@@ -1,0 +1,31 @@
+.scroller {
+  scrollbar-width: none;
+}
+
+.scroller::-webkit-scrollbar {
+  display: none;
+}
+
+.track {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 2px;
+  width: 6px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 150ms ease;
+}
+
+.root:hover .track {
+  opacity: 1;
+}
+
+.thumb {
+  width: 100%;
+  border-radius: 3px;
+  background-color: rgba(0, 0, 0, 0.35);
+  transition:
+    transform 64ms ease-out,
+    height 64ms ease-out;
+}

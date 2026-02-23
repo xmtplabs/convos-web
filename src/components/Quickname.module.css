@@ -1,0 +1,16 @@
+.avatar {
+  cursor: pointer;
+
+  &:hover {
+    opacity: 0.8;
+  }
+}
+
+.status {
+  min-height: 1lh;
+  box-sizing: content-box;
+}
+
+.undo {
+  cursor: pointer;
+}

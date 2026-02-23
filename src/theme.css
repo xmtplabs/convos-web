@@ -1,0 +1,6 @@
+:root {
+  --convos-nav-width: 400px;
+  --convos-header-height: 112px;
+  --convos-header-padding: var(--mantine-spacing-md);
+  --convos-card-height: 80px;
+}

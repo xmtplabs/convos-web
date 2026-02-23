@@ -1,0 +1,9 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
+.outer {
+  flex-grow: 1;
+}

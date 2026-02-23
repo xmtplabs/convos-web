@@ -1,0 +1,137 @@
+import { Button, Loader, Paper, Stack, Text } from "@mantine/core";
+import { Outlet, useNavigate } from "@tanstack/react-router";
+import { useLiveQuery } from "dexie-react-hooks";
+import { SendIcon } from "lucide-react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { Composer } from "@/components/Composer";
+import { ConvoHeader } from "@/components/ConvoHeader";
+import { LoadingMessage } from "@/components/LoadingMessage";
+import { MessageList } from "@/components/MessageList";
+import { ConvoProvider } from "@/contexts/ConvoContext";
+import { db } from "@/db";
+import { useClient } from "@/hooks/useClient";
+import { useMessages } from "@/hooks/useMessages";
+import { ConvoLayout } from "@/layouts/ConvoLayout";
+import { Route } from "@/routes/_app/convo/$convoId";
+import { resendJoinRequest } from "@/utils/invite";
+
+const ConvoContent = () => {
+  const { messages, messagesLoading } = useMessages();
+
+  return (
+    <ConvoLayout
+      header={<ConvoHeader />}
+      footer={<Composer />}
+      withScrollArea={false}>
+      {messagesLoading ? (
+        <LoadingMessage message="Connecting..." />
+      ) : (
+        <MessageList messages={messages} />
+      )}
+    </ConvoLayout>
+  );
+};
+
+const PendingConvo = () => {
+  const convo = Route.useLoaderData();
+  const ctx = useClient();
+  const [resending, setResending] = useState(false);
+  const [resent, setResent] = useState(false);
+
+  const handleResend = useCallback(() => {
+    setResending(true);
+    setResent(false);
+    resendJoinRequest(convo)
+      .then(() => {
+        setResent(true);
+      })
+      .catch(() => {})
+      .finally(() => {
+        setResending(false);
+      });
+  }, [convo]);
+
+  const isChecking = ctx.status === "loading";
+
+  return (
+    <ConvoLayout header={<ConvoHeader />} footer={null} withScrollArea={false}>
+      <Stack align="center" justify="center" flex={1} px="md">
+        <Paper p="xl" radius="md" withBorder>
+          <Stack align="center" gap="md">
+            {isChecking ? (
+              <>
+                <Loader size={24} />
+                <Text size="sm" c="dimmed" ta="center">
+                  Checking invite status...
+                </Text>
+              </>
+            ) : (
+              <>
+                <Text size="sm" c="dimmed" ta="center">
+                  Join request sent. Waiting for the creator to add you.
+                </Text>
+                <Button
+                  variant="light"
+                  leftSection={
+                    resending ? <Loader size={16} /> : <SendIcon size={16} />
+                  }
+                  disabled={resending}
+                  onClick={handleResend}>
+                  {resent ? "Re-request sent" : "Re-request to join"}
+                </Button>
+              </>
+            )}
+          </Stack>
+        </Paper>
+      </Stack>
+    </ConvoLayout>
+  );
+};
+
+export const Convo = () => {
+  const loaderConvo = Route.useLoaderData();
+  const liveConvo = useLiveQuery(
+    () => db.convos.get(loaderConvo.id),
+    [loaderConvo.id],
+  );
+  const convo = liveConvo ?? loaderConvo;
+  const ctx = useClient();
+  const navigate = useNavigate();
+  const hasLoaded = useRef(false);
+
+  if (liveConvo) hasLoaded.current = true;
+
+  useEffect(() => {
+    if (hasLoaded.current && !liveConvo) {
+      void navigate({ to: "/" });
+    }
+  }, [liveConvo, navigate]);
+
+  useEffect(() => {
+    ctx.setConvo(loaderConvo);
+    return () => {
+      ctx.setConvo(null);
+    };
+  }, [loaderConvo.id, ctx.setConvo]);
+
+  // Ready is the authoritative signal — check it first
+  if (ctx.status === "ready") {
+    return (
+      <ConvoProvider convo={convo} conversation={ctx.conversation}>
+        <ConvoContent />
+        <Outlet />
+      </ConvoProvider>
+    );
+  }
+
+  if (loaderConvo.status === "pending") {
+    return (
+      <>
+        <PendingConvo />
+        <Outlet />
+      </>
+    );
+  }
+
+  return <LoadingMessage message="Connecting..." />;
+};

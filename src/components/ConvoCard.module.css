@@ -1,0 +1,14 @@
+.link {
+  color: inherit;
+  text-decoration: none;
+}
+
+.root {
+  padding-inline: var(--convos-header-padding);
+  height: var(--convos-card-height);
+}
+
+.root[data-selected],
+.root:hover {
+  background: var(--mantine-color-gray-2);
+}
