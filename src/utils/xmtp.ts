@@ -13,6 +13,8 @@ import { toBytes, type Hex } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import { version } from "../../package.json";
 
+const xmtpEnv = import.meta.env.VITE_XMTP_ENV || "dev";
+
 export const createSigner = (privateKey: Hex): Signer => {
   const account = privateKeyToAccount(privateKey);
   return {
@@ -33,7 +35,7 @@ export const createSigner = (privateKey: Hex): Signer => {
 export const createClient = async (privateKey: Hex) => {
   const signer = createSigner(privateKey);
   return await Client.create(signer, {
-    env: "dev",
+    env: xmtpEnv,
     disableDeviceSync: true,
     loggingLevel: LogLevel.Off,
     appVersion: `convos-web/${version}`,
@@ -44,7 +46,7 @@ export const buildClient = async (privateKey: Hex) => {
   const signer = createSigner(privateKey);
   const identifier = await signer.getIdentifier();
   return Client.build(identifier, {
-    env: "dev",
+    env: xmtpEnv,
     disableDeviceSync: true,
     loggingLevel: LogLevel.Off,
     appVersion: `convos-web/${version}`,
