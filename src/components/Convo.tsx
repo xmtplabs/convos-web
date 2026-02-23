@@ -54,7 +54,14 @@ const PendingConvo = () => {
   const isChecking = ctx.status === "loading";
 
   return (
-    <ConvoLayout header={<ConvoHeader />} footer={null} withScrollArea={false}>
+    <ConvoLayout
+      header={
+        <Text fw={500} size="md" truncate>
+          {convo.name ?? "New Convo"}
+        </Text>
+      }
+      footer={null}
+      withScrollArea={false}>
       <Stack align="center" justify="center" flex={1} px="md">
         <Paper p="xl" radius="md" withBorder>
           <Stack align="center" gap="md">
