@@ -105,8 +105,14 @@ export const Convo = () => {
   const ctx = useClient();
   const navigate = useNavigate();
   const hasLoaded = useRef(false);
+  const conversationRef = useRef(ctx.conversation);
 
-  if (liveConvo) hasLoaded.current = true;
+  if (ctx.conversation) {
+    conversationRef.current = ctx.conversation;
+  }
+  if (liveConvo) {
+    hasLoaded.current = true;
+  }
 
   useEffect(() => {
     if (hasLoaded.current && !liveConvo) {
@@ -121,10 +127,11 @@ export const Convo = () => {
     };
   }, [loaderConvo.id, ctx.setConvo]);
 
-  // Ready is the authoritative signal — check it first
-  if (ctx.status === "ready") {
+  // keep showing the convo even if status briefly changes
+  const conversation = ctx.conversation ?? conversationRef.current;
+  if (conversation) {
     return (
-      <ConvoProvider convo={convo} conversation={ctx.conversation}>
+      <ConvoProvider convo={convo} conversation={conversation}>
         <ConvoContent />
         <Outlet />
       </ConvoProvider>
