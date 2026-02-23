@@ -1,0 +1,59 @@
+syntax = "proto3";
+
+package convos.v1;
+
+// Custom metadata for XMTP conversations
+//
+// Encoding optimizations for compact storage:
+// - inbox_id: Hex-decoded bytes (32 bytes) instead
+//   of hex string (64 chars), saves ~32 bytes/member
+// - expires_at: Unix sfixed64 (8 bytes) instead of
+//   protobuf Timestamp (10-16 bytes)
+// - DEFLATE compression if size >100 bytes
+//   (typically 20-40% reduction)
+//
+// Image encryption (lean approach):
+// - One 32-byte AES-256 key per group
+// - Per-image: URL + salt + nonce
+//   (no digest — AES-GCM auth tag = integrity)
+// - ~48 bytes overhead per image
+//
+message ConversationCustomMetadata {
+  string tag = 1;
+  repeated ConversationProfile profiles = 2;
+  optional sfixed64 expires_at_unix = 3;
+
+  // 32-byte AES-256 key for encrypting all images
+  optional bytes image_encryption_key = 4;
+
+  // Encrypted group avatar
+  optional EncryptedImageRef encrypted_group_image = 5;
+}
+
+// Encrypted image metadata
+// AES-GCM auth tag (16 bytes) appended to ciphertext
+// provides integrity verification
+message EncryptedImageRef {
+  // S3 URL to encrypted ciphertext
+  string url = 1;
+
+  // 32-byte HKDF salt for key derivation
+  bytes salt = 2;
+
+  // 12-byte AES-GCM nonce
+  bytes nonce = 3;
+}
+
+// Participant in the conversation
+message ConversationProfile {
+  // XMTP inbox ID as hex-decoded bytes
+  bytes inbox_id = 1;
+
+  optional string name = 2;
+
+  // Legacy: plain URL (backward compat)
+  optional string image = 3;
+
+  // Encrypted image reference
+  optional EncryptedImageRef encrypted_image = 4;
+}

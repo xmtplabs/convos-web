@@ -1,0 +1,49 @@
+syntax = "proto3";
+
+package convos.v1;
+
+// InvitePayload represents the core invite data
+message InvitePayload {
+  // Encrypted conversation id
+  // Stored as raw bytes for compactness
+  bytes conversation_token = 1;
+
+  // Creator's inbox ID as raw bytes (hex-decoded)
+  // Required for:
+  //   1) conversation token decryption AAD
+  //   2) joiner to know who to DM
+  bytes creator_inbox_id = 2;
+
+  // Tag marking which conversation this corresponds
+  // to, lives in `ConversationCustomMetadata`
+  string tag = 3;
+
+  // Optional conversation metadata
+  optional string name = 4;
+  optional string description = 5;
+  optional string image_url = 6;
+
+  // Unix timestamp in seconds (8 bytes fixed)
+  // More compact than google.protobuf.Timestamp
+  optional sfixed64 conversation_expires_at_unix = 7;
+
+  // Invite expiration as Unix timestamp in seconds
+  optional sfixed64 expires_at_unix = 8;
+
+  // Whether the invite expires after one use
+  bool expires_after_use = 9;
+}
+
+// SignedInvite represents an invite with its
+// cryptographic signature
+message SignedInvite {
+  // Invite payload as bytes to preserve exact
+  // serialization that was signed. Ensures signatures
+  // remain valid even if the protobuf schema changes
+  // (protobuf serialization is not canonical).
+  bytes payload = 1;
+
+  // Cryptographic signature
+  // Typically 65 bytes for ECDSA with recovery
+  bytes signature = 2;
+}
