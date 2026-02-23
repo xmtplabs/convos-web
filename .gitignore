@@ -38,6 +38,8 @@ logs
 lib
 dist
 build
+.output
+.nitro
 
 # yarn
 .pnp.*
