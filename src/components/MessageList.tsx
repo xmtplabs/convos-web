@@ -243,7 +243,11 @@ const RowRenderer = ({
     const initiatorName = memberProfiles.get(
       groupUpdated.initiatedByInboxId,
     )?.name;
-    const lines = getGroupUpdatedStrings(groupUpdated, initiatorName);
+    const lines = getGroupUpdatedStrings(
+      groupUpdated,
+      initiatorName,
+      memberProfiles,
+    );
     return (
       <div className={`${classes.item} ${classes.systemMessage}`}>
         {lines.map((line) => (

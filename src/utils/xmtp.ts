@@ -75,21 +75,42 @@ const metadataFieldLabels: Record<string, string> = {
 export const getGroupUpdatedStrings = (
   content: GroupUpdated,
   initiatorName?: string,
+  profileNames?: Map<string, { name?: string }>,
 ): string[] => {
   const who = initiatorName ?? "Somebody";
-  return content.metadataFieldChanges
-    .filter((change) => change.fieldName in metadataFieldLabels)
-    .map((change) => {
-      if (change.fieldName === "group_image_url_square") {
-        if (change.newValue) {
-          return `${who} changed the convo photo`;
-        }
-        return `${who} removed the convo photo`;
-      }
+  const getName = (inboxId: string) =>
+    profileNames?.get(inboxId)?.name ?? "Somebody";
+  const lines: string[] = [];
+
+  for (const inbox of content.addedInboxes) {
+    lines.push(`${getName(inbox.inboxId)} joined the group`);
+  }
+
+  for (const inbox of content.removedInboxes) {
+    lines.push(`${getName(inbox.inboxId)} was removed from the group`);
+  }
+
+  for (const inbox of content.leftInboxes) {
+    lines.push(`${getName(inbox.inboxId)} left the group`);
+  }
+
+  for (const change of content.metadataFieldChanges) {
+    if (!(change.fieldName in metadataFieldLabels)) continue;
+    if (change.fieldName === "group_image_url_square") {
+      lines.push(
+        change.newValue
+          ? `${who} changed the convo photo`
+          : `${who} removed the convo photo`,
+      );
+    } else {
       const field = metadataFieldLabels[change.fieldName];
-      if (change.newValue) {
-        return `${who} changed the group ${field} to "${change.newValue}"`;
-      }
-      return `${who} removed the group ${field}`;
-    });
+      lines.push(
+        change.newValue
+          ? `${who} changed the group ${field} to "${change.newValue}"`
+          : `${who} removed the group ${field}`,
+      );
+    }
+  }
+
+  return lines;
 };
