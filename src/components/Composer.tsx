@@ -12,7 +12,7 @@ import {
 } from "@mantine/core";
 import { Group as XmtpGroup, type RemoteAttachment } from "@xmtp/browser-sdk";
 import { ArrowUpIcon, ImageIcon, UserIcon } from "lucide-react";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { AttachmentPreview } from "@/components/AttachmentPreview";
 import { ReplyPreview } from "@/components/ReplyPreview";
 import { useAvatar } from "@/hooks/useAvatar";
@@ -55,6 +55,12 @@ export const Composer = () => {
   const remoteAttachmentRef = useRef<RemoteAttachment | null>(null);
   const isSending = sending || uploadingAttachment;
   const hasContent = message.trim() !== "" || attachment;
+
+  useEffect(() => {
+    if (reply) {
+      inputRef.current?.focus();
+    }
+  }, [reply]);
 
   const handleShareProfile = useCallback(async () => {
     if (!inboxId || !(conversation instanceof XmtpGroup) || !profile) {
