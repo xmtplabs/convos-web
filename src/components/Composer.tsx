@@ -57,7 +57,9 @@ export const Composer = () => {
   const hasContent = message.trim() !== "" || attachment;
 
   const handleShareProfile = useCallback(async () => {
-    if (!inboxId || !(conversation instanceof XmtpGroup) || !profile) return;
+    if (!inboxId || !(conversation instanceof XmtpGroup) || !profile) {
+      return;
+    }
     setSharingProfile(true);
     try {
       await shareProfileToGroup(conversation, profile, inboxId);
@@ -87,7 +89,9 @@ export const Composer = () => {
   );
 
   const handleSend = useCallback(async () => {
-    if (!hasContent || isSending) return;
+    if (!hasContent || isSending) {
+      return;
+    }
 
     if (attachment) {
       try {
@@ -232,7 +236,9 @@ export const Composer = () => {
               placeholder={`Chat as ${groupName ?? "Somebody"}`}
               value={message}
               onKeyDown={(e) => {
-                if (e.key === "Enter") void handleSend();
+                if (e.key === "Enter") {
+                  void handleSend();
+                }
               }}
               onChange={(e) => {
                 setMessage(e.target.value);

@@ -37,7 +37,9 @@ export const useVirtualList = <T>({
   // check if currently scrolled to bottom
   const isScrolledToBottom = useCallback(() => {
     const scrollElement = scrollContainerRef.current;
-    if (!scrollElement) return true;
+    if (!scrollElement) {
+      return true;
+    }
     const { scrollTop, scrollHeight, clientHeight } = scrollElement;
     const distanceFromBottom = scrollHeight - scrollTop - clientHeight;
     return distanceFromBottom <= bottomThreshold;
@@ -53,7 +55,9 @@ export const useVirtualList = <T>({
   // track user scroll to update scrolledToBottomRef
   useEffect(() => {
     const scrollElement = scrollContainerRef.current;
-    if (!scrollElement) return;
+    if (!scrollElement) {
+      return;
+    }
 
     const handleScroll = () => {
       scrolledToBottomRef.current = isScrolledToBottom();

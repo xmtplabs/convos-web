@@ -46,7 +46,9 @@ const base64UrlEncode = (bytes: Uint8Array): string => {
 const base64UrlDecode = (str: string): Uint8Array => {
   let b64 = str.replace(/-/g, "+").replace(/_/g, "/");
   const pad = b64.length % 4;
-  if (pad) b64 += "=".repeat(4 - pad);
+  if (pad) {
+    b64 += "=".repeat(4 - pad);
+  }
   return Uint8Array.from(atob(b64), (c) => c.charCodeAt(0));
 };
 
@@ -106,7 +108,9 @@ const decode = async (data: string): Promise<ConversationCustomMetadata> => {
 const normalizeImageRef = (
   ref: { url: string; salt: Uint8Array; nonce: Uint8Array } | undefined,
 ): EncryptedImageRef | undefined => {
-  if (!ref) return undefined;
+  if (!ref) {
+    return undefined;
+  }
   return { url: ref.url, salt: ref.salt, nonce: ref.nonce };
 };
 
@@ -175,7 +179,9 @@ export const shareProfileToGroup = async (
     // download and decrypt profile avatar
     const response = await fetch(profile.avatarUrl);
 
-    if (!response.ok) return;
+    if (!response.ok) {
+      return;
+    }
 
     const ciphertext = new Uint8Array(await response.arrayBuffer());
     const plaintext = await decrypt(
@@ -249,7 +255,9 @@ export const updateGroupImage = async (
 
 export const removeGroupImage = async (group: Group) => {
   const currentAppData = group.appData;
-  if (!currentAppData) return;
+  if (!currentAppData) {
+    return;
+  }
 
   let metadata: ConversationCustomMetadata;
   try {

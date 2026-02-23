@@ -62,7 +62,9 @@ const VirtualList = <T,>(
     const el = scrollContainerRef.current;
     const thumb = thumbRef.current;
     const track = trackRef.current;
-    if (!el || !thumb || !track) return;
+    if (!el || !thumb || !track) {
+      return;
+    }
 
     const { scrollTop, scrollHeight, clientHeight } = el;
     if (scrollHeight <= clientHeight) {
@@ -85,7 +87,9 @@ const VirtualList = <T,>(
 
   useEffect(() => {
     const el = scrollContainerRef.current;
-    if (!el) return;
+    if (!el) {
+      return;
+    }
 
     el.addEventListener("scroll", updateScrollbar, { passive: true });
     return () => {

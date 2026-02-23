@@ -16,13 +16,21 @@ import classes from "./ConvoCard.module.css";
 
 const formatTime = (convo: Convo): string | undefined => {
   const ns = convo.lastUpdatedAtNs;
-  if (ns == null) return undefined;
+  if (ns == null) {
+    return undefined;
+  }
   const seconds = Math.floor((Date.now() - Number(ns / 1_000_000n)) / 1000);
-  if (seconds < 60) return "now";
+  if (seconds < 60) {
+    return "now";
+  }
   const minutes = Math.floor(seconds / 60);
-  if (minutes < 60) return `${minutes}m`;
+  if (minutes < 60) {
+    return `${minutes}m`;
+  }
   const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `${hours}h`;
+  if (hours < 24) {
+    return `${hours}h`;
+  }
   const days = Math.floor(hours / 24);
   return `${days}d`;
 };
@@ -60,7 +68,9 @@ export const ConvoCard: React.FC<ConvoCardProps> = ({ convo, selected }) => {
     <Menu
       opened={menuOpened}
       onChange={(opened) => {
-        if (!opened) setMenuOpened(false);
+        if (!opened) {
+          setMenuOpened(false);
+        }
       }}
       withArrow
       arrowPosition="side"

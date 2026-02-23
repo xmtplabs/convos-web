@@ -34,7 +34,9 @@ const AcceptInvite = () => {
   }, [slug]);
 
   const handleJoin = useCallback(() => {
-    if (!parsed) return;
+    if (!parsed) {
+      return;
+    }
     setStatus("sending");
     setError(undefined);
     sendJoinRequest(parsed)

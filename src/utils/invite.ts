@@ -102,7 +102,9 @@ const toUrlSafeSlug = (data: Uint8Array): string => {
   b64 = b64.replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
 
   // Insert '*' every 300 characters
-  if (b64.length <= 300) return b64;
+  if (b64.length <= 300) {
+    return b64;
+  }
   const parts: string[] = [];
   for (let i = 0; i < b64.length; i += 300) {
     parts.push(b64.slice(i, i + 300));
@@ -171,7 +173,9 @@ export const parseInviteSlug = (slug: string): ParsedInvite => {
   let standard = b64.replace(/-/g, "+").replace(/_/g, "/");
   // Add padding
   const pad = standard.length % 4;
-  if (pad) standard += "=".repeat(4 - pad);
+  if (pad) {
+    standard += "=".repeat(4 - pad);
+  }
 
   // Decode to bytes
   const binary = atob(standard);
@@ -226,7 +230,9 @@ export const processDmInvite = async (
   tag: string,
   group: Group,
 ): Promise<boolean> => {
-  if (!isText(message) || !message.content) return false;
+  if (!isText(message) || !message.content) {
+    return false;
+  }
   try {
     const parsed = parseInviteSlug(message.content);
     if (parsed.payload.tag !== tag) {

@@ -56,7 +56,9 @@ export const XmtpProvider: React.FC<{
   const groupStreamRef = useRef<AsyncStreamProxy<Group> | null>(null);
 
   const setConvo = useCallback((convo: Convo | null) => {
-    if (convo?.id === convoIdRef.current) return;
+    if (convo?.id === convoIdRef.current) {
+      return;
+    }
 
     // cancel any in-flight setup
     cancelRef.current?.();
@@ -109,7 +111,9 @@ export const XmtpProvider: React.FC<{
       }
 
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-      if (cancelled) return;
+      if (cancelled) {
+        return;
+      }
 
       const newClient = await buildClient(convo.privateKey);
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
@@ -147,7 +151,9 @@ export const XmtpProvider: React.FC<{
           await newClient.conversations.sync();
           const conversation =
             await newClient.conversations.getConversationById(group.id);
-          if (!conversation) return false;
+          if (!conversation) {
+            return false;
+          }
           setState({
             status: "ready",
             client: newClient,
@@ -162,10 +168,14 @@ export const XmtpProvider: React.FC<{
           consentStates,
         });
         for (const group of groups) {
-          if (await resolveIfMatch(group)) return;
+          if (await resolveIfMatch(group)) {
+            return;
+          }
         }
         // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-        if (cancelled) return;
+        if (cancelled) {
+          return;
+        }
 
         // No match found — show waiting UI while streaming continues
         setState({
@@ -210,7 +220,9 @@ export const XmtpProvider: React.FC<{
           const tag = convo.tag;
           const group = conversation;
           void processExistingDms(newClient, tag, group).then(async () => {
-            if (cancelled) return;
+            if (cancelled) {
+              return;
+            }
             const stream = await newClient.conversations.streamAllDmMessages({
               disableSync: true,
               onValue(value) {

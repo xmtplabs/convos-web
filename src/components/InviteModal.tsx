@@ -28,7 +28,9 @@ export const InviteModal: React.FC<InviteModalProps> = ({
   const [inviteUrl, setInviteUrl] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!opened || !appData) return;
+    if (!opened || !appData) {
+      return;
+    }
     const slug = createInviteSlug(convo, appData, inboxId);
     setInviteUrl(getInviteUrl(slug));
   }, [opened, convo, appData, inboxId]);

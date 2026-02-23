@@ -24,13 +24,19 @@ export const ConvoHeader: React.FC = () => {
   const handleFileSelect = useCallback(
     async (e: React.ChangeEvent<HTMLInputElement>) => {
       const file = e.target.files?.[0];
-      if (!file) return;
+      if (!file) {
+        return;
+      }
       e.target.value = "";
 
       const validation = validateFile(file);
-      if (!validation.valid) return;
+      if (!validation.valid) {
+        return;
+      }
 
-      if (!(conversation instanceof XmtpGroup)) return;
+      if (!(conversation instanceof XmtpGroup)) {
+        return;
+      }
 
       const imageData = new Uint8Array(await file.arrayBuffer());
       await updateGroupImage(conversation, imageData);
@@ -40,7 +46,9 @@ export const ConvoHeader: React.FC = () => {
   );
 
   const handleRemoveImage = useCallback(async () => {
-    if (!(conversation instanceof XmtpGroup)) return;
+    if (!(conversation instanceof XmtpGroup)) {
+      return;
+    }
     await removeGroupImage(conversation);
     await sync();
   }, [conversation, sync]);

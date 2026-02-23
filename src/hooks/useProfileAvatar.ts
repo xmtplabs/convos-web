@@ -16,7 +16,9 @@ export const useProfileAvatar = (profile: Profile | null) => {
     void (async () => {
       try {
         const response = await fetch(avatarUrl, { signal: ctrl.signal });
-        if (!response.ok) return;
+        if (!response.ok) {
+          return;
+        }
         const ciphertext = new Uint8Array(await response.arrayBuffer());
         const decrypted = await decrypt(
           ciphertext,
@@ -24,7 +26,9 @@ export const useProfileAvatar = (profile: Profile | null) => {
           avatarSalt,
           avatarNonce,
         );
-        if (ctrl.signal.aborted) return;
+        if (ctrl.signal.aborted) {
+          return;
+        }
         const blob = new Blob([decrypted]);
         setSrc(URL.createObjectURL(blob));
       } catch {

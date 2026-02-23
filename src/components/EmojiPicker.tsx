@@ -14,7 +14,9 @@ export const EmojiPicker: React.FC<{
     <Popover
       opened={opened}
       onChange={(open) => {
-        if (!open) onClose();
+        if (!open) {
+          onClose();
+        }
       }}
       position="top"
       withArrow

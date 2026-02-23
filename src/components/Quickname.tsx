@@ -64,7 +64,9 @@ export const Quickname: React.FC<QuicknameProps> = ({ onDirtyChange }) => {
   const handleFileSelect = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const file = e.target.files?.[0];
-      if (!file) return;
+      if (!file) {
+        return;
+      }
       const validation = validateFile(file);
       if (!validation.valid) {
         setStatus(validation.error);

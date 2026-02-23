@@ -112,7 +112,9 @@ export const getFileType = (filename: string) => {
 };
 
 export const formatFileSize = (fileSize: number) => {
-  if (!fileSize) return "";
+  if (!fileSize) {
+    return "";
+  }
   const kb = fileSize / 1024;
   if (kb < 1024) {
     return `${kb.toFixed(1)} KB`;

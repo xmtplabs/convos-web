@@ -12,24 +12,34 @@ export const syncAvatars = async (
   signal?: AbortSignal,
 ): Promise<void> => {
   const keyBytes = appData.imageEncryptionKey;
-  if (!keyBytes || keyBytes.length === 0) return;
+  if (!keyBytes || keyBytes.length === 0) {
+    return;
+  }
   const keyHex = bytesToHex(keyBytes);
 
   const tasks = appData.profiles
     .filter((p) => p.encryptedImage)
     .map(async (profile) => {
       const img = profile.encryptedImage;
-      if (!img) return;
-      if (signal?.aborted) return;
+      if (!img) {
+        return;
+      }
+      if (signal?.aborted) {
+        return;
+      }
 
       // Skip if we already have this exact sourceUrl cached
       const existing = await db.avatars.get([convoId, profile.inboxId]);
-      if (existing && existing.sourceUrl === img.url) return;
+      if (existing && existing.sourceUrl === img.url) {
+        return;
+      }
 
       const response = await fetch(img.url, { signal });
       const ciphertext = new Uint8Array(await response.arrayBuffer());
 
-      if (signal?.aborted) return;
+      if (signal?.aborted) {
+        return;
+      }
 
       const plaintext = await decrypt(
         ciphertext,
@@ -38,7 +48,9 @@ export const syncAvatars = async (
         bytesToHex(img.nonce),
       );
 
-      if (signal?.aborted) return;
+      if (signal?.aborted) {
+        return;
+      }
 
       const base64 = btoa(String.fromCharCode(...plaintext));
       const dataUrl = `data:image/png;base64,${base64}`;
@@ -59,19 +71,25 @@ export const syncAvatars = async (
     await db.avatars.delete([convoId, GROUP_IMAGE_INBOX_ID]);
   } else {
     try {
-      if (signal?.aborted) return;
+      if (signal?.aborted) {
+        return;
+      }
       const existing = await db.avatars.get([convoId, GROUP_IMAGE_INBOX_ID]);
       if (!existing || existing.sourceUrl !== groupImg.url) {
         const response = await fetch(groupImg.url, { signal });
         const ciphertext = new Uint8Array(await response.arrayBuffer());
-        if (signal?.aborted) return;
+        if (signal?.aborted) {
+          return;
+        }
         const plaintext = await decrypt(
           ciphertext,
           keyHex,
           bytesToHex(groupImg.salt),
           bytesToHex(groupImg.nonce),
         );
-        if (signal?.aborted) return;
+        if (signal?.aborted) {
+          return;
+        }
         const base64 = btoa(String.fromCharCode(...plaintext));
         const dataUrl = `data:image/png;base64,${base64}`;
         await db.avatars.put({

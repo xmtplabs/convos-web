@@ -51,8 +51,12 @@ const formatTimeLabel = (date: Date): string => {
     minute: "2-digit",
   });
 
-  if (diffDays === 0) return `Today, ${time}`;
-  if (diffDays === 1) return `Yesterday, ${time}`;
+  if (diffDays === 0) {
+    return `Today, ${time}`;
+  }
+  if (diffDays === 1) {
+    return `Yesterday, ${time}`;
+  }
 
   const dateStr = date.toLocaleDateString(undefined, {
     month: "short",
@@ -75,7 +79,9 @@ const addReaction = (
   senderInboxId: string,
   inboxId: string,
 ) => {
-  if (!reaction.content) return;
+  if (!reaction.content) {
+    return;
+  }
 
   let msgReactions = map.get(reference);
   if (!msgReactions) {
@@ -88,7 +94,9 @@ const addReaction = (
   if (reaction.action === ReactionAction.Added) {
     if (existing) {
       existing.count += 1;
-      if (senderInboxId === inboxId) existing.reacted = true;
+      if (senderInboxId === inboxId) {
+        existing.reacted = true;
+      }
     } else {
       msgReactions.set(reaction.content, {
         emoji: reaction.content,
@@ -98,7 +106,9 @@ const addReaction = (
     }
   } else if (reaction.action === ReactionAction.Removed && existing) {
     existing.count -= 1;
-    if (senderInboxId === inboxId) existing.reacted = false;
+    if (senderInboxId === inboxId) {
+      existing.reacted = false;
+    }
     if (existing.count <= 0) {
       msgReactions.delete(reaction.content);
     }
@@ -155,12 +165,15 @@ const buildRows = (
   let lastMinuteKey = "";
 
   for (const message of messages) {
-    if (isReaction(message)) continue;
+    if (isReaction(message)) {
+      continue;
+    }
     if (
       isGroupUpdated(message) &&
       getGroupUpdatedStrings(message.content as GroupUpdated).length === 0
-    )
+    ) {
       continue;
+    }
 
     const minuteKey = getMinuteKey(message.sentAtNs);
     if (minuteKey !== lastMinuteKey) {
@@ -185,7 +198,9 @@ const buildRows = (
   // Compute isFirstInGroup / isLastInGroup based on adjacent rows.
   for (let i = 0; i < rows.length; i++) {
     const row = rows[i];
-    if (row.type !== "message") continue;
+    if (row.type !== "message") {
+      continue;
+    }
     const prev = rows[i - 1] as Row | undefined;
     const next = rows[i + 1] as Row | undefined;
     row.isFirstInGroup =
@@ -307,7 +322,9 @@ const RowRenderer = ({
           <div
             className={`${classes.replyContext} ${row.isOwn ? classes.replyContextOwn : classes.replyContextOther}`}
             onClick={() => {
-              if (replyReferenceId) onScrollToMessage(replyReferenceId);
+              if (replyReferenceId) {
+                onScrollToMessage(replyReferenceId);
+              }
             }}>
             <ReplyIcon size={14} className={classes.replyIcon} />
             <div style={{ overflow: "hidden" }}>
@@ -381,7 +398,9 @@ export const MessageList: React.FC<{
       const index = messageIdToIndex.get(messageId);
       if (index !== undefined) {
         listRef.current?.scrollToIndex(index, { align: "center" });
-        if (highlightTimer.current) clearTimeout(highlightTimer.current);
+        if (highlightTimer.current) {
+          clearTimeout(highlightTimer.current);
+        }
         setHighlightedMessageId(messageId);
         highlightTimer.current = setTimeout(() => {
           setHighlightedMessageId(null);

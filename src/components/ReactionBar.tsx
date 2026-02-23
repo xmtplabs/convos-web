@@ -30,7 +30,9 @@ export const ReactionBar: React.FC<{
     [messageId, senderInboxId, sendReaction],
   );
 
-  if (reactions.size === 0) return null;
+  if (reactions.size === 0) {
+    return null;
+  }
 
   return (
     <div

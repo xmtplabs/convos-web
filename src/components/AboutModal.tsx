@@ -17,7 +17,9 @@ export const AboutModal = () => {
   }, []);
 
   const onClose = () => {
-    if (dirtyRef.current) return;
+    if (dirtyRef.current) {
+      return;
+    }
     void navigate({ to: ".", search: { modal: undefined } });
   };
 

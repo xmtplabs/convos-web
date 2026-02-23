@@ -16,7 +16,9 @@ export const RemoteAttachmentContent: React.FC<{
 
   const loadAttachment = useCallback(
     async (force = false) => {
-      if (loadingRef.current) return;
+      if (loadingRef.current) {
+        return;
+      }
       loadingRef.current = true;
       setError(null);
       setDecryptedUrl(null);
@@ -110,7 +112,9 @@ export const RemoteAttachmentContent: React.FC<{
     );
   }
 
-  if (!decryptedUrl) return null;
+  if (!decryptedUrl) {
+    return null;
+  }
 
   const fileType = getFileType(content.filename ?? "");
 

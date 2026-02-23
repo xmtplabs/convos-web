@@ -67,7 +67,9 @@ export const ConvoProvider: React.FC<{
 
   const refresh = useCallback(async () => {
     const isActive = await conversation.isActive();
-    if (!isActive) return;
+    if (!isActive) {
+      return;
+    }
 
     setMessagesLoading(true);
     await conversation.sync();
@@ -84,11 +86,15 @@ export const ConvoProvider: React.FC<{
       const name = conversation.name;
       const description = conversation.description;
       const imageUrl = conversation.imageUrl;
-      if (name && name !== current.name) updates.name = name;
-      if (description !== current.description)
+      if (name && name !== current.name) {
+        updates.name = name;
+      }
+      if (description !== current.description) {
         updates.description = description || undefined;
-      if (imageUrl !== current.imageUrl)
+      }
+      if (imageUrl !== current.imageUrl) {
         updates.imageUrl = imageUrl || undefined;
+      }
     }
     const lastMsg = msgs.at(-1);
     if (lastMsg && lastMsg.sentAtNs !== current.lastUpdatedAtNs) {
@@ -109,7 +115,9 @@ export const ConvoProvider: React.FC<{
     const init = async () => {
       await refresh();
 
-      if (cancelled) return;
+      if (cancelled) {
+        return;
+      }
 
       const stream = await conversation.stream({
         onValue(value) {

@@ -11,7 +11,9 @@ export const useAppData = (conversation: Conversation, convoId: string) => {
   const [appData, setAppData] = useState<AppData | null>(null);
 
   const refreshAppData = useCallback(() => {
-    if (!(conversation instanceof Group)) return;
+    if (!(conversation instanceof Group)) {
+      return;
+    }
     const raw = conversation.appData;
     if (!raw) {
       setAppData(null);
@@ -37,7 +39,9 @@ export const useAppData = (conversation: Conversation, convoId: string) => {
   }, [appData]);
 
   useEffect(() => {
-    if (!appData) return;
+    if (!appData) {
+      return;
+    }
     const controller = new AbortController();
     void syncAvatars(convoId, appData, controller.signal);
     return () => {
