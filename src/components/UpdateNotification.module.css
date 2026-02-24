@@ -1,0 +1,12 @@
+.root {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  z-index: 1000;
+  opacity: 1;
+  transition: opacity 300ms ease;
+
+  @starting-style {
+    opacity: 0;
+  }
+}
