@@ -62,7 +62,11 @@ export const DeleteAllDataModal: React.FC<DeleteAllDataModalProps> = ({
           destroyed.
         </Text>
         <Group justify="flex-end" gap="xxs">
-          <Button variant="default" onClick={onClose} disabled={deleting}>
+          <Button
+            variant="default"
+            radius="xl"
+            onClick={onClose}
+            disabled={deleting}>
             Cancel
           </Button>
           <Button

@@ -67,7 +67,11 @@ export const DeleteConvoModal: React.FC<DeleteConvoModalProps> = ({
           conversation will be destroyed.
         </Text>
         <Group justify="flex-end" gap="xxs">
-          <Button variant="default" onClick={onClose} disabled={deleting}>
+          <Button
+            variant="default"
+            radius="xl"
+            onClick={onClose}
+            disabled={deleting}>
             Cancel
           </Button>
           <Button
