@@ -11,6 +11,7 @@ export const theme = createTheme({
   spacing: {
     xxs: "calc(0.5rem * var(--mantine-scale))",
     xxxs: "calc(0.25rem * var(--mantine-scale))",
+    lg: "calc(1.5rem * var(--mantine-scale))",
   },
   components: {
     Modal: Modal.extend({
