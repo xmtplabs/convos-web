@@ -26,9 +26,7 @@ export const LinkButton = createLink(LinkButtonComponent);
 const LinkActionIconComponent = forwardRef<
   HTMLAnchorElement,
   ActionIconProps & AnchorProps
->((props, ref) => (
-  <ActionIcon {...props} component="a" ref={ref} variant="transparent" />
-));
+>((props, ref) => <ActionIcon {...props} component="a" ref={ref} />);
 
 export const LinkActionIcon = createLink(LinkActionIconComponent);
 
