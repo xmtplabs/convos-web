@@ -8,7 +8,6 @@ import {
 } from "@mantine/core";
 import { Group as XmtpGroup } from "@xmtp/browser-sdk";
 import { useState } from "react";
-import { LinkButton } from "@/components/Button";
 import { useConvo } from "@/hooks/useConvo";
 import { updateConvo } from "@/utils/convos";
 
@@ -83,33 +82,23 @@ export const EditConvoModal: React.FC<EditConvoModalProps> = ({
           autosize
           minRows={2}
         />
-        <Group justify="space-between" gap="xxs">
-          <LinkButton
-            to="/convo/$convoId/delete"
-            params={{ convoId: convo.id }}
-            variant="light"
-            color="red"
-            radius="xl">
-            Delete convo
-          </LinkButton>
-          <Group gap="xxs">
-            <Button
-              variant="default"
-              radius="xl"
-              onClick={onClose}
-              disabled={saving}>
-              Cancel
-            </Button>
-            <Button
-              variant="filled"
-              radius="xl"
-              onClick={() => {
-                void handleSave();
-              }}
-              loading={saving}>
-              Save
-            </Button>
-          </Group>
+        <Group gap="xxs" justify="flex-end">
+          <Button
+            variant="default"
+            radius="xl"
+            onClick={onClose}
+            disabled={saving}>
+            Cancel
+          </Button>
+          <Button
+            variant="filled"
+            radius="xl"
+            onClick={() => {
+              void handleSave();
+            }}
+            loading={saving}>
+            Save
+          </Button>
         </Group>
       </Stack>
     </Modal>
