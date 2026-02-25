@@ -1,4 +1,4 @@
-import { Button, Group, Stack, Textarea, TextInput } from "@mantine/core";
+import { Button, Stack, Textarea, TextInput } from "@mantine/core";
 import { Group as XmtpGroup } from "@xmtp/browser-sdk";
 import { useState } from "react";
 import { Modal } from "@/components/shared/Modal";
@@ -47,8 +47,7 @@ export const EditConvoModal: React.FC<EditConvoModalProps> = ({
       closeOnEscape={false}
       closeOnClickOutside={false}
       onClose={onClose}
-      title="Edit convo"
-      withCloseButton={false}>
+      title="Edit convo">
       <Stack gap="md">
         <TextInput
           label="Name"
@@ -68,24 +67,18 @@ export const EditConvoModal: React.FC<EditConvoModalProps> = ({
           autosize
           minRows={2}
         />
-        <Group gap="xxs" justify="flex-end">
-          <Button
-            variant="default"
-            radius="xl"
-            onClick={onClose}
-            disabled={saving}>
-            Cancel
-          </Button>
+        <Stack gap="xxs">
           <Button
             variant="filled"
-            radius="xl"
+            size="md"
+            radius="lg"
             onClick={() => {
               void handleSave();
             }}
             loading={saving}>
             Save
           </Button>
-        </Group>
+        </Stack>
       </Stack>
     </Modal>
   );

@@ -44,7 +44,7 @@ export const AboutModal = () => {
             justify="space-between"
             variant="filled"
             size="md"
-            radius="xl"
+            radius="lg"
             leftSection={<span />}
             rightSection={<ExternalLinkIcon size={20} />}>
             Secured by XMTP
@@ -53,7 +53,7 @@ export const AboutModal = () => {
             href="https://hq.convos.org/privacy-and-terms"
             justify="space-between"
             size="md"
-            radius="xl"
+            radius="lg"
             variant="filled"
             leftSection={<span />}
             rightSection={<ExternalLinkIcon size={20} />}>
@@ -73,7 +73,7 @@ export const AboutModal = () => {
           variant="light"
           color="red"
           size="md"
-          radius="xl"
+          radius="lg"
           disabled={!hasConvos}>
           Delete all app data
         </LinkButton>

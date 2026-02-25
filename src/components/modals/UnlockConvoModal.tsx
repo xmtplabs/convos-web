@@ -1,4 +1,4 @@
-import { Button, Group, Stack, Text } from "@mantine/core";
+import { Button, Stack, Text } from "@mantine/core";
 import {
   PermissionPolicy,
   PermissionUpdateType,
@@ -38,30 +38,32 @@ export const UnlockConvoModal: React.FC<UnlockConvoModalProps> = ({
   };
 
   return (
-    <Modal opened={opened} onClose={onClose} title="Locked">
+    <Modal opened={opened} onClose={onClose} size="sm" title="Locked">
       <Stack gap="md">
         <Text size="lg" fw="bold">
           Unlock to enable invites
         </Text>
         <Text size="sm">Allow new members to join.</Text>
-        <Group justify="flex-end" gap="xxs">
-          <Button
-            variant="default"
-            radius="xl"
-            onClick={onClose}
-            disabled={loading}>
-            Keep locked
-          </Button>
+        <Stack gap="xxs">
           <Button
             variant="filled"
-            radius="xl"
+            size="md"
+            radius="lg"
             onClick={() => {
               void handleLock();
             }}
             loading={loading}>
             Unlock
           </Button>
-        </Group>
+          <Button
+            variant="default"
+            size="md"
+            radius="lg"
+            onClick={onClose}
+            disabled={loading}>
+            Cancel
+          </Button>
+        </Stack>
       </Stack>
     </Modal>
   );
