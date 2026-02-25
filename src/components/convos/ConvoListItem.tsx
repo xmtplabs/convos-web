@@ -1,7 +1,7 @@
 import { Avatar, Group, Stack, Text } from "@mantine/core";
 import { useInterval } from "@mantine/hooks";
 import { Link } from "@tanstack/react-router";
-import { ImageIcon } from "lucide-react";
+import { ImageIcon, StarIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import type { Convo } from "@/db";
 import { useAvatar } from "@/hooks/useAvatar";
@@ -65,12 +65,22 @@ export const ConvoListItem: React.FC<ConvoListItemProps> = ({
         data-selected={selected || undefined}
         gap="xs"
         align="center"
+        wrap="nowrap"
         className={classes.root}>
         <Avatar radius="xl" size="md" flex="0 0 auto" src={groupImage}>
           {!groupImage && <ImageIcon size={16} />}
         </Avatar>
-        <Stack flex="1 1 auto" gap="0" align="flex-start">
-          <Text truncate>{convo.name}</Text>
+        <Stack
+          flex="1 1 auto"
+          gap="0"
+          align="flex-start"
+          style={{ overflow: "hidden" }}>
+          <Group gap="xxxs" wrap="nowrap" maw="100%">
+            {convo.faved && <StarIcon size={14} style={{ flexShrink: 0 }} />}
+            <Text truncate flex="1 1 auto">
+              {convo.name}
+            </Text>
+          </Group>
           <Text size="xs" c="dimmed" truncate>
             {time}
           </Text>
