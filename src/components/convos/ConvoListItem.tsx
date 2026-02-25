@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 import type { Convo } from "@/db";
 import { useAvatar } from "@/hooks/useAvatar";
 import { GROUP_IMAGE_INBOX_ID } from "@/utils/avatars";
-import classes from "./ConvoCard.module.css";
+import classes from "./ConvoListItem.module.css";
 
 const formatTime = (convo: Convo): string | undefined => {
   const ns = convo.lastUpdatedAtNs;
@@ -29,7 +29,7 @@ const formatTime = (convo: Convo): string | undefined => {
   return `${days}d`;
 };
 
-export type ConvoCardProps = {
+export type ConvoListItemProps = {
   convo: Convo;
   selected?: boolean;
 };
@@ -49,7 +49,10 @@ const useRelativeTime = (convo: Convo) => {
   return time;
 };
 
-export const ConvoCard: React.FC<ConvoCardProps> = ({ convo, selected }) => {
+export const ConvoListItem: React.FC<ConvoListItemProps> = ({
+  convo,
+  selected,
+}) => {
   const time = useRelativeTime(convo);
   const groupImage = useAvatar(convo.id, GROUP_IMAGE_INBOX_ID);
 

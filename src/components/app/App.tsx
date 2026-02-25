@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { AppHeader } from "@/components/app/AppHeader";
 import { AppLockScreen } from "@/components/app/AppLockScreen";
 import { UpdateNotification } from "@/components/app/UpdateNotification";
-import { ConvosList } from "@/components/ConvosList";
+import { ConvosList } from "@/components/convos/ConvosList";
 import { AboutModal } from "@/components/modals/AboutModal";
 import { AppLockProvider, useAppLockContext } from "@/contexts/AppLockContext";
 import { XmtpProvider } from "@/contexts/XmtpContext";

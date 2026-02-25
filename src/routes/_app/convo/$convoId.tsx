@@ -1,5 +1,5 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
-import { Convo } from "@/components/Convo";
+import { Convo } from "@/components/convos/Convo";
 import { getConvo } from "@/utils/convos";
 
 export const Route = createFileRoute("/_app/convo/$convoId")({

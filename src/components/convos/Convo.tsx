@@ -3,7 +3,7 @@ import { Outlet, useNavigate } from "@tanstack/react-router";
 import { useLiveQuery } from "dexie-react-hooks";
 import { SendIcon } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ConvoHeader } from "@/components/ConvoHeader";
+import { ConvoHeader } from "@/components/convos/ConvoHeader";
 import { Composer } from "@/components/messages/Composer";
 import { MessageList } from "@/components/messages/MessageList";
 import { LoadingMessage } from "@/components/shared/LoadingMessage";

@@ -1,9 +1,9 @@
 import { Box } from "@mantine/core";
 import { useParams } from "@tanstack/react-router";
 import { useMemo } from "react";
-import { ConvoCard } from "@/components/ConvoCard";
 import VirtualList from "@/components/shared/VirtualList";
 import type { Convo } from "@/db";
+import { ConvoListItem } from "./ConvoListItem";
 import classes from "./ConvosList.module.css";
 
 export type ConvosListProps = {
@@ -25,7 +25,7 @@ export const ConvosList: React.FC<ConvosListProps> = ({ convos }) => {
         initialScrollIndex={Math.max(selectedConversationIndex, 0)}
         outerClassName={classes.outer}
         renderItem={(convo) => (
-          <ConvoCard convo={convo} selected={convo.id === convoId} />
+          <ConvoListItem convo={convo} selected={convo.id === convoId} />
         )}
       />
     </Box>
