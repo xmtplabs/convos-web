@@ -6,6 +6,14 @@ import { pinata } from "@/utils/pinata";
 
 export const GROUP_IMAGE_INBOX_ID = "__group__";
 
+const uint8ToDataUrl = (bytes: Uint8Array): string => {
+  let binary = "";
+  for (let i = 0; i < bytes.length; i++) {
+    binary += String.fromCharCode(bytes[i]);
+  }
+  return `data:image/png;base64,${btoa(binary)}`;
+};
+
 export const syncAvatars = async (
   convoId: string,
   appData: AppData,
@@ -52,8 +60,7 @@ export const syncAvatars = async (
         return;
       }
 
-      const base64 = btoa(String.fromCharCode(...plaintext));
-      const dataUrl = `data:image/png;base64,${base64}`;
+      const dataUrl = uint8ToDataUrl(plaintext);
 
       await db.avatars.put({
         convoId,
@@ -90,8 +97,7 @@ export const syncAvatars = async (
         if (signal?.aborted) {
           return;
         }
-        const base64 = btoa(String.fromCharCode(...plaintext));
-        const dataUrl = `data:image/png;base64,${base64}`;
+        const dataUrl = uint8ToDataUrl(plaintext);
         await db.avatars.put({
           convoId,
           inboxId: GROUP_IMAGE_INBOX_ID,
