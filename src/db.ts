@@ -13,6 +13,8 @@ export type Convo = {
   status?: "pending";
   creatorInboxId?: string;
   slug?: string;
+  faved?: boolean;
+  locked?: boolean;
 };
 
 export type Profile = {
