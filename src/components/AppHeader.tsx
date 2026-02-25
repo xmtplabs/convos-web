@@ -6,8 +6,8 @@ import {
   SettingsIcon,
   SquarePenIcon,
 } from "lucide-react";
-import { LinkActionIcon } from "@/components/Button";
-import { Logo } from "@/components/Logo";
+import { LinkActionIcon } from "@/components/shared/Button";
+import { Logo } from "@/components/shared/Logo";
 import classes from "./AppHeader.module.css";
 
 type Filter = "all" | "unread";

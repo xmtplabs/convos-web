@@ -2,8 +2,8 @@ import { Group, Modal, Stack, Text, Title } from "@mantine/core";
 import { useNavigate } from "@tanstack/react-router";
 import { ExternalLinkIcon } from "lucide-react";
 import { useCallback, useRef } from "react";
-import { ExternalLinkButton, LinkButton } from "@/components/Button";
 import { Quickname } from "@/components/Quickname";
+import { ExternalLinkButton, LinkButton } from "@/components/shared/Button";
 import { useConvos } from "@/hooks/useConvos";
 
 export const AboutModal = () => {

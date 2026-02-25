@@ -2,7 +2,7 @@ import { Box } from "@mantine/core";
 import { useParams } from "@tanstack/react-router";
 import { useMemo } from "react";
 import { ConvoCard } from "@/components/ConvoCard";
-import VirtualList from "@/components/VirtualList";
+import VirtualList from "@/components/shared/VirtualList";
 import type { Convo } from "@/db";
 import classes from "./ConvosList.module.css";
 

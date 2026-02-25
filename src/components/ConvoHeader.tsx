@@ -8,7 +8,7 @@ import {
   UploadIcon,
 } from "lucide-react";
 import { useCallback, useRef } from "react";
-import { LinkActionIcon } from "@/components/Button";
+import { LinkActionIcon } from "@/components/shared/Button";
 import { useAvatar } from "@/hooks/useAvatar";
 import { useConvo } from "@/hooks/useConvo";
 import { removeGroupImage, updateGroupImage } from "@/utils/appData";

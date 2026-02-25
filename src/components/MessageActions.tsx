@@ -2,7 +2,7 @@ import { ActionIcon, Group } from "@mantine/core";
 import { ReactionAction, ReactionSchema } from "@xmtp/browser-sdk";
 import { MessageCircleReplyIcon, SmilePlusIcon } from "lucide-react";
 import { useCallback, useState } from "react";
-import { EmojiPicker } from "@/components/EmojiPicker";
+import { EmojiPicker } from "@/components/shared/EmojiPicker";
 import { useSendMessage } from "@/hooks/useSendMessage";
 import classes from "./MessageList.module.css";
 

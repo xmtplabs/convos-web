@@ -1,5 +1,5 @@
 import { Button, Group, Paper, Stack, Text } from "@mantine/core";
-import { Logo } from "@/components/Logo";
+import { Logo } from "@/components/shared/Logo";
 import { useAppLockContext } from "@/contexts/AppLockContext";
 import { CenteredLayout } from "@/layouts/CenteredLayout";
 

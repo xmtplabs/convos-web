@@ -15,7 +15,9 @@ import { useCallback, useMemo, useRef, useState } from "react";
 import { MessageActions } from "@/components/MessageActions";
 import { ReactionBar, type ReactionEntry } from "@/components/ReactionBar";
 import { RemoteAttachmentContent } from "@/components/RemoteAttachmentContent";
-import VirtualList, { type VirtualListHandle } from "@/components/VirtualList";
+import VirtualList, {
+  type VirtualListHandle,
+} from "@/components/shared/VirtualList";
 import { useAvatar } from "@/hooks/useAvatar";
 import { useConvo } from "@/hooks/useConvo";
 import { useInboxId } from "@/hooks/useInboxId";
