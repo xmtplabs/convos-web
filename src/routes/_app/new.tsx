@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef } from "react";
-import { LoadingMessage } from "@/components/LoadingMessage";
+import { LoadingMessage } from "@/components/shared/LoadingMessage";
 import { useClient } from "@/hooks/useClient";
 
 const NewConvo = () => {
