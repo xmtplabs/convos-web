@@ -1,7 +1,7 @@
 import mantineCss from "@mantine/core/styles.css?url";
 import { createRootRoute } from "@tanstack/react-router";
-import { NotFound } from "@/components/NotFound";
-import { Root } from "@/components/Root";
+import { NotFound } from "@/components/app/NotFound";
+import { Root } from "@/components/app/Root";
 import themeCss from "@/theme.css?url";
 
 export const Route = createRootRoute({
