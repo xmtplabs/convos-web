@@ -284,7 +284,7 @@ const RowRenderer = ({
 
   if (row.type === "summary") {
     return (
-      <Box px="lg">
+      <Box px="lg" pt="lg">
         <ConvoCard convo={convo} />
       </Box>
     );
