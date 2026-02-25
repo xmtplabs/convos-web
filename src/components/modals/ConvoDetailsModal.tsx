@@ -19,13 +19,7 @@ export const ConvoDetailsModal: React.FC<ConvoDetailsModalProps> = ({
   const canEditInfo = canEditName || canEditDescription;
 
   return (
-    <Modal
-      size="lg"
-      opened={opened}
-      closeOnEscape={false}
-      closeOnClickOutside={false}
-      onClose={onClose}
-      title="Convo details">
+    <Modal size="lg" opened={opened} onClose={onClose} title="Convo details">
       <ConvoCard convo={convo}>
         {canEditInfo && (
           <LinkButton

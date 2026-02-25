@@ -1,13 +1,7 @@
-import {
-  Button,
-  Group,
-  Modal,
-  Stack,
-  Textarea,
-  TextInput,
-} from "@mantine/core";
+import { Button, Group, Stack, Textarea, TextInput } from "@mantine/core";
 import { Group as XmtpGroup } from "@xmtp/browser-sdk";
 import { useState } from "react";
+import { Modal } from "@/components/shared/Modal";
 import { useConvo } from "@/hooks/useConvo";
 import { updateConvo } from "@/utils/convos";
 
@@ -37,8 +31,7 @@ export const EditConvoModal: React.FC<EditConvoModalProps> = ({
       if (canEditDescription && description !== (convo.description ?? "")) {
         await conversation.updateDescription(description);
       }
-      void updateConvo({
-        ...convo,
+      void updateConvo(convo.id, {
         name: name || undefined,
         description: description || undefined,
       });
@@ -50,20 +43,14 @@ export const EditConvoModal: React.FC<EditConvoModalProps> = ({
 
   return (
     <Modal
-      radius="lg"
       opened={opened}
       closeOnEscape={false}
       closeOnClickOutside={false}
       onClose={onClose}
       title="Edit convo"
-      styles={{
-        title: { fontSize: "var(--mantine-h3-font-size)", fontWeight: 700 },
-      }}
-      withCloseButton={false}
-      centered>
+      withCloseButton={false}>
       <Stack gap="md">
         <TextInput
-          variant="filled"
           label="Name"
           disabled={!canEditName}
           value={name}
@@ -72,7 +59,6 @@ export const EditConvoModal: React.FC<EditConvoModalProps> = ({
           }}
         />
         <Textarea
-          variant="filled"
           label="Description"
           disabled={!canEditDescription}
           value={description}

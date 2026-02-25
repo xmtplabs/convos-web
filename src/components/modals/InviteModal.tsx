@@ -2,7 +2,6 @@ import {
   Button,
   CopyButton,
   Loader,
-  Modal,
   Stack,
   Text,
   Tooltip,
@@ -10,6 +9,7 @@ import {
 import { CheckIcon, CopyIcon } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 import { useEffect, useState } from "react";
+import { Modal } from "@/components/shared/Modal";
 import { useConvo } from "@/hooks/useConvo";
 import { useInboxId } from "@/hooks/useInboxId";
 import { createInviteSlug, getInviteUrl } from "@/utils/invite";
@@ -36,19 +36,7 @@ export const InviteModal: React.FC<InviteModalProps> = ({
   }, [opened, convo, appData, inboxId]);
 
   return (
-    <Modal
-      radius="lg"
-      opened={opened}
-      onClose={onClose}
-      title="Invite"
-      styles={{
-        title: {
-          fontSize: "var(--mantine-h3-font-size)",
-          fontWeight: 700,
-        },
-      }}
-      withCloseButton={false}
-      centered>
+    <Modal opened={opened} onClose={onClose} title="Invite">
       <Stack gap="md" align="center">
         {inviteUrl ? (
           <>

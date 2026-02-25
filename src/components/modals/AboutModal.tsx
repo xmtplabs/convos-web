@@ -1,9 +1,10 @@
-import { Group, Modal, Stack, Text, Title } from "@mantine/core";
+import { Group, Stack, Text, Title } from "@mantine/core";
 import { useNavigate } from "@tanstack/react-router";
 import { ExternalLinkIcon } from "lucide-react";
 import { useCallback, useRef } from "react";
 import { Quickname } from "@/components/app/Quickname";
 import { ExternalLinkButton, LinkButton } from "@/components/shared/Button";
+import { Modal } from "@/components/shared/Modal";
 import { useConvos } from "@/hooks/useConvos";
 
 export const AboutModal = () => {
@@ -24,18 +25,8 @@ export const AboutModal = () => {
   };
 
   return (
-    <Modal
-      radius="lg"
-      opened
-      onClose={onClose}
-      withCloseButton={false}
-      title="Convos"
-      styles={{
-        title: { fontSize: "var(--mantine-h2-font-size)", fontWeight: 700 },
-      }}
-      centered>
+    <Modal opened onClose={onClose} title="Settings">
       <Stack gap="md">
-        <Text>Private chat for the AI world</Text>
         <Stack gap="xs">
           <Title order={3}>My info</Title>
           <Stack gap="xxxs">

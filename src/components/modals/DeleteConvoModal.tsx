@@ -1,7 +1,8 @@
-import { Button, Group, Modal, Stack, Text } from "@mantine/core";
+import { Button, Group, Stack, Text } from "@mantine/core";
 import { useNavigate } from "@tanstack/react-router";
 import { Opfs } from "@xmtp/browser-sdk";
 import { useState } from "react";
+import { Modal } from "@/components/shared/Modal";
 import { useClient } from "@/hooks/useClient";
 import { useInboxId } from "@/hooks/useInboxId";
 import { Route } from "@/routes/_app/convo/$convoId";
@@ -47,19 +48,10 @@ export const DeleteConvoModal: React.FC<DeleteConvoModalProps> = ({
 
   return (
     <Modal
-      radius="lg"
       opened={opened}
       onClose={onClose}
       title="Delete conversation"
-      styles={{
-        title: {
-          fontSize: "var(--mantine-h3-font-size)",
-          fontWeight: 700,
-          color: "var(--mantine-color-red-filled)",
-        },
-      }}
-      withCloseButton={false}
-      centered>
+      withCloseButton={false}>
       <Stack gap="md">
         <Text size="sm">
           This action is permanent and cannot be undone. All conversation data

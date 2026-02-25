@@ -173,7 +173,6 @@ export const Quickname: React.FC<QuicknameProps> = ({ onDirtyChange }) => {
   return (
     <Stack gap="xs">
       <TextInput
-        variant="filled"
         radius="xl"
         placeholder="Somebody"
         size="md"

@@ -1,7 +1,8 @@
-import { Button, Group, Modal, Stack, Text } from "@mantine/core";
+import { Button, Group, Stack, Text } from "@mantine/core";
 import { useNavigate } from "@tanstack/react-router";
 import { Opfs } from "@xmtp/browser-sdk";
 import { useState } from "react";
+import { Modal } from "@/components/shared/Modal";
 import { useClient } from "@/hooks/useClient";
 import { clearAllAvatars } from "@/utils/avatars";
 import { clearConvos } from "@/utils/convos";
@@ -41,20 +42,7 @@ export const DeleteAllDataModal: React.FC<DeleteAllDataModalProps> = ({
   };
 
   return (
-    <Modal
-      radius="lg"
-      opened={opened}
-      onClose={onClose}
-      title="Delete all app data"
-      styles={{
-        title: {
-          fontSize: "var(--mantine-h3-font-size)",
-          fontWeight: 700,
-          color: "var(--mantine-color-red-filled)",
-        },
-      }}
-      withCloseButton={false}
-      centered>
+    <Modal opened={opened} onClose={onClose} title="Delete all app data">
       <Stack gap="md">
         <Text size="sm">
           This action is permanent and cannot be undone. All conversations,
