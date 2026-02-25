@@ -7,26 +7,34 @@ import {
 } from "@/utils/appData";
 import { syncAvatars } from "@/utils/avatars";
 
+type AppDataEntry = { convoId: string; data: AppData };
+
 export const useAppData = (conversation: Conversation, convoId: string) => {
-  const [appData, setAppData] = useState<AppData | null>(null);
+  const [entry, setEntry] = useState<AppDataEntry | null>(null);
+
+  // only expose appData when it belongs to the current convo to ensure
+  // that consumers have the correct appData
+  const appData = useMemo(
+    () => (entry?.convoId === convoId ? entry.data : null),
+    [entry, convoId],
+  );
 
   const refreshAppData = useCallback(() => {
     if (!(conversation instanceof Group)) {
       return;
     }
-    const raw = conversation.appData;
-    if (!raw) {
-      setAppData(null);
+    if (!conversation.appData) {
+      setEntry(null);
       return;
     }
-    decodeAppData(raw)
+    decodeAppData(conversation.appData)
       .then((decoded) => {
-        setAppData(decoded);
+        setEntry({ convoId, data: decoded });
       })
       .catch(() => {
-        setAppData(null);
+        setEntry(null);
       });
-  }, [conversation]);
+  }, [conversation, convoId]);
 
   const memberProfiles = useMemo(() => {
     const map = new Map<string, MemberProfile>();
