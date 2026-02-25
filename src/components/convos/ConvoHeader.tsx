@@ -142,7 +142,15 @@ export const ConvoHeader: React.FC = () => {
               <EllipsisIcon size={24} />
             </ActionIcon>
           </ConvoMenu>
-          {convo.locked ? (
+          {convo.locked && permissions?.canLock && (
+            <LinkActionIcon
+              variant="transparent"
+              to="/convo/$convoId/unlock"
+              params={{ convoId: convo.id }}>
+              <LockIcon size={24} />
+            </LinkActionIcon>
+          )}
+          {convo.locked && !permissions?.canLock && (
             <Tooltip
               label={
                 <Text size="sm">
@@ -156,15 +164,14 @@ export const ConvoHeader: React.FC = () => {
                 <LockIcon size={24} />
               </ActionIcon>
             </Tooltip>
-          ) : (
-            permissions?.canAddMembers && (
-              <LinkActionIcon
-                variant="transparent"
-                to="/convo/$convoId/invite"
-                params={{ convoId: convo.id }}>
-                <ShareIcon size={24} />
-              </LinkActionIcon>
-            )
+          )}
+          {!convo.locked && permissions?.canAddMembers && (
+            <LinkActionIcon
+              variant="transparent"
+              to="/convo/$convoId/invite"
+              params={{ convoId: convo.id }}>
+              <ShareIcon size={24} />
+            </LinkActionIcon>
           )}
           <LinkActionIcon
             variant="transparent"
