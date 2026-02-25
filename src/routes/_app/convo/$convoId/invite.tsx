@@ -1,5 +1,5 @@
 import { createFileRoute, useRouter } from "@tanstack/react-router";
-import { InviteModal } from "@/components/InviteModal";
+import { InviteModal } from "@/components/modals/InviteModal";
 
 const InviteConvo = () => {
   const router = useRouter();

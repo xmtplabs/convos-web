@@ -1,5 +1,5 @@
 import { createFileRoute, useRouter } from "@tanstack/react-router";
-import { DeleteAllDataModal } from "@/components/DeleteAllDataModal";
+import { DeleteAllDataModal } from "@/components/modals/DeleteAllDataModal";
 
 const DeleteAll = () => {
   const router = useRouter();

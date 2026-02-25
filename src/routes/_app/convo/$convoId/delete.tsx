@@ -1,5 +1,5 @@
 import { createFileRoute, useRouter } from "@tanstack/react-router";
-import { DeleteConvoModal } from "@/components/DeleteConvoModal";
+import { DeleteConvoModal } from "@/components/modals/DeleteConvoModal";
 
 const DeleteConvo = () => {
   const router = useRouter();

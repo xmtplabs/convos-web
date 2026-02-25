@@ -1,10 +1,10 @@
 import { Outlet, useSearch } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
-import { AboutModal } from "@/components/AboutModal";
 import { AppHeader } from "@/components/app/AppHeader";
 import { AppLockScreen } from "@/components/app/AppLockScreen";
 import { UpdateNotification } from "@/components/app/UpdateNotification";
 import { ConvosList } from "@/components/ConvosList";
+import { AboutModal } from "@/components/modals/AboutModal";
 import { AppLockProvider, useAppLockContext } from "@/contexts/AppLockContext";
 import { XmtpProvider } from "@/contexts/XmtpContext";
 import { useConvos } from "@/hooks/useConvos";
