@@ -1,13 +1,25 @@
-import { ActionIcon, Avatar, Box, Group, Menu, Text } from "@mantine/core";
+import {
+  ActionIcon,
+  Avatar,
+  Group,
+  Menu,
+  Stack,
+  Text,
+  Tooltip,
+} from "@mantine/core";
 import { Group as XmtpGroup } from "@xmtp/browser-sdk";
 import {
+  EllipsisIcon,
   ImageIcon,
-  PencilIcon,
-  QrCodeIcon,
+  InfoIcon,
+  LockIcon,
+  ShareIcon,
+  StarIcon,
   TrashIcon,
   UploadIcon,
 } from "lucide-react";
 import { useCallback, useRef } from "react";
+import { ConvoMenu } from "@/components/convos/ConvoMenu";
 import { LinkActionIcon } from "@/components/shared/Button";
 import { useAvatar } from "@/hooks/useAvatar";
 import { useConvo } from "@/hooks/useConvo";
@@ -99,10 +111,13 @@ export const ConvoHeader: React.FC = () => {
         ) : (
           avatarElement
         )}
-        <Box style={{ overflow: "hidden" }}>
-          <Text fw={500} size="md" truncate>
-            {convo.name}
-          </Text>
+        <Stack flex="1 1 auto" gap="0" style={{ overflow: "hidden" }}>
+          <Group gap={4} align="center" wrap="nowrap">
+            {convo.faved && <StarIcon size={16} style={{ flexShrink: 0 }} />}
+            <Text fw={500} size="md" truncate flex="1 1 auto">
+              {convo.name}
+            </Text>
+          </Group>
           <Group gap="xxxs" align="center" wrap="nowrap">
             <Text size="xs" c="dimmed" truncate>
               {members.length} member{members.length !== 1 && "s"}
@@ -118,23 +133,44 @@ export const ConvoHeader: React.FC = () => {
               </>
             )}
           </Group>
-        </Box>
+        </Stack>
       </Group>
       {!isPending && (
-        <Group align="center" gap="xxxs">
+        <Group align="center" gap="md" flex="0 0 auto">
+          <ConvoMenu convo={convo} canLock={permissions?.canLock}>
+            <ActionIcon variant="transparent">
+              <EllipsisIcon size={24} />
+            </ActionIcon>
+          </ConvoMenu>
+          {convo.locked ? (
+            <Tooltip
+              label={
+                <Text size="sm">
+                  This Convo is locked.
+                  <br />
+                  Nobody new can join.
+                </Text>
+              }
+              withArrow>
+              <ActionIcon variant="transparent" c="dimmed">
+                <LockIcon size={24} />
+              </ActionIcon>
+            </Tooltip>
+          ) : (
+            permissions?.canAddMembers && (
+              <LinkActionIcon
+                variant="transparent"
+                to="/convo/$convoId/invite"
+                params={{ convoId: convo.id }}>
+                <ShareIcon size={24} />
+              </LinkActionIcon>
+            )
+          )}
           <LinkActionIcon
-            radius="xl"
-            size="lg"
-            to="/convo/$convoId/edit"
+            variant="transparent"
+            to="/convo/$convoId/details"
             params={{ convoId: convo.id }}>
-            <PencilIcon size={24} />
-          </LinkActionIcon>
-          <LinkActionIcon
-            radius="xl"
-            size="lg"
-            to="/convo/$convoId/invite"
-            params={{ convoId: convo.id }}>
-            <QrCodeIcon size={24} />
+            <InfoIcon size={24} />
           </LinkActionIcon>
         </Group>
       )}
