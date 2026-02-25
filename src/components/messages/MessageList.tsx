@@ -12,9 +12,11 @@ import {
 } from "@xmtp/browser-sdk";
 import { ReplyIcon } from "lucide-react";
 import { useCallback, useMemo, useRef, useState } from "react";
+import { ConvoCard } from "@/components/convos/ConvoCard";
 import VirtualList, {
   type VirtualListHandle,
 } from "@/components/shared/VirtualList";
+import type { Convo } from "@/db";
 import { useAvatar } from "@/hooks/useAvatar";
 import { useConvo } from "@/hooks/useConvo";
 import { useInboxId } from "@/hooks/useInboxId";
@@ -24,7 +26,16 @@ import classes from "./MessageList.module.css";
 import { ReactionBar, type ReactionEntry } from "./ReactionBar";
 import { RemoteAttachmentContent } from "./RemoteAttachmentContent";
 
-type TimeRow = { type: "time"; label: string; key: string };
+type SummaryRow = {
+  type: "summary";
+};
+
+type TimeRow = {
+  type: "time";
+  label: string;
+  key: string;
+};
+
 type MessageRow = {
   type: "message";
   message: DecodedMessage<BuiltInContentTypes>;
@@ -32,7 +43,8 @@ type MessageRow = {
   isFirstInGroup: boolean;
   isLastInGroup: boolean;
 };
-type Row = TimeRow | MessageRow;
+
+type Row = SummaryRow | TimeRow | MessageRow;
 
 type ReactionMap = Map<string, Map<string, ReactionEntry>>;
 
@@ -166,6 +178,10 @@ const buildRows = (
   const messageIdToIndex = new Map<string, number>();
   let lastMinuteKey = "";
 
+  rows.push({
+    type: "summary",
+  });
+
   for (const message of messages) {
     if (isReaction(message)) {
       continue;
@@ -208,10 +224,12 @@ const buildRows = (
     row.isFirstInGroup =
       !prev ||
       prev.type === "time" ||
+      prev.type === "summary" ||
       prev.message.senderInboxId !== row.message.senderInboxId;
     row.isLastInGroup =
       !next ||
       next.type === "time" ||
+      next.type === "summary" ||
       next.message.senderInboxId !== row.message.senderInboxId;
   }
 
@@ -219,7 +237,14 @@ const buildRows = (
 };
 
 const getRowKey = (row: Row): string => {
-  return row.type === "time" ? row.key : row.message.id;
+  switch (row.type) {
+    case "summary":
+      return "summary";
+    case "time":
+      return row.key;
+    case "message":
+      return row.message.id;
+  }
 };
 
 const AvatarImg: React.FC<{ inboxId: string }> = ({ inboxId }) => {
@@ -238,11 +263,13 @@ const RowRenderer = ({
   reactionMap,
   onScrollToMessage,
   highlightedMessageId,
+  convo,
 }: {
   row: Row;
   reactionMap: ReactionMap;
   onScrollToMessage: (messageId: string) => void;
   highlightedMessageId: string | null;
+  convo: Convo;
 }) => {
   const { memberProfiles } = useConvo();
   if (row.type === "time") {
@@ -252,6 +279,14 @@ const RowRenderer = ({
           {row.label}
         </Text>
       </div>
+    );
+  }
+
+  if (row.type === "summary") {
+    return (
+      <Box px="lg">
+        <ConvoCard convo={convo} />
+      </Box>
     );
   }
 
@@ -378,6 +413,7 @@ const RowRenderer = ({
 export const MessageList: React.FC<{
   messages: DecodedMessage<BuiltInContentTypes>[];
 }> = ({ messages }) => {
+  const { convo } = useConvo();
   const inboxId = useInboxId();
   const listRef = useRef<VirtualListHandle>(null);
   const [highlightedMessageId, setHighlightedMessageId] = useState<
@@ -428,6 +464,7 @@ export const MessageList: React.FC<{
           reactionMap={reactionMap}
           onScrollToMessage={onScrollToMessage}
           highlightedMessageId={highlightedMessageId}
+          convo={convo}
         />
       )}
     />
