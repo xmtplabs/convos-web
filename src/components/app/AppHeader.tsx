@@ -35,6 +35,7 @@ export const AppHeader = () => {
       </Group>
       <Group gap="xxxs" align="center" p="0">
         <LinkActionIcon
+          variant="transparent"
           radius="xl"
           size="lg"
           to="."
@@ -76,7 +77,7 @@ export const AppHeader = () => {
             </Menu.Item>
           </Menu.Dropdown>
         </Menu>
-        <LinkActionIcon radius="xl" size="lg" to="/new">
+        <LinkActionIcon radius="xl" size="lg" to="/new" variant="transparent">
           <SquarePenIcon size={24} />
         </LinkActionIcon>
       </Group>
