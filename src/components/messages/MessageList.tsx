@@ -12,9 +12,6 @@ import {
 } from "@xmtp/browser-sdk";
 import { ReplyIcon } from "lucide-react";
 import { useCallback, useMemo, useRef, useState } from "react";
-import { MessageActions } from "@/components/MessageActions";
-import { ReactionBar, type ReactionEntry } from "@/components/ReactionBar";
-import { RemoteAttachmentContent } from "@/components/RemoteAttachmentContent";
 import VirtualList, {
   type VirtualListHandle,
 } from "@/components/shared/VirtualList";
@@ -22,7 +19,10 @@ import { useAvatar } from "@/hooks/useAvatar";
 import { useConvo } from "@/hooks/useConvo";
 import { useInboxId } from "@/hooks/useInboxId";
 import { getContentString, getGroupUpdatedStrings } from "@/utils/xmtp";
+import { MessageActions } from "./MessageActions";
 import classes from "./MessageList.module.css";
+import { ReactionBar, type ReactionEntry } from "./ReactionBar";
+import { RemoteAttachmentContent } from "./RemoteAttachmentContent";
 
 type TimeRow = { type: "time"; label: string; key: string };
 type MessageRow = {

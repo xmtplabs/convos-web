@@ -13,8 +13,6 @@ import {
 import { Group as XmtpGroup, type RemoteAttachment } from "@xmtp/browser-sdk";
 import { ArrowUpIcon, ImageIcon, UserIcon } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { AttachmentPreview } from "@/components/AttachmentPreview";
-import { ReplyPreview } from "@/components/ReplyPreview";
 import { useAvatar } from "@/hooks/useAvatar";
 import { useConvo } from "@/hooks/useConvo";
 import { useInboxId } from "@/hooks/useInboxId";
@@ -22,6 +20,8 @@ import { useProfile } from "@/hooks/useProfile";
 import { useSendMessage } from "@/hooks/useSendMessage";
 import { shareProfileToGroup } from "@/utils/appData";
 import { uploadAttachment, validateFile } from "@/utils/attachment";
+import { AttachmentPreview } from "./AttachmentPreview";
+import { ReplyPreview } from "./ReplyPreview";
 
 export const Composer = () => {
   const { convo, conversation, memberProfiles, permissions } = useConvo();
