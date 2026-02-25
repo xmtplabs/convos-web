@@ -1,6 +1,7 @@
 import {
   Group,
   isGroupUpdated,
+  PermissionPolicy,
   type AsyncStreamProxy,
   type BuiltInContentTypes,
   type Conversation,
@@ -36,6 +37,7 @@ export type ConvoContextValue = {
   reply: ReplyState | null;
   setReply: (reply: ReplyState | null) => void;
   permissions: ConvoPermissions | null;
+  isLocked: boolean;
   refresh: () => Promise<void>;
 };
 
@@ -64,8 +66,12 @@ export const ConvoProvider: React.FC<{
   convoRef.current = convo;
 
   const { permissions, refreshPermissions } = usePermissions(conversation);
+  const [isLocked, setIsLocked] = useState(false);
 
   const refresh = useCallback(async () => {
+    // capture reference to convo so it stays in sync with conversation
+    const current = convoRef.current;
+
     const isActive = await conversation.isActive();
     if (!isActive) {
       return;
@@ -80,7 +86,6 @@ export const ConvoProvider: React.FC<{
     setMembers(await conversation.members());
 
     // Sync conversation metadata and last message to local DB
-    const current = convoRef.current;
     const updates: Partial<Convo> = {};
     if (conversation instanceof Group) {
       const name = conversation.name;
@@ -102,12 +107,23 @@ export const ConvoProvider: React.FC<{
       updates.lastUpdatedAtNs = lastMsg.sentAtNs;
     }
     if (Object.keys(updates).length > 0) {
-      void updateConvo({ ...current, ...updates });
+      await updateConvo(current.id, updates);
     }
 
     refreshAppData();
-    void refreshPermissions();
+    const policySet = await refreshPermissions();
+    if (policySet) {
+      setIsLocked(policySet.addMemberPolicy === PermissionPolicy.Deny);
+    }
   }, [conversation, refreshAppData, refreshPermissions]);
+
+  // sync locked state from permissions to local DB
+  useEffect(() => {
+    const current = convoRef.current;
+    if (current.locked !== isLocked) {
+      void updateConvo(current.id, { locked: isLocked });
+    }
+  }, [isLocked]);
 
   useEffect(() => {
     let cancelled = false;
@@ -123,8 +139,7 @@ export const ConvoProvider: React.FC<{
         onValue(value) {
           setMessages((prev) => [...prev, value]);
           const current = convoRef.current;
-          void updateConvo({
-            ...current,
+          void updateConvo(current.id, {
             lastMessage: getContentString(value) ?? current.lastMessage,
             lastUpdatedAtNs: value.sentAtNs,
           });
@@ -165,6 +180,7 @@ export const ConvoProvider: React.FC<{
         messages,
         messagesLoading,
         permissions,
+        isLocked,
         sending,
         setSending,
         syncing,
