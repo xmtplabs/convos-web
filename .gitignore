@@ -68,3 +68,7 @@ tmp
 
 # protobuf generated files
 src/gen
+
+# claude
+.claude/*
+!.claude/skills

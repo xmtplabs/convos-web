@@ -1,0 +1,22 @@
+# Generated files
+src/gen/
+*.gen.ts
+.tanstack/
+
+# Dependencies
+node_modules/
+.yarn/releases/
+.yarn/cache/
+
+# Build output
+dist/
+.output/
+.nitro/
+
+# Protobuf binary
+buf.lock
+
+# Misc
+*.tsbuildinfo
+coverage/
+.DS_Store
