@@ -2,6 +2,9 @@ import { ActionIcon, Box, Group, Paper, Text } from "@mantine/core";
 import { XIcon } from "lucide-react";
 import { useMemo } from "react";
 import { formatFileSize } from "@/utils/attachment";
+import { createLogger } from "@/utils/log";
+
+const log = createLogger("messaging");
 
 export type AttachmentPreviewProps = {
   file: File;
@@ -17,6 +20,12 @@ export const AttachmentPreview: React.FC<AttachmentPreviewProps> = ({
   const fileUrl = useMemo(() => URL.createObjectURL(file), [file]);
   const fileType = file.type.split("/")[0];
   const fileSize = formatFileSize(file.size);
+
+  log.trace("render", {
+    name: file.name,
+    size: file.size,
+    fileType,
+  });
 
   return (
     <Paper p="xs" radius="md" withBorder>
@@ -47,7 +56,10 @@ export const AttachmentPreview: React.FC<AttachmentPreviewProps> = ({
           aria-label="Cancel attachment"
           variant="light"
           radius="xl"
-          onClick={onCancel}
+          onClick={() => {
+            log.info("cancel", { name: file.name });
+            onCancel();
+          }}
           disabled={disabled}>
           <XIcon size={18} />
         </ActionIcon>

@@ -8,7 +8,10 @@ import {
 } from "lucide-react";
 import { LinkActionIcon } from "@/components/shared/Button";
 import { Logo } from "@/components/shared/Logo";
+import { createLogger } from "@/utils/log";
 import classes from "./AppHeader.module.css";
+
+const log = createLogger("app-header");
 
 type Filter = "all" | "unread";
 
@@ -58,6 +61,7 @@ export const AppHeader = () => {
                 )
               }
               onClick={() => {
+                log.info("filter changed", { filter: "all" });
                 setFilter("all");
               }}>
               All
@@ -71,6 +75,7 @@ export const AppHeader = () => {
                 )
               }
               onClick={() => {
+                log.info("filter changed", { filter: "unread" });
                 setFilter("unread");
               }}>
               Unread

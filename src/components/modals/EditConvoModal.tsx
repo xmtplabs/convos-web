@@ -4,6 +4,9 @@ import { useState } from "react";
 import { Modal } from "@/components/shared/Modal";
 import { useConvo } from "@/hooks/useConvo";
 import { updateConvo } from "@/utils/convos";
+import { createLogger } from "@/utils/log";
+
+const log = createLogger("edit-convo");
 
 type EditConvoModalProps = {
   opened: boolean;
@@ -21,8 +24,18 @@ export const EditConvoModal: React.FC<EditConvoModalProps> = ({
   const [description, setDescription] = useState(convo.description ?? "");
   const [saving, setSaving] = useState(false);
 
+  log.trace("render", { convoId: convo.id, saving });
+
   const handleSave = async () => {
-    if (!(conversation instanceof XmtpGroup)) return;
+    if (!(conversation instanceof XmtpGroup)) {
+      log.debug("save skipped, not a group", { convoId: convo.id });
+      return;
+    }
+    log.info("save started", {
+      convoId: convo.id,
+      canEditName,
+      canEditDescription,
+    });
     setSaving(true);
     try {
       if (canEditName && name !== (convo.name ?? "")) {
@@ -35,7 +48,11 @@ export const EditConvoModal: React.FC<EditConvoModalProps> = ({
         name: name || undefined,
         description: description || undefined,
       });
+      log.info("save succeeded", { convoId: convo.id });
       onClose();
+    } catch (err) {
+      log.error("save failed", err);
+      throw err;
     } finally {
       setSaving(false);
     }
@@ -46,7 +63,10 @@ export const EditConvoModal: React.FC<EditConvoModalProps> = ({
       opened={opened}
       closeOnEscape={false}
       closeOnClickOutside={false}
-      onClose={onClose}
+      onClose={() => {
+        log.info("edit modal closed", { convoId: convo.id });
+        onClose();
+      }}
       title="Edit convo">
       <Stack gap="md">
         <TextInput

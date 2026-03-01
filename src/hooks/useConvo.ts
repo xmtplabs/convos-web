@@ -1,5 +1,8 @@
 import { useCallback, useContext } from "react";
 import { ConvoContext } from "@/contexts/ConvoContext";
+import { createLogger } from "@/utils/log";
+
+const log = createLogger("sync");
 
 export const useConvo = () => {
   const context = useContext(ConvoContext);
@@ -14,14 +17,23 @@ export const useConvo = () => {
     members,
     memberProfiles,
     permissions,
+    exploding,
+    explodeError,
+    clearExplodeError,
+    pendingExplode,
+    explode,
+    confirmExplode,
+    cancelExplode,
     setSyncing,
     refresh,
   } = context;
 
   const sync = useCallback(async () => {
+    log.info("sync start");
     setSyncing(true);
     try {
       await refresh();
+      log.info("sync complete");
     } finally {
       setSyncing(false);
     }
@@ -34,6 +46,13 @@ export const useConvo = () => {
     members,
     memberProfiles,
     permissions,
+    exploding,
+    explodeError,
+    clearExplodeError,
+    pendingExplode,
+    explode,
+    confirmExplode,
+    cancelExplode,
     sync,
   };
 };

@@ -8,14 +8,21 @@ import { AboutModal } from "@/components/modals/AboutModal";
 import { AppLockProvider, useAppLockContext } from "@/contexts/AppLockContext";
 import { XmtpProvider } from "@/contexts/XmtpContext";
 import { useConvos } from "@/hooks/useConvos";
+import { useExplodeWatcher } from "@/hooks/useExplodeWatcher";
 import { MainLayout } from "@/layouts/MainLayout";
+import { createLogger } from "@/utils/log";
+
+const log = createLogger("app");
 
 const UPDATE_POLL_INTERVAL = 5 * 60 * 1000;
 
 const AppContent = () => {
+  log.trace("content render");
   const { modal } = useSearch({ from: "/_app" });
   const convos = useConvos();
+  log.debug("convos loaded", { count: convos.length });
   const [navOpened, setNavOpened] = useState(false);
+  useExplodeWatcher();
 
   useEffect(() => {
     setNavOpened(convos.length > 0);
@@ -32,8 +39,10 @@ const AppContent = () => {
 
 const AppGate = () => {
   const { lockState } = useAppLockContext();
+  log.trace("gate render", { lockState });
 
   if (lockState === "locked") {
+    log.warn("locked by another tab");
     return <AppLockScreen />;
   }
 
@@ -45,11 +54,14 @@ const AppGate = () => {
 };
 
 export const App = () => {
+  log.trace("render");
   const [updateAvailable, setUpdateAvailable] = useState(false);
   const intervalRef = useRef<ReturnType<typeof setInterval>>(null);
 
   useEffect(() => {
+    log.trace("mounted");
     if (!("serviceWorker" in navigator)) {
+      log.debug("service worker not supported");
       return;
     }
 
@@ -59,6 +71,7 @@ export const App = () => {
 
     const onControllerChange = () => {
       if (hadController) {
+        log.info("update available (new service worker)");
         setUpdateAvailable(true);
       }
     };
@@ -71,6 +84,7 @@ export const App = () => {
     navigator.serviceWorker
       .register("/sw.js")
       .then((registration) => {
+        log.info("service worker registered");
         // poll for updates so updates are discovered without navigation
         intervalRef.current = setInterval(() => {
           registration.update().catch(() => {});

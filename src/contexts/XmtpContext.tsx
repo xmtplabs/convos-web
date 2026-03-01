@@ -12,7 +12,10 @@ import { generatePrivateKey } from "viem/accounts";
 import { db, type Convo } from "@/db";
 import { decodeAppData, initGroupAppData } from "@/utils/appData";
 import { processDmInvite, processExistingDms } from "@/utils/invite";
+import { createLogger } from "@/utils/log";
 import { buildClient, createClient } from "@/utils/xmtp";
+
+const log = createLogger("xmtp");
 
 type XmtpState =
   | { status: "idle"; client: null; conversation: null }
@@ -45,6 +48,7 @@ export const XmtpContext = createContext<XmtpContextValue | null>(null);
 export const XmtpProvider: React.FC<{
   children: React.ReactNode;
 }> = ({ children }) => {
+  log.trace("render");
   const [state, setState] = useState<XmtpState>(idleState);
   const clientRef = useRef<Client | null>(null);
   const convoIdRef = useRef<string | null>(null);
@@ -56,7 +60,9 @@ export const XmtpProvider: React.FC<{
   const groupStreamRef = useRef<AsyncStreamProxy<Group> | null>(null);
 
   const setConvo = useCallback((convo: Convo | null) => {
+    log.trace("setConvo", { convoId: convo?.id ?? null });
     if (convo?.id === convoIdRef.current) {
+      log.debug("setConvo skipped, same convo");
       return;
     }
 
@@ -78,7 +84,9 @@ export const XmtpProvider: React.FC<{
         clientRef.current = null;
       }
       convoIdRef.current = null;
+      setupRef.current = Promise.resolve();
       setState(idleState);
+      log.info("disconnected");
       return;
     }
 
@@ -94,7 +102,7 @@ export const XmtpProvider: React.FC<{
     // Wait for previous setup to finish before starting a new one
     const prevSetup = setupRef.current;
     setupRef.current = (async () => {
-      await prevSetup;
+      await prevSetup.catch(() => {});
 
       // Close previous streams and client after setup has settled
       if (groupStreamRef.current) {
@@ -115,6 +123,7 @@ export const XmtpProvider: React.FC<{
         return;
       }
 
+      log.trace("setup: building client", { convoId: convo.id });
       const newClient = await buildClient(convo.privateKey);
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       if (cancelled) {
@@ -128,9 +137,11 @@ export const XmtpProvider: React.FC<{
         return;
       }
       clientRef.current = newClient;
+      log.info("setup: client ready", { convoId: convo.id });
 
       // Pending convos: watch for being added to a matching group
       if (convo.status === "pending") {
+        log.trace("setup: pending convo, watching for group match");
         const resolveIfMatch = async (group: Group): Promise<boolean> => {
           await group.sync();
           if (!group.appData) {
@@ -144,6 +155,7 @@ export const XmtpProvider: React.FC<{
           } catch {
             return false;
           }
+          log.info("setup: pending convo matched group", { groupId: group.id });
           const { status, slug, creatorInboxId, ...rest } = convo;
           await db.convos.put({ ...rest, xmtpId: group.id });
 
@@ -162,29 +174,7 @@ export const XmtpProvider: React.FC<{
           return true;
         };
 
-        // Check existing groups first (added while offline)
-        const consentStates = [ConsentState.Unknown, ConsentState.Allowed];
-        const groups = await newClient.conversations.listGroups({
-          consentStates,
-        });
-        for (const group of groups) {
-          if (await resolveIfMatch(group)) {
-            return;
-          }
-        }
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-        if (cancelled) {
-          return;
-        }
-
-        // No match found — show waiting UI while streaming continues
-        setState({
-          status: "connected",
-          client: newClient,
-          conversation: null,
-        });
-
-        // Stream new groups
+        // Start stream first so no welcome messages are missed
         const stream = await newClient.conversations.streamGroups({
           onValue(group) {
             void resolveIfMatch(group).then((matched) => {
@@ -198,9 +188,29 @@ export const XmtpProvider: React.FC<{
         // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         if (cancelled) {
           void stream.end();
-        } else {
-          groupStreamRef.current = stream;
+          return;
         }
+        groupStreamRef.current = stream;
+
+        // Then check existing groups (added before stream started)
+        const consentStates = [ConsentState.Unknown, ConsentState.Allowed];
+        const groups = await newClient.conversations.listGroups({
+          consentStates,
+        });
+        for (const group of groups) {
+          if (await resolveIfMatch(group)) {
+            void stream.end();
+            groupStreamRef.current = null;
+            return;
+          }
+        }
+
+        // No match found — show waiting UI while streaming continues
+        setState({
+          status: "connected",
+          client: newClient,
+          conversation: null,
+        });
         return;
       }
 
@@ -213,10 +223,12 @@ export const XmtpProvider: React.FC<{
         return;
       }
       if (conversation) {
+        log.info("setup: ready", { convoId: convo.id, xmtpId: convo.xmtpId });
         setState({ status: "ready", client: newClient, conversation });
 
         // Start DM invite processing for creator convos
         if (convo.tag && conversation instanceof Group) {
+          log.trace("setup: starting DM invite stream");
           const tag = convo.tag;
           const group = conversation;
           void processExistingDms(newClient, tag, group).then(async () => {
@@ -238,6 +250,7 @@ export const XmtpProvider: React.FC<{
           });
         }
       } else {
+        log.warn("setup: conversation not found", { xmtpId: convo.xmtpId });
         setState({
           status: "connected",
           client: newClient,
@@ -248,6 +261,7 @@ export const XmtpProvider: React.FC<{
   }, []);
 
   const createConvo = useCallback(async (): Promise<Convo> => {
+    log.trace("createConvo");
     // cancel any in-flight setup
     cancelRef.current?.();
     cancelRef.current = null;
@@ -287,6 +301,7 @@ export const XmtpProvider: React.FC<{
     };
 
     await db.convos.add(convo);
+    log.info("createConvo: convo created", { convoId: convo.id });
 
     // fetch conversation from the client we just used
     const conversation = await client.conversations.getConversationById(
@@ -298,6 +313,15 @@ export const XmtpProvider: React.FC<{
 
     if (conversation) {
       setState({ status: "ready", client, conversation });
+
+      // Start DM invite processing for join requests
+      const stream = await client.conversations.streamAllDmMessages({
+        disableSync: true,
+        onValue(value) {
+          void processDmInvite(value, tag, group);
+        },
+      });
+      dmStreamRef.current = stream;
     } else {
       setState({ status: "connected", client, conversation: null });
     }

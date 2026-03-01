@@ -3,14 +3,18 @@ import { useParams } from "@tanstack/react-router";
 import { useMemo } from "react";
 import VirtualList from "@/components/shared/VirtualList";
 import type { Convo } from "@/db";
+import { createLogger } from "@/utils/log";
 import { ConvoListItem } from "./ConvoListItem";
 import classes from "./ConvosList.module.css";
+
+const log = createLogger("convos-list");
 
 export type ConvosListProps = {
   convos: Convo[];
 };
 
 export const ConvosList: React.FC<ConvosListProps> = ({ convos }) => {
+  log.trace("render", { count: convos.length });
   const { convoId } = useParams({ strict: false });
   const selectedConversationIndex = useMemo(
     () => convos.findIndex((convo) => convo.id === convoId),

@@ -4,7 +4,10 @@ import {
   type Attachment,
   type RemoteAttachment,
 } from "@xmtp/browser-sdk";
+import { createLogger } from "@/utils/log";
 import { pinata } from "@/utils/pinata";
+
+const log = createLogger("attachment");
 
 const ALLOWED_FILE_TYPES = [
   "image/jpeg",
@@ -43,6 +46,11 @@ export const getPresignedUrl = async (): Promise<string> => {
 export const uploadAttachment = async (
   file: File,
 ): Promise<RemoteAttachment> => {
+  log.trace("uploadAttachment", {
+    name: file.name,
+    type: file.type,
+    size: file.size,
+  });
   const arrayBuffer = await file.arrayBuffer();
   const attachment = new Uint8Array(arrayBuffer);
   const attachmentData: Attachment = {
@@ -50,7 +58,9 @@ export const uploadAttachment = async (
     filename: file.name,
     content: attachment,
   };
+  log.info("encrypting attachment", { attachmentData });
   const encryptedAttachment = await encryptAttachment(attachmentData);
+  log.info("encrypted attachment", { encryptedAttachment });
   const encryptedBlob = new Blob(
     [encryptedAttachment.payload as Uint8Array<ArrayBuffer>],
     {
@@ -60,12 +70,15 @@ export const uploadAttachment = async (
   const encryptedFile = new File([encryptedBlob], file.name, {
     type: "application/octet-stream",
   });
+  log.info("fetching presigned url for attachment");
   const presignedUrl = await getPresignedUrl();
+  log.info("fetched presigned url", { presignedUrl });
+  log.info("uploading attachment to pinata", { encryptedFile });
   const upload = await pinata.upload.public
     .file(encryptedFile)
     .url(presignedUrl);
   const url = `https://${import.meta.env.VITE_PINATA_GATEWAY}/ipfs/${upload.cid}`;
-
+  log.info("uploaded attachment to pinata", { url });
   return {
     url,
     contentDigest: encryptedAttachment.contentDigest,
@@ -79,11 +92,12 @@ export const uploadAttachment = async (
 };
 
 export const downloadAttachment = async (content: RemoteAttachment) => {
+  log.trace("downloadAttachment", { url: content.url });
   const response = await fetch(content.url);
   if (!response.ok) {
-    throw new Error(
-      `Unable to load attachment: [${response.status}] ${response.statusText}`,
-    );
+    const msg = `Unable to load attachment: [${response.status}] ${response.statusText}`;
+    log.error(msg);
+    throw new Error(msg);
   }
   const payload = new Uint8Array(await response.arrayBuffer());
   return decryptAttachment(payload, content);

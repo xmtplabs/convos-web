@@ -1,5 +1,8 @@
 import { createContext, useContext, useEffect, useRef } from "react";
 import { useAppLock, type AppLockState } from "@/hooks/useAppLock";
+import { createLogger } from "@/utils/log";
+
+const log = createLogger("app-lock");
 
 export type AppLockContextValue = {
   lockState: AppLockState;
@@ -14,16 +17,20 @@ const AppLockContext = createContext<AppLockContextValue>({
 export const AppLockProvider: React.FC<{
   children: React.ReactNode;
 }> = ({ children }) => {
+  log.trace("render");
   const { lockState, acquireLock } = useAppLock();
+  log.debug("lockState", { lockState });
 
   // Acquire the lock when the app mounts
   const mountedRef = useRef(false);
   useEffect(() => {
     if (!mountedRef.current) {
       mountedRef.current = true;
-      acquireLock();
+      log.trace("acquiring");
+      const acquired = acquireLock();
+      log.info("acquired", { state: acquired ? "acquired" : lockState });
     }
-  }, [acquireLock]);
+  }, [acquireLock, lockState]);
 
   return (
     <AppLockContext.Provider value={{ lockState, acquireLock }}>

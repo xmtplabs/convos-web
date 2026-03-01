@@ -1,5 +1,8 @@
 import { useLocalStorage } from "@mantine/hooks";
 import { useCallback, useEffect, useMemo, useRef } from "react";
+import { createLogger } from "@/utils/log";
+
+const log = createLogger("app-lock");
 
 export const APP_LOCK_ID_KEY = "XMTP_APP_LOCK_ID";
 export const APP_LOCK_LAST_ACTIVE_KEY = "XMTP_APP_LOCK_LAST_ACTIVE";
@@ -47,16 +50,18 @@ export const useAppLock = (onLockLost?: () => void) => {
   lastActiveRef.current = lastActive;
 
   const lockState: AppLockState = useMemo(() => {
+    let state: AppLockState;
     if (lockId === null) {
-      return "available";
+      state = "available";
+    } else if (lockId === lockIdRef.current) {
+      state = "active";
+    } else if (isLockStale(lastActive)) {
+      state = "available";
+    } else {
+      state = "locked";
     }
-    if (lockId === lockIdRef.current) {
-      return "active";
-    }
-    if (isLockStale(lastActive)) {
-      return "available";
-    }
-    return "locked";
+    log.debug("lockState resolved", { state, lockId, lastActive });
+    return state;
   }, [lockId, lastActive]);
 
   /**
@@ -66,6 +71,7 @@ export const useAppLock = (onLockLost?: () => void) => {
    */
   const acquireLock = useCallback(
     (force?: boolean) => {
+      log.info("acquireLock attempt", { force, currentLockId: lockId });
       // if the lock is not stale and acquired by another session, don't acquire it
       // unless force is true
       if (
@@ -74,6 +80,7 @@ export const useAppLock = (onLockLost?: () => void) => {
         lockId !== lockIdRef.current &&
         !force
       ) {
+        log.debug("acquireLock denied, held by another session");
         return false;
       }
       // acquire the lock
@@ -81,12 +88,14 @@ export const useAppLock = (onLockLost?: () => void) => {
       setLastActive(Date.now());
       // lock acquired, set the flag to true
       hadLockRef.current = true;
+      log.info("acquireLock acquired", { lockId: lockIdRef.current });
       return true;
     },
     [lockId, setLockId, setLastActive],
   );
 
   const releaseLock = useCallback((): void => {
+    log.info("releaseLock");
     hadLockRef.current = false;
     setLockId(null);
     setLastActive(null);
@@ -96,28 +105,37 @@ export const useAppLock = (onLockLost?: () => void) => {
   // this is helpful for disconnecting the user when the lock is lost
   useEffect(() => {
     if (lockState !== "active" && hadLockRef.current) {
+      log.warn("lock lost, invoking onLockLost callback");
       hadLockRef.current = false;
       onLockLost?.();
     }
   }, [lockState, onLockLost]);
 
   // heartbeat to keep lock alive when active
+  // Writes directly to localStorage to avoid triggering React re-renders
+  // in the active tab. Other tabs pick up the change via the storage event.
   useEffect(() => {
-    // if the lock is not active or the lock ID is not the current session,
-    // don't update the last active time
     if (lockState !== "active" || lockId !== lockIdRef.current) {
       return;
     }
 
-    // update the last active time at the set interval
+    log.debug("heartbeat start", { interval: ACTIVE_INTERVAL });
     const interval = setInterval(() => {
-      setLastActive(Date.now());
+      try {
+        localStorage.setItem(
+          APP_LOCK_LAST_ACTIVE_KEY,
+          JSON.stringify(Date.now()),
+        );
+      } catch {
+        // localStorage unavailable
+      }
     }, ACTIVE_INTERVAL);
 
     return () => {
+      log.debug("heartbeat stop");
       clearInterval(interval);
     };
-  }, [lockState, lockId, setLastActive]);
+  }, [lockState, lockId]);
 
   // release lock on pagehide event
   useEffect(() => {
@@ -128,6 +146,7 @@ export const useAppLock = (onLockLost?: () => void) => {
     }
 
     const handlePageHide = () => {
+      log.info("pagehide, releasing lock");
       releaseLock();
     };
 

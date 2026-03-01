@@ -6,6 +6,9 @@ import {
 } from "@xmtp/browser-sdk";
 import { useCallback, useState } from "react";
 import { useInboxId } from "@/hooks/useInboxId";
+import { createLogger } from "@/utils/log";
+
+const log = createLogger("app-lock");
 
 export type ConvoPermissions = {
   isAdmin: boolean;
@@ -62,15 +65,18 @@ export const usePermissions = (conversation: Conversation) => {
   const [permissions, setPermissions] = useState<ConvoPermissions | null>(null);
 
   const refreshPermissions = useCallback(async () => {
+    log.trace("refreshing");
     if (!(conversation instanceof Group)) return;
     try {
       const { policySet } = await conversation.permissions();
       const admin = conversation.admins.includes(inboxId);
       const superAdmin = conversation.superAdmins.includes(inboxId);
-      setPermissions(resolvePermissions(policySet, admin, superAdmin));
+      const resolved = resolvePermissions(policySet, admin, superAdmin);
+      log.debug("permissions resolved", { isAdmin: resolved.isAdmin });
+      setPermissions(resolved);
       return policySet;
     } catch (e: unknown) {
-      console.error("[convo] permissions error:", e);
+      log.error("permissions error", e);
     }
   }, [conversation, inboxId]);
 

@@ -19,6 +19,7 @@
   "dependencies": {
     "@bufbuild/protobuf": "^2.11.0",
     "@mantine/core": "^8.3.15",
+    "@mantine/dates": "^8.3.15",
     "@mantine/hooks": "^8.3.15",
     "@noble/ciphers": "^2.1.1",
     "@noble/curves": "^2.0.1",
@@ -32,6 +33,7 @@
     "@tanstack/router-plugin": "^1.162.6",
     "@xmtp/browser-sdk": "^6.3.0",
     "date-fns": "^4.1.0",
+    "dayjs": "^1.11.19",
     "dexie": "^4.3.0",
     "dexie-react-hooks": "^4.2.0",
     "emoji-picker-react": "^4.18.0",

@@ -20,14 +20,18 @@ import { useProfileAvatar } from "@/hooks/useProfileAvatar";
 import { validateFile } from "@/utils/attachment";
 import { uploadAvatar } from "@/utils/avatars";
 import { generateKey } from "@/utils/encryption";
+import { createLogger } from "@/utils/log";
 import { upsertProfile } from "@/utils/profile";
 import classes from "./Quickname.module.css";
+
+const log = createLogger("quickname");
 
 type QuicknameProps = {
   onDirtyChange?: (dirty: boolean) => void;
 };
 
 export const Quickname: React.FC<QuicknameProps> = ({ onDirtyChange }) => {
+  log.trace("render");
   const profile = useProfile();
   const decryptedAvatarSrc = useProfileAvatar(profile);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -58,6 +62,7 @@ export const Quickname: React.FC<QuicknameProps> = ({ onDirtyChange }) => {
     avatarCleared;
 
   useLayoutEffect(() => {
+    log.debug("onDirtyChange", { isDirty });
     onDirtyChange?.(isDirty);
   }, [isDirty, onDirtyChange]);
 
@@ -65,14 +70,22 @@ export const Quickname: React.FC<QuicknameProps> = ({ onDirtyChange }) => {
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const file = e.target.files?.[0];
       if (!file) {
+        log.debug("file select dismissed, no file chosen");
         return;
       }
+      log.info("file selected", {
+        name: file.name,
+        size: file.size,
+        type: file.type,
+      });
       const validation = validateFile(file);
       if (!validation.valid) {
+        log.warn("file validation failed", { error: validation.error });
         setStatus(validation.error);
         setStatusColor("red");
         return;
       }
+      log.debug("file validation passed");
       setStatus(null);
       setPendingFile(file);
       setPendingUrl(null);
@@ -86,6 +99,7 @@ export const Quickname: React.FC<QuicknameProps> = ({ onDirtyChange }) => {
   );
 
   const handleRemoveAvatar = useCallback(() => {
+    log.info("avatar removed");
     setPendingFile(null);
     setPendingUrl(null);
     setPendingPreview(null);
@@ -94,6 +108,7 @@ export const Quickname: React.FC<QuicknameProps> = ({ onDirtyChange }) => {
   }, []);
 
   const handleUndo = useCallback(() => {
+    log.info("undo changes");
     setEditingName(profile?.name ?? "");
     setPendingFile(null);
     setPendingUrl(null);
@@ -105,6 +120,12 @@ export const Quickname: React.FC<QuicknameProps> = ({ onDirtyChange }) => {
   const [saving, setSaving] = useState(false);
 
   const handleSave = async () => {
+    log.info("save started", {
+      name: editingName,
+      hasPendingFile: !!pendingFile,
+      hasPendingUrl: !!pendingUrl,
+      avatarCleared,
+    });
     setSaving(true);
     setStatusColor("dimmed");
     setStatus("Saving...");
@@ -117,13 +138,16 @@ export const Quickname: React.FC<QuicknameProps> = ({ onDirtyChange }) => {
 
       if (pendingFile ?? pendingUrl) {
         if (!avatarKey) {
+          log.debug("generating new avatar key");
           avatarKey = generateKey();
         }
 
         let imageData: Uint8Array<ArrayBuffer>;
         if (pendingFile) {
+          log.debug("reading pending file");
           imageData = new Uint8Array(await pendingFile.arrayBuffer());
         } else if (pendingUrl) {
+          log.debug("fetching image from url", { url: pendingUrl });
           setStatus("Fetching image...");
           const response = await fetch(pendingUrl);
           if (!response.ok) {
@@ -134,18 +158,21 @@ export const Quickname: React.FC<QuicknameProps> = ({ onDirtyChange }) => {
           throw new Error("No image data");
         }
 
+        log.debug("uploading avatar");
         setStatus("Uploading image...");
         const result = await uploadAvatar(imageData, avatarKey);
         avatarUrl = result.url;
         avatarSalt = result.salt;
         avatarNonce = result.nonce;
       } else if (avatarCleared) {
+        log.debug("clearing avatar data");
         avatarUrl = undefined;
         avatarSalt = undefined;
         avatarNonce = undefined;
         avatarKey = undefined;
       }
 
+      log.debug("saving profile", { profileId });
       setStatus("Saving...");
       await upsertProfile({
         id: profileId,
@@ -160,7 +187,9 @@ export const Quickname: React.FC<QuicknameProps> = ({ onDirtyChange }) => {
       setPendingUrl(null);
       setAvatarCleared(false);
       setStatus(null);
+      log.info("save completed", { profileId });
     } catch (err) {
+      log.error("save failed", err);
       setStatus(err instanceof Error ? err.message : "Failed to save profile");
       setStatusColor("red");
     } finally {

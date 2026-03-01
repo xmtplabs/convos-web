@@ -4,7 +4,10 @@ import { MessageCircleReplyIcon, SmilePlusIcon } from "lucide-react";
 import { useCallback, useState } from "react";
 import { EmojiPicker } from "@/components/shared/EmojiPicker";
 import { useSendMessage } from "@/hooks/useSendMessage";
+import { createLogger } from "@/utils/log";
 import classes from "./MessageList.module.css";
+
+const log = createLogger("messaging");
 
 const quickEmojis = ["👍", "❤️", "😂", "😢", "🙏"];
 
@@ -19,6 +22,7 @@ export const MessageActions: React.FC<{
 
   const handleReaction = useCallback(
     (emoji: string) => {
+      log.info("handleReaction", { emoji, messageId });
       void sendReaction({
         reference: messageId,
         referenceInboxId: senderInboxId,
@@ -31,6 +35,7 @@ export const MessageActions: React.FC<{
   );
 
   const handleReply = useCallback(() => {
+    log.info("handleReply", { messageId });
     setReply({ messageId, senderInboxId, content });
   }, [messageId, senderInboxId, content, setReply]);
 

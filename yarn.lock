@@ -893,6 +893,21 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@mantine/dates@npm:^8.3.15":
+  version: 8.3.15
+  resolution: "@mantine/dates@npm:8.3.15"
+  dependencies:
+    clsx: "npm:^2.1.1"
+  peerDependencies:
+    "@mantine/core": 8.3.15
+    "@mantine/hooks": 8.3.15
+    dayjs: ">=1.0.0"
+    react: ^18.x || ^19.x
+    react-dom: ^18.x || ^19.x
+  checksum: 10/4a07b7bfd53e15d0f282ca00d6f72f43a3a14f7f02a1f8f3856339c0435eee280a4519d323bedb35803dce898caf5292498a037fa221155f09983e380633adde
+  languageName: node
+  linkType: hard
+
 "@mantine/hooks@npm:^8.3.15":
   version: 8.3.15
   resolution: "@mantine/hooks@npm:8.3.15"
@@ -2745,6 +2760,7 @@ __metadata:
     "@eslint/js": "npm:^9.39.3"
     "@ianvs/prettier-plugin-sort-imports": "npm:^4.7.1"
     "@mantine/core": "npm:^8.3.15"
+    "@mantine/dates": "npm:^8.3.15"
     "@mantine/hooks": "npm:^8.3.15"
     "@noble/ciphers": "npm:^2.1.1"
     "@noble/curves": "npm:^2.0.1"
@@ -2765,6 +2781,7 @@ __metadata:
     "@vitejs/plugin-react": "npm:^5.1.4"
     "@xmtp/browser-sdk": "npm:^6.3.0"
     date-fns: "npm:^4.1.0"
+    dayjs: "npm:^1.11.19"
     dexie: "npm:^4.3.0"
     dexie-react-hooks: "npm:^4.2.0"
     emoji-picker-react: "npm:^4.18.0"
@@ -2864,6 +2881,13 @@ __metadata:
   version: 4.1.0
   resolution: "date-fns@npm:4.1.0"
   checksum: 10/d5f6e9de5bbc52310f786099e18609289ed5e30af60a71e0646784c8185ddd1d0eebcf7c96b7faaaefc4a8366f3a3a4244d099b6d0866ee2bec80d1361e64342
+  languageName: node
+  linkType: hard
+
+"dayjs@npm:^1.11.19":
+  version: 1.11.19
+  resolution: "dayjs@npm:1.11.19"
+  checksum: 10/185b820d68492b83a3ce2b8ddc7543034edc1dfd1423183f6ae4707b29929a3cc56503a81826309279f9084680c15966b99456e74cf41f7d1f6a2f98f9c7196f
   languageName: node
   linkType: hard
 

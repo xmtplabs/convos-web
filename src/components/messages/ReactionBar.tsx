@@ -1,7 +1,10 @@
 import { ReactionAction, ReactionSchema } from "@xmtp/browser-sdk";
 import { useCallback } from "react";
 import { useSendMessage } from "@/hooks/useSendMessage";
+import { createLogger } from "@/utils/log";
 import classes from "./MessageList.module.css";
+
+const log = createLogger("messaging");
 
 export type ReactionEntry = {
   emoji: string;
@@ -19,6 +22,11 @@ export const ReactionBar: React.FC<{
 
   const handleClick = useCallback(
     (emoji: string, alreadyReacted: boolean) => {
+      log.info("handleClick toggle reaction", {
+        emoji,
+        messageId,
+        alreadyReacted,
+      });
       void sendReaction({
         reference: messageId,
         referenceInboxId: senderInboxId,

@@ -8,6 +8,9 @@ import { useState } from "react";
 import { Modal } from "@/components/shared/Modal";
 import { useConvo } from "@/hooks/useConvo";
 import { updateConvo } from "@/utils/convos";
+import { createLogger } from "@/utils/log";
+
+const log = createLogger("app-lock");
 
 type UnlockConvoModalProps = {
   opened: boolean;
@@ -21,7 +24,10 @@ export const UnlockConvoModal: React.FC<UnlockConvoModalProps> = ({
   const { convo, conversation } = useConvo();
   const [loading, setLoading] = useState(false);
 
+  log.trace("render", { convoId: convo.id, loading });
+
   const handleLock = async () => {
+    log.info("unlock action started", { convoId: convo.id });
     setLoading(true);
     try {
       if (conversation instanceof XmtpGroup) {
@@ -30,15 +36,28 @@ export const UnlockConvoModal: React.FC<UnlockConvoModalProps> = ({
           PermissionPolicy.Allow,
         );
         await updateConvo(convo.id, { locked: false });
+        log.info("unlock action succeeded", { convoId: convo.id });
         onClose();
+      } else {
+        log.debug("unlock skipped, not a group", { convoId: convo.id });
       }
+    } catch (err) {
+      log.error("unlock action failed", err);
+      throw err;
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <Modal opened={opened} onClose={onClose} size="sm" title="Locked">
+    <Modal
+      opened={opened}
+      onClose={() => {
+        log.info("unlock modal closed", { convoId: convo.id });
+        onClose();
+      }}
+      size="sm"
+      title="Locked">
       <Stack gap="md">
         <Text size="lg" fw="bold">
           Unlock to enable invites

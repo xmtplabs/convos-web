@@ -5,6 +5,9 @@ import {
 } from "@xmtp/browser-sdk";
 import { useCallback, useContext } from "react";
 import { ConvoContext } from "@/contexts/ConvoContext";
+import { createLogger } from "@/utils/log";
+
+const log = createLogger("messaging");
 
 export const useSendMessage = () => {
   const context = useContext(ConvoContext);
@@ -16,9 +19,11 @@ export const useSendMessage = () => {
 
   const sendText = useCallback(
     async (text: string) => {
+      log.trace("sendText");
       setSending(true);
       try {
         await conversation.sendText(text);
+        log.info("text sent");
       } finally {
         setSending(false);
       }
@@ -44,9 +49,11 @@ export const useSendMessage = () => {
 
   const sendRemoteAttachment = useCallback(
     async (remoteAttachment: RemoteAttachment) => {
+      log.trace("sendRemoteAttachment", { url: remoteAttachment.url });
       setSending(true);
       try {
         await conversation.sendRemoteAttachment(remoteAttachment);
+        log.info("attachment sent");
       } finally {
         setSending(false);
       }

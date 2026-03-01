@@ -3,6 +3,9 @@ import type { RemoteAttachment } from "@xmtp/browser-sdk";
 import { AlertCircleIcon } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { downloadAttachment, getFileType } from "@/utils/attachment";
+import { createLogger } from "@/utils/log";
+
+const log = createLogger("messaging");
 
 const urlCache = new Map<string, { blobUrl: string | null; failed: boolean }>();
 
@@ -16,6 +19,7 @@ export const RemoteAttachmentContent: React.FC<{
 
   const loadAttachment = useCallback(
     async (force = false) => {
+      log.info("loadAttachment start", { url: content.url, force });
       if (loadingRef.current) {
         return;
       }
@@ -26,6 +30,10 @@ export const RemoteAttachmentContent: React.FC<{
       if (!force) {
         const cached = urlCache.get(content.url);
         if (cached) {
+          log.debug("loadAttachment cache hit", {
+            url: content.url,
+            failed: cached.failed,
+          });
           if (cached.failed) {
             setError("Unable to load attachment");
           } else if (cached.blobUrl) {
@@ -34,6 +42,7 @@ export const RemoteAttachmentContent: React.FC<{
           loadingRef.current = false;
           return;
         }
+        log.debug("loadAttachment cache miss", { url: content.url });
       }
 
       setIsLoading(true);
@@ -45,7 +54,9 @@ export const RemoteAttachmentContent: React.FC<{
         const blobUrl = URL.createObjectURL(blob);
         urlCache.set(content.url, { blobUrl, failed: false });
         setDecryptedUrl(blobUrl);
-      } catch {
+        log.info("loadAttachment download success", { url: content.url });
+      } catch (err) {
+        log.error("loadAttachment download failed", err);
         setError("Unable to load attachment");
         urlCache.set(content.url, { blobUrl: null, failed: true });
       } finally {
@@ -104,6 +115,7 @@ export const RemoteAttachmentContent: React.FC<{
           radius="xl"
           size="xs"
           onClick={() => {
+            log.info("loadAttachment retry", { url: content.url });
             void loadAttachment(true);
           }}>
           Retry

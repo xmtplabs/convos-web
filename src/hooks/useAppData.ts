@@ -6,6 +6,9 @@ import {
   type MemberProfile,
 } from "@/utils/appData";
 import { syncAvatars } from "@/utils/avatars";
+import { createLogger } from "@/utils/log";
+
+const log = createLogger("sync");
 
 type AppDataEntry = { convoId: string; data: AppData };
 
@@ -20,6 +23,7 @@ export const useAppData = (conversation: Conversation, convoId: string) => {
   );
 
   const refreshAppData = useCallback(() => {
+    log.trace("refreshAppData", { convoId });
     if (!(conversation instanceof Group)) {
       return;
     }
@@ -29,9 +33,14 @@ export const useAppData = (conversation: Conversation, convoId: string) => {
     }
     decodeAppData(conversation.appData)
       .then((decoded) => {
+        log.debug("appData decoded", {
+          convoId,
+          profiles: decoded.profiles.length,
+        });
         setEntry({ convoId, data: decoded });
       })
-      .catch(() => {
+      .catch((err: unknown) => {
+        log.error("appData decode failed", err);
         setEntry(null);
       });
   }, [conversation, convoId]);

@@ -6,7 +6,10 @@ import { Modal } from "@/components/shared/Modal";
 import { useClient } from "@/hooks/useClient";
 import { clearAllAvatars } from "@/utils/avatars";
 import { clearConvos } from "@/utils/convos";
+import { createLogger } from "@/utils/log";
 import { clearProfiles } from "@/utils/profile";
+
+const log = createLogger("db");
 
 type DeleteAllDataModalProps = {
   opened: boolean;
@@ -22,6 +25,7 @@ export const DeleteAllDataModal: React.FC<DeleteAllDataModalProps> = ({
   const [deleting, setDeleting] = useState(false);
 
   const handleDelete = async () => {
+    log.trace("deleteAllData");
     setDeleting(true);
     try {
       ctx.setConvo(null);
@@ -32,11 +36,13 @@ export const DeleteAllDataModal: React.FC<DeleteAllDataModalProps> = ({
       await opfs.clearAll();
       const remaining = await opfs.listFiles();
       if (remaining.length > 0) {
-        console.error("Failed to clear all OPFS files:", remaining);
+        log.error("failed to clear all OPFS files", { remaining });
       }
       opfs.close();
+      log.info("all data deleted");
       void navigate({ to: "/" });
-    } catch {
+    } catch (err) {
+      log.error("deleteAllData failed", err);
       setDeleting(false);
     }
   };

@@ -3,6 +3,9 @@ import { ConvoCard } from "@/components/convos/ConvoCard";
 import { LinkButton } from "@/components/shared/Button";
 import { Modal } from "@/components/shared/Modal";
 import { useConvo } from "@/hooks/useConvo";
+import { createLogger } from "@/utils/log";
+
+const log = createLogger("convo-details");
 
 type ConvoDetailsModalProps = {
   opened: boolean;
@@ -18,8 +21,17 @@ export const ConvoDetailsModal: React.FC<ConvoDetailsModalProps> = ({
   const canEditDescription = permissions?.canEditDescription ?? false;
   const canEditInfo = canEditName || canEditDescription;
 
+  log.trace("render", { convoId: convo.id, canEditInfo });
+
   return (
-    <Modal size="lg" opened={opened} onClose={onClose} title="Convo details">
+    <Modal
+      size="lg"
+      opened={opened}
+      onClose={() => {
+        log.info("closed", { convoId: convo.id });
+        onClose();
+      }}
+      title="Convo details">
       <ConvoCard convo={convo}>
         {canEditInfo && (
           <LinkButton

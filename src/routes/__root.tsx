@@ -1,10 +1,27 @@
 import mantineCss from "@mantine/core/styles.css?url";
-import { createRootRoute } from "@tanstack/react-router";
+import mantineDatesCss from "@mantine/dates/styles.css?url";
+import {
+  createRootRoute,
+  ErrorComponent,
+  type ErrorComponentProps,
+} from "@tanstack/react-router";
 import { NotFound } from "@/components/app/NotFound";
 import { Root } from "@/components/app/Root";
 import themeCss from "@/theme.css?url";
+import { createLogger } from "@/utils/log";
+
+const log = createLogger("root");
+
+const RootError = (props: ErrorComponentProps) => {
+  log.error("error boundary caught", props.error);
+  return <ErrorComponent {...props} />;
+};
 
 export const Route = createRootRoute({
+  errorComponent: RootError,
+  beforeLoad: () => {
+    log.trace("beforeLoad");
+  },
   head: () => ({
     meta: [
       {
@@ -39,6 +56,10 @@ export const Route = createRootRoute({
       {
         rel: "stylesheet",
         href: mantineCss,
+      },
+      {
+        rel: "stylesheet",
+        href: mantineDatesCss,
       },
       {
         rel: "stylesheet",

@@ -8,6 +8,9 @@ import { useState } from "react";
 import { Modal } from "@/components/shared/Modal";
 import { useConvo } from "@/hooks/useConvo";
 import { updateConvo } from "@/utils/convos";
+import { createLogger } from "@/utils/log";
+
+const log = createLogger("app-lock");
 
 type LockConvoModalProps = {
   opened: boolean;
@@ -21,7 +24,10 @@ export const LockConvoModal: React.FC<LockConvoModalProps> = ({
   const { convo, conversation } = useConvo();
   const [loading, setLoading] = useState(false);
 
+  log.trace("render", { convoId: convo.id, loading });
+
   const handleLock = async () => {
+    log.info("lock action started", { convoId: convo.id });
     setLoading(true);
     try {
       if (conversation instanceof XmtpGroup) {
@@ -30,15 +36,28 @@ export const LockConvoModal: React.FC<LockConvoModalProps> = ({
           PermissionPolicy.Deny,
         );
         await updateConvo(convo.id, { locked: true });
+        log.info("lock action succeeded", { convoId: convo.id });
         onClose();
+      } else {
+        log.debug("lock skipped, not a group", { convoId: convo.id });
       }
+    } catch (err) {
+      log.error("lock action failed", err);
+      throw err;
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <Modal opened={opened} onClose={onClose} size="sm" title="Lock?">
+    <Modal
+      opened={opened}
+      onClose={() => {
+        log.info("lock modal closed", { convoId: convo.id });
+        onClose();
+      }}
+      size="sm"
+      title="Lock?">
       <Stack gap="md">
         <Text size="md" fw="bold">
           Nobody new can join.

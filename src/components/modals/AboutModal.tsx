@@ -6,21 +6,28 @@ import { Quickname } from "@/components/app/Quickname";
 import { ExternalLinkButton, LinkButton } from "@/components/shared/Button";
 import { Modal } from "@/components/shared/Modal";
 import { useConvos } from "@/hooks/useConvos";
+import { createLogger } from "@/utils/log";
+
+const log = createLogger("settings");
 
 export const AboutModal = () => {
+  log.trace("render");
   const navigate = useNavigate();
   const convos = useConvos();
   const hasConvos = convos.length > 0;
   const dirtyRef = useRef(false);
 
   const onDirtyChange = useCallback((dirty: boolean) => {
+    log.debug("onDirtyChange", { dirty });
     dirtyRef.current = dirty;
   }, []);
 
   const onClose = () => {
     if (dirtyRef.current) {
+      log.debug("close blocked, form is dirty");
       return;
     }
+    log.info("modal closed");
     void navigate({ to: ".", search: { modal: undefined } });
   };
 

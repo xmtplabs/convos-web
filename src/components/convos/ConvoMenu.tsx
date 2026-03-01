@@ -1,27 +1,40 @@
 import { Menu } from "@mantine/core";
 import { useNavigate } from "@tanstack/react-router";
 import {
+  BombIcon,
   LockIcon,
   LockOpenIcon,
   StarIcon,
   StarOffIcon,
   Trash2Icon,
 } from "lucide-react";
+import { ExplodeSubMenu } from "@/components/convos/ExplodeSubMenu";
 import type { Convo } from "@/db";
+import type { AppData } from "@/utils/appData";
 import { MENU_ICON_SIZE } from "@/utils/constants";
 import { updateConvo } from "@/utils/convos";
+import { createLogger } from "@/utils/log";
+
+const log = createLogger("convo-menu");
 
 export type ConvoMenuProps = React.PropsWithChildren<{
   convo: Convo;
+  appData?: AppData | null;
   canLock?: boolean;
+  canExplode?: boolean;
+  onExplode?: (getExpiresAt: () => Date, immediate?: boolean) => void;
 }>;
 
 export const ConvoMenu: React.FC<ConvoMenuProps> = ({
   convo,
+  appData,
   canLock,
+  canExplode,
+  onExplode,
   children,
 }) => {
   const navigate = useNavigate();
+  const hasActiveTimer = appData?.expiresAtUnix != null;
 
   return (
     <Menu withArrow arrowPosition="side" arrowOffset={14} position="bottom-end">
@@ -36,6 +49,9 @@ export const ConvoMenu: React.FC<ConvoMenuProps> = ({
             )
           }
           onClick={() => {
+            log.info(convo.faved ? "unfav clicked" : "fav clicked", {
+              convoId: convo.id,
+            });
             void updateConvo(convo.id, { faved: !convo.faved });
           }}>
           {convo.faved ? "Unfav" : "Fav"}
@@ -50,6 +66,9 @@ export const ConvoMenu: React.FC<ConvoMenuProps> = ({
               )
             }
             onClick={() => {
+              log.info(convo.locked ? "unlock clicked" : "lock clicked", {
+                convoId: convo.id,
+              });
               void navigate({
                 to: `/convo/${convo.id}/${convo.locked ? "unlock" : "lock"}`,
               });
@@ -57,11 +76,34 @@ export const ConvoMenu: React.FC<ConvoMenuProps> = ({
             {convo.locked ? "Unlock" : "Lock"}
           </Menu.Item>
         )}
+        {canExplode && onExplode && !hasActiveTimer && (
+          <ExplodeSubMenu
+            onExplode={onExplode}
+            onChooseDateTime={() => {
+              void navigate({
+                to: "/convo/$convoId/explode",
+                params: { convoId: convo.id },
+              });
+            }}
+          />
+        )}
+        {canExplode && onExplode && hasActiveTimer && (
+          <Menu.Item
+            color="red"
+            leftSection={<BombIcon size={MENU_ICON_SIZE} />}
+            onClick={() => {
+              log.info("explode now clicked", { convoId: convo.id });
+              onExplode(() => new Date(), true);
+            }}>
+            Explode now
+          </Menu.Item>
+        )}
         <Menu.Divider />
         <Menu.Item
           color="red"
           leftSection={<Trash2Icon size={MENU_ICON_SIZE} />}
           onClick={() => {
+            log.info("delete clicked", { convoId: convo.id });
             void navigate({
               to: "/convo/$convoId/delete",
               params: { convoId: convo.id },

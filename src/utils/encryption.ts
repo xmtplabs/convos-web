@@ -1,3 +1,7 @@
+import { createLogger } from "@/utils/log";
+
+const log = createLogger("encryption");
+
 const INFO = new TextEncoder().encode("ConvosImageV1");
 
 export const hexToBytes = (hex: string): Uint8Array<ArrayBuffer> => {
@@ -59,6 +63,7 @@ export const encrypt = async (
   salt: string;
   nonce: string;
 }> => {
+  log.trace("encrypt", { inputSize: imageData.byteLength });
   const salt = generateSalt();
   const nonce = generateNonce();
   const derivedKey = await deriveKey(key, salt);
@@ -68,6 +73,7 @@ export const encrypt = async (
     imageData,
   );
 
+  log.debug("encrypt complete", { outputSize: encrypted.byteLength });
   return {
     ciphertext: new Uint8Array(encrypted),
     salt: bytesToHex(salt),
@@ -81,6 +87,7 @@ export const decrypt = async (
   salt: string,
   nonce: string,
 ): Promise<Uint8Array<ArrayBuffer>> => {
+  log.debug("decrypt", { inputSize: ciphertext.byteLength });
   const saltBytes = hexToBytes(salt);
   const nonceBytes = hexToBytes(nonce);
   const derivedKey = await deriveKey(key, saltBytes);
@@ -90,5 +97,6 @@ export const decrypt = async (
     ciphertext,
   );
 
+  log.debug("decrypt complete", { outputSize: decrypted.byteLength });
   return new Uint8Array(decrypted);
 };

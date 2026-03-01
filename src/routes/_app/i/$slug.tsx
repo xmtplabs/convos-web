@@ -15,9 +15,14 @@ import {
   sendJoinRequest,
   type ParsedInvite,
 } from "@/utils/invite";
+import { createLogger } from "@/utils/log";
+
+const log = createLogger("invite");
 
 const AcceptInvite = () => {
+  log.trace("render");
   const { slug } = Route.useParams();
+  log.debug("slug length", { length: slug.length });
   const navigate = useNavigate();
   const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">(
     "idle",
@@ -27,8 +32,10 @@ const AcceptInvite = () => {
   const parsed = useMemo((): ParsedInvite | null => {
     try {
       const result = parseInviteSlug(slug);
+      log.info("parsed", { name: result.payload.name });
       return result;
-    } catch {
+    } catch (err) {
+      log.error("invalid invite slug", err);
       return null;
     }
   }, [slug]);
@@ -47,6 +54,7 @@ const AcceptInvite = () => {
         });
       })
       .catch((e: unknown) => {
+        log.error("join request failed", e);
         setError(
           e instanceof Error ? e.message : "Failed to send join request",
         );
@@ -114,4 +122,9 @@ const AcceptInvite = () => {
 export const Route = createFileRoute("/_app/i/$slug")({
   component: AcceptInvite,
   ssr: false,
+  beforeLoad: ({ params }) => {
+    log.trace("beforeLoad", {
+      slugLength: params.slug.length,
+    });
+  },
 });

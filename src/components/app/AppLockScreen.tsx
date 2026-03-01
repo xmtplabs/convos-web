@@ -2,9 +2,14 @@ import { Button, Group, Paper, Stack, Text } from "@mantine/core";
 import { Logo } from "@/components/shared/Logo";
 import { useAppLockContext } from "@/contexts/AppLockContext";
 import { CenteredLayout } from "@/layouts/CenteredLayout";
+import { createLogger } from "@/utils/log";
+
+const log = createLogger("app-lock");
 
 export const AppLockScreen = () => {
   const { acquireLock } = useAppLockContext();
+
+  log.trace("render");
 
   return (
     <CenteredLayout fullScreen>
@@ -23,7 +28,10 @@ export const AppLockScreen = () => {
           <Button
             variant="filled"
             radius="xl"
-            onClick={() => acquireLock(true)}>
+            onClick={() => {
+              log.info("force acquire lock clicked");
+              acquireLock(true);
+            }}>
             Disconnect other session
           </Button>
         </Stack>

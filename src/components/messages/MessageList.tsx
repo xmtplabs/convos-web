@@ -1,4 +1,4 @@
-import { Avatar, Box, Text } from "@mantine/core";
+import { Avatar, Box, Group, Text } from "@mantine/core";
 import {
   isGroupUpdated,
   isReaction,
@@ -20,11 +20,14 @@ import type { Convo } from "@/db";
 import { useAvatar } from "@/hooks/useAvatar";
 import { useConvo } from "@/hooks/useConvo";
 import { useInboxId } from "@/hooks/useInboxId";
+import { createLogger } from "@/utils/log";
 import { getContentString, getGroupUpdatedStrings } from "@/utils/xmtp";
 import { MessageActions } from "./MessageActions";
 import classes from "./MessageList.module.css";
 import { ReactionBar, type ReactionEntry } from "./ReactionBar";
 import { RemoteAttachmentContent } from "./RemoteAttachmentContent";
+
+const log = createLogger("messaging");
 
 type SummaryRow = {
   type: "summary";
@@ -173,10 +176,28 @@ const buildReactionMap = (
 const buildRows = (
   messages: DecodedMessage<BuiltInContentTypes>[],
   inboxId: string,
+  expiresAtUnix?: number,
 ): { rows: Row[]; messageIdToIndex: Map<string, number> } => {
   const rows: Row[] = [];
   const messageIdToIndex = new Map<string, number>();
   let lastMinuteKey = "";
+
+  // Pre-scan: find the last group update with unrecognized metadata changes
+  // (the one that set the explode timer) so we only show one notification
+  let explodeMessageId: string | null = null;
+  if (expiresAtUnix != null) {
+    for (let i = messages.length - 1; i >= 0; i--) {
+      const msg = messages[i];
+      if (isGroupUpdated(msg)) {
+        const gu = msg.content as GroupUpdated;
+        const lines = getGroupUpdatedStrings(gu);
+        if (gu.metadataFieldChanges.length > lines.length) {
+          explodeMessageId = msg.id;
+          break;
+        }
+      }
+    }
+  }
 
   rows.push({
     type: "summary",
@@ -186,11 +207,12 @@ const buildRows = (
     if (isReaction(message)) {
       continue;
     }
-    if (
-      isGroupUpdated(message) &&
-      getGroupUpdatedStrings(message.content as GroupUpdated).length === 0
-    ) {
-      continue;
+    if (isGroupUpdated(message)) {
+      const gu = message.content as GroupUpdated;
+      const lines = getGroupUpdatedStrings(gu);
+      if (lines.length === 0 && message.id !== explodeMessageId) {
+        continue;
+      }
     }
 
     const minuteKey = getMinuteKey(message.sentAtNs);
@@ -247,6 +269,54 @@ const getRowKey = (row: Row): string => {
   }
 };
 
+const formatDuration = (ms: number): string => {
+  if (ms <= 0) return "now";
+  const s = Math.round(ms / 1000);
+  if (s >= 79200) {
+    const days = Math.round(s / 86400);
+    return `${days} day${days !== 1 ? "s" : ""}`;
+  }
+  if (s >= 3000) {
+    const hours = Math.round(s / 3600);
+    return `${hours} hour${hours !== 1 ? "s" : ""}`;
+  }
+  if (s >= 50) {
+    const minutes = Math.round(s / 60);
+    return `${minutes} minute${minutes !== 1 ? "s" : ""}`;
+  }
+  return `${s} second${s !== 1 ? "s" : ""}`;
+};
+
+const ExplodeNotification: React.FC<{
+  initiatorInboxId: string;
+  sentAtNs: bigint;
+  expiresAtUnix: number;
+}> = ({ initiatorInboxId, sentAtNs, expiresAtUnix }) => {
+  const { convo, memberProfiles } = useConvo();
+  const inboxId = useInboxId();
+  const src = useAvatar(convo.id, initiatorInboxId);
+  const profile = memberProfiles.get(initiatorInboxId);
+  const isYou = initiatorInboxId === inboxId;
+  const name = isYou ? "You" : (profile?.name ?? "Somebody");
+
+  const sentMs = Number(sentAtNs / 1_000_000n);
+  const durationMs = expiresAtUnix * 1000 - sentMs;
+  const durationText = formatDuration(durationMs);
+
+  return (
+    <div className={`${classes.item} ${classes.systemMessage}`}>
+      <Group gap={4} justify="center" align="center">
+        <Avatar size={20} radius="xl" src={src}>
+          {!src && (profile?.name ? profile.name[0].toUpperCase() : "S")}
+        </Avatar>
+        <Text size="xs" c="dimmed">
+          {name} set this convo to explode in {durationText}
+        </Text>
+      </Group>
+    </div>
+  );
+};
+
 const AvatarImg: React.FC<{ inboxId: string }> = ({ inboxId }) => {
   const { convo, memberProfiles } = useConvo();
   const src = useAvatar(convo.id, inboxId);
@@ -300,14 +370,27 @@ const RowRenderer = ({
       initiatorName,
       memberProfiles,
     );
+    const hasUnrecognized =
+      groupUpdated.metadataFieldChanges.length > lines.length;
     return (
-      <div className={`${classes.item} ${classes.systemMessage}`}>
-        {lines.map((line) => (
-          <Text key={line} size="xs" c="dimmed">
-            {line}
-          </Text>
-        ))}
-      </div>
+      <>
+        {lines.length > 0 && (
+          <div className={`${classes.item} ${classes.systemMessage}`}>
+            {lines.map((line) => (
+              <Text key={line} size="xs" c="dimmed">
+                {line}
+              </Text>
+            ))}
+          </div>
+        )}
+        {hasUnrecognized && convo.expiresAtUnix != null && (
+          <ExplodeNotification
+            initiatorInboxId={groupUpdated.initiatedByInboxId}
+            sentAtNs={row.message.sentAtNs}
+            expiresAtUnix={convo.expiresAtUnix}
+          />
+        )}
+      </>
     );
   }
 
@@ -416,14 +499,19 @@ export const MessageList: React.FC<{
   const { convo } = useConvo();
   const inboxId = useInboxId();
   const listRef = useRef<VirtualListHandle>(null);
+
+  log.trace("render", {
+    messageCount: messages.length,
+    convoId: convo.id,
+  });
   const [highlightedMessageId, setHighlightedMessageId] = useState<
     string | null
   >(null);
   const highlightTimer = useRef<ReturnType<typeof setTimeout>>(null);
 
   const { rows, messageIdToIndex } = useMemo(
-    () => buildRows(messages, inboxId),
-    [messages, inboxId],
+    () => buildRows(messages, inboxId, convo.expiresAtUnix),
+    [messages, inboxId, convo.expiresAtUnix],
   );
 
   const reactionMap = useMemo(
@@ -433,6 +521,7 @@ export const MessageList: React.FC<{
 
   const onScrollToMessage = useCallback(
     (messageId: string) => {
+      log.info("onScrollToMessage", { messageId });
       const index = messageIdToIndex.get(messageId);
       if (index !== undefined) {
         listRef.current?.scrollToIndex(index, { align: "center" });

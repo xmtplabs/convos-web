@@ -20,8 +20,11 @@ import { useProfile } from "@/hooks/useProfile";
 import { useSendMessage } from "@/hooks/useSendMessage";
 import { shareProfileToGroup } from "@/utils/appData";
 import { uploadAttachment, validateFile } from "@/utils/attachment";
+import { createLogger } from "@/utils/log";
 import { AttachmentPreview } from "./AttachmentPreview";
 import { ReplyPreview } from "./ReplyPreview";
+
+const log = createLogger("messaging");
 
 export const Composer = () => {
   const { convo, conversation, memberProfiles, permissions } = useConvo();
@@ -56,20 +59,39 @@ export const Composer = () => {
   const isSending = sending || uploadingAttachment;
   const hasContent = message.trim() !== "" || attachment;
 
+  log.trace("render", {
+    convoId: convo.id,
+    hasContent,
+    isSending,
+    hasReply: !!reply,
+    hasAttachment: !!attachment,
+  });
+
   useEffect(() => {
     if (reply) {
+      log.debug("reply focus effect triggered", {
+        replyMessageId: reply.messageId,
+      });
       inputRef.current?.focus();
     }
   }, [reply]);
 
   const handleShareProfile = useCallback(async () => {
+    log.info("handleShareProfile start", { inboxId });
     if (!inboxId || !(conversation instanceof XmtpGroup) || !profile) {
+      log.debug("handleShareProfile skipped: missing prerequisites", {
+        hasInboxId: !!inboxId,
+        isGroup: conversation instanceof XmtpGroup,
+        hasProfile: !!profile,
+      });
       return;
     }
     setSharingProfile(true);
     try {
       await shareProfileToGroup(conversation, profile, inboxId);
-    } catch {
+      log.info("handleShareProfile success", { inboxId });
+    } catch (err) {
+      log.error("handleShareProfile failed", err);
       setError("Failed to share profile");
     } finally {
       setSharingProfile(false);
@@ -80,10 +102,19 @@ export const Composer = () => {
     (event: React.ChangeEvent<HTMLInputElement>) => {
       const file = event.target.files?.[0];
       if (file) {
+        log.info("handleFileSelect: file chosen", {
+          name: file.name,
+          size: file.size,
+          type: file.type,
+        });
         const validation = validateFile(file);
         if (validation.valid) {
+          log.debug("handleFileSelect: validation passed");
           setAttachment(file);
         } else {
+          log.warn("handleFileSelect: validation failed", {
+            error: validation.error,
+          });
           setError(validation.error);
         }
       }
@@ -95,17 +126,29 @@ export const Composer = () => {
   );
 
   const handleSend = useCallback(async () => {
+    log.info("handleSend start", {
+      hasContent,
+      hasAttachment: !!attachment,
+      hasReply: !!reply,
+    });
     if (!hasContent || isSending) {
+      log.debug("handleSend skipped", { hasContent, isSending });
       return;
     }
 
     if (attachment) {
       try {
         if (!remoteAttachmentRef.current) {
+          log.info("handleSend: uploading attachment", {
+            name: attachment.name,
+            size: attachment.size,
+          });
           setUploadingAttachment(true);
           remoteAttachmentRef.current = await uploadAttachment(attachment);
+          log.info("handleSend: attachment uploaded");
         }
-      } catch {
+      } catch (err) {
+        log.error("handleSend: attachment upload failed", err);
         setError("Failed to upload attachment");
         return;
       } finally {
@@ -113,10 +156,13 @@ export const Composer = () => {
       }
 
       try {
+        log.info("handleSend: sending remote attachment");
         await sendRemoteAttachment(remoteAttachmentRef.current);
         setAttachment(null);
         remoteAttachmentRef.current = null;
-      } catch {
+        log.info("handleSend: remote attachment sent");
+      } catch (err) {
+        log.error("handleSend: send attachment failed", err);
         setError("Failed to send attachment");
         return;
       }
@@ -125,12 +171,18 @@ export const Composer = () => {
     if (message) {
       try {
         if (reply) {
+          log.info("handleSend: sending reply", {
+            replyMessageId: reply.messageId,
+          });
           await sendTextReply(reply.messageId, message);
         } else {
+          log.info("handleSend: sending text");
           await sendText(message);
         }
         setMessage("");
-      } catch {
+        log.info("handleSend: text sent");
+      } catch (err) {
+        log.error("handleSend: send text failed", err);
         setError("Failed to send message");
         return;
       }
@@ -161,6 +213,7 @@ export const Composer = () => {
               }
               replyMessage={reply.content}
               onCancel={() => {
+                log.info("cancel reply", { replyMessageId: reply.messageId });
                 setReply(null);
               }}
             />
@@ -170,6 +223,7 @@ export const Composer = () => {
               file={attachment}
               disabled={isSending}
               onCancel={() => {
+                log.info("cancel attachment", { name: attachment.name });
                 setAttachment(null);
               }}
             />
@@ -264,6 +318,7 @@ export const Composer = () => {
           size="auto"
           title="Error"
           onClose={() => {
+            log.info("error modal dismissed (close)", { error });
             setError(null);
           }}>
           <Text ta="center" size="sm">
@@ -272,6 +327,7 @@ export const Composer = () => {
           <Group mt="md" justify="flex-end">
             <Button
               onClick={() => {
+                log.info("error modal dismissed (OK)", { error });
                 setError(null);
               }}>
               OK

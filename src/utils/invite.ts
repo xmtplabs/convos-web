@@ -18,7 +18,10 @@ import {
 } from "@/gen/convos/v1/invite_pb";
 import type { AppData } from "@/utils/appData";
 import { bytesToHex, hexToBytes } from "@/utils/encryption";
+import { createLogger } from "@/utils/log";
 import { createClient } from "@/utils/xmtp";
+
+const log = createLogger("invite");
 
 const SALT = new TextEncoder().encode("ConvosInviteV1");
 const encoder = new TextEncoder();
@@ -117,6 +120,7 @@ export const createInviteSlug = (
   appData: AppData,
   inboxId: string,
 ): string => {
+  log.trace("createInviteSlug", { convoId: convo.id });
   // Strip 0x prefix from private key hex and decode to bytes
   const pkHex = convo.privateKey.startsWith("0x")
     ? convo.privateKey.slice(2)
@@ -166,6 +170,7 @@ export interface ParsedInvite {
 }
 
 export const parseInviteSlug = (slug: string): ParsedInvite => {
+  log.trace("parseInviteSlug");
   // Strip '*' separators
   const b64 = slug.replace(/\*/g, "");
 
@@ -197,6 +202,7 @@ export const parseInviteSlug = (slug: string): ParsedInvite => {
 };
 
 export const sendJoinRequest = async (parsed: ParsedInvite): Promise<Convo> => {
+  log.trace("sendJoinRequest", { creatorInboxId: parsed.creatorInboxId });
   const { creatorInboxId, slug, payload } = parsed;
   const privateKey = generatePrivateKey();
   const client = await createClient(privateKey);
@@ -204,6 +210,7 @@ export const sendJoinRequest = async (parsed: ParsedInvite): Promise<Convo> => {
     await client.conversations.sync();
     const dm = await client.conversations.createDm(creatorInboxId);
     await dm.sendText(slug);
+    log.info("join request sent", { creatorInboxId });
 
     const convo: Convo = {
       id: crypto.randomUUID(),
@@ -230,17 +237,23 @@ export const processDmInvite = async (
   tag: string,
   group: Group,
 ): Promise<boolean> => {
+  log.trace("processDmInvite", { senderInboxId: message.senderInboxId });
   if (!isText(message) || !message.content) {
     return false;
   }
   try {
     const parsed = parseInviteSlug(message.content);
     if (parsed.payload.tag !== tag) {
+      log.debug("processDmInvite: tag mismatch");
       return false;
     }
     await group.addMembers([message.senderInboxId]);
+    log.info("processDmInvite: member added", {
+      senderInboxId: message.senderInboxId,
+    });
     return true;
-  } catch {
+  } catch (err) {
+    log.debug("processDmInvite: not an invite message", err);
     return false;
   }
 };
@@ -250,8 +263,10 @@ export const processExistingDms = async (
   tag: string,
   group: Group,
 ): Promise<void> => {
+  log.trace("processExistingDms");
   await client.conversations.sync();
   const dms = await client.conversations.listDms();
+  log.debug("processExistingDms", { dmCount: dms.length });
   for (const dm of dms) {
     await dm.sync();
     const messages = await dm.messages();
@@ -262,6 +277,7 @@ export const processExistingDms = async (
 };
 
 export const resendJoinRequest = async (convo: Convo): Promise<void> => {
+  log.trace("resendJoinRequest", { convoId: convo.id });
   if (!convo.slug || !convo.creatorInboxId) {
     throw new Error("Missing slug or creatorInboxId for re-request");
   }
@@ -269,6 +285,7 @@ export const resendJoinRequest = async (convo: Convo): Promise<void> => {
   try {
     const dm = await client.conversations.createDm(convo.creatorInboxId);
     await dm.sendText(convo.slug);
+    log.info("join request re-sent", { convoId: convo.id });
   } finally {
     client.close();
   }

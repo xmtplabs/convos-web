@@ -8,6 +8,9 @@ import { useInboxId } from "@/hooks/useInboxId";
 import { Route } from "@/routes/_app/convo/$convoId";
 import { clearAvatars } from "@/utils/avatars";
 import { deleteConvo } from "@/utils/convos";
+import { createLogger } from "@/utils/log";
+
+const log = createLogger("db");
 
 type DeleteConvoModalProps = {
   opened: boolean;
@@ -25,6 +28,7 @@ export const DeleteConvoModal: React.FC<DeleteConvoModalProps> = ({
   const [deleting, setDeleting] = useState(false);
 
   const handleDelete = async () => {
+    log.trace("deleteConvoData", { convoId: convo.id });
     setDeleting(true);
     try {
       ctx.setConvo(null);
@@ -36,12 +40,14 @@ export const DeleteConvoModal: React.FC<DeleteConvoModalProps> = ({
         await opfs.deleteFile(dbPath);
         const remaining = await opfs.listFiles();
         if (remaining.includes(dbPath)) {
-          console.error(`Failed to delete OPFS database: ${dbPath}`);
+          log.error("failed to delete OPFS database", { dbPath });
         }
         opfs.close();
       }
+      log.info("convo data deleted", { convoId: convo.id });
       void navigate({ to: "/" });
-    } catch {
+    } catch (err) {
+      log.error("deleteConvoData failed", err);
       setDeleting(false);
     }
   };

@@ -1,8 +1,13 @@
 import { Box, Button, Paper, Stack, Text, Title } from "@mantine/core";
 import { Link } from "@tanstack/react-router";
 import { CenteredLayout } from "@/layouts/CenteredLayout";
+import { createLogger } from "@/utils/log";
+
+const log = createLogger("welcome");
 
 export const Welcome = () => {
+  log.trace("render");
+
   return (
     <CenteredLayout>
       <Paper p="xl" bg="gray.1" radius="md">

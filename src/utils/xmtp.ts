@@ -11,11 +11,14 @@ import {
 } from "@xmtp/browser-sdk";
 import { toBytes, type Hex } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
+import { createLogger } from "@/utils/log";
 import { version } from "../../package.json";
 
+const log = createLogger("xmtp");
 const xmtpEnv = import.meta.env.VITE_XMTP_ENV || "dev";
 
 export const createSigner = (privateKey: Hex): Signer => {
+  log.trace("createSigner");
   const account = privateKeyToAccount(privateKey);
   return {
     type: "EOA",
@@ -33,27 +36,34 @@ export const createSigner = (privateKey: Hex): Signer => {
 };
 
 export const createClient = async (privateKey: Hex) => {
+  log.trace("createClient", { env: xmtpEnv });
   const signer = createSigner(privateKey);
-  return await Client.create(signer, {
+  const client = await Client.create(signer, {
     env: xmtpEnv,
     disableDeviceSync: true,
     loggingLevel: LogLevel.Off,
     appVersion: `convos-web/${version}`,
   });
+  log.info("client created", { env: xmtpEnv });
+  return client;
 };
 
 export const buildClient = async (privateKey: Hex) => {
+  log.trace("buildClient", { env: xmtpEnv });
   const signer = createSigner(privateKey);
   const identifier = await signer.getIdentifier();
-  return Client.build(identifier, {
+  const client = await Client.build(identifier, {
     env: xmtpEnv,
     disableDeviceSync: true,
     loggingLevel: LogLevel.Off,
     appVersion: `convos-web/${version}`,
   });
+  log.info("client built", { env: xmtpEnv });
+  return client;
 };
 
 export const getContentString = (message: DecodedMessage) => {
+  log.trace("getContentString", { message });
   if (isText(message)) {
     return message.content;
   }
@@ -77,6 +87,7 @@ export const getGroupUpdatedStrings = (
   initiatorName?: string,
   profileNames?: Map<string, { name?: string }>,
 ): string[] => {
+  log.trace("getGroupUpdatedStrings", { content, initiatorName, profileNames });
   const who = initiatorName ?? "Somebody";
   const getName = (inboxId: string) =>
     profileNames?.get(inboxId)?.name ?? "Somebody";

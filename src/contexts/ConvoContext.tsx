@@ -9,12 +9,16 @@ import {
   type GroupMember,
 } from "@xmtp/browser-sdk";
 import { createContext, useCallback, useEffect, useRef, useState } from "react";
-import type { Convo } from "@/db";
+import { db, type Convo } from "@/db";
 import { useAppData } from "@/hooks/useAppData";
 import { usePermissions, type ConvoPermissions } from "@/hooks/usePermissions";
 import type { AppData, MemberProfile } from "@/utils/appData";
 import { updateConvo } from "@/utils/convos";
+import { setExplodeTimer } from "@/utils/explode";
+import { createLogger } from "@/utils/log";
 import { getContentString } from "@/utils/xmtp";
+
+const log = createLogger("sync");
 
 export type ReplyState = {
   messageId: string;
@@ -38,6 +42,13 @@ export type ConvoContextValue = {
   setReply: (reply: ReplyState | null) => void;
   permissions: ConvoPermissions | null;
   isLocked: boolean;
+  exploding: boolean;
+  explodeError: string | null;
+  clearExplodeError: () => void;
+  pendingExplode: { getDate: () => Date; immediate: boolean } | null;
+  explode: (getExpiresAt: () => Date, immediate?: boolean) => void;
+  confirmExplode: () => void;
+  cancelExplode: () => void;
   refresh: () => Promise<void>;
 };
 
@@ -67,17 +78,63 @@ export const ConvoProvider: React.FC<{
 
   const { permissions, refreshPermissions } = usePermissions(conversation);
   const [isLocked, setIsLocked] = useState(false);
+  const [exploding, setExploding] = useState(false);
+  const [explodeError, setExplodeError] = useState<string | null>(null);
+  const [pendingExplode, setPendingExplode] = useState<{
+    getDate: () => Date;
+    immediate: boolean;
+  } | null>(null);
+  const clearExplodeError = useCallback(() => {
+    setExplodeError(null);
+  }, []);
+
+  const explode = useCallback(
+    (getExpiresAt: () => Date, immediate?: boolean) => {
+      setPendingExplode({
+        getDate: getExpiresAt,
+        immediate: immediate ?? false,
+      });
+    },
+    [],
+  );
+
+  const confirmExplode = useCallback(() => {
+    if (!pendingExplode) return;
+    const expiresAt = pendingExplode.getDate();
+    log.info("confirmExplode", {
+      convoId: convo.id,
+      expiresAt: expiresAt.toISOString(),
+    });
+    setPendingExplode(null);
+    setExploding(true);
+    setExplodeError(null);
+    setExplodeTimer(conversation, convo.id, expiresAt)
+      .catch((err: unknown) => {
+        log.error("explode failed", err);
+        setExplodeError(
+          err instanceof Error ? err.message : "Failed to explode convo",
+        );
+      })
+      .finally(() => {
+        setExploding(false);
+      });
+  }, [pendingExplode, conversation, convo.id]);
+
+  const cancelExplode = useCallback(() => {
+    setPendingExplode(null);
+  }, []);
 
   const refresh = useCallback(async () => {
+    log.trace("refresh", { convoId: convoRef.current.id });
     // capture reference to convo so it stays in sync with conversation
     const current = convoRef.current;
 
     const isActive = await conversation.isActive();
     if (!isActive) {
+      log.debug("refresh: conversation not active");
       return;
     }
 
-    setMessagesLoading(true);
     await conversation.sync();
 
     const msgs = await conversation.messages();
@@ -125,10 +182,36 @@ export const ConvoProvider: React.FC<{
     }
   }, [isLocked]);
 
+  // sync explode state from appData to local DB
+  useEffect(() => {
+    const current = convoRef.current;
+    if (
+      appData?.expiresAtUnix != null &&
+      Number(appData.expiresAtUnix) !== current.expiresAtUnix
+    ) {
+      const unix = Number(appData.expiresAtUnix);
+      log.info("syncing expiresAt from appData", {
+        convoId: current.id,
+        unix,
+      });
+      if (unix <= Math.floor(Date.now() / 1000)) {
+        // Already expired — delete immediately instead of waiting for worker
+        log.info("already expired during sync, deleting", {
+          convoId: current.id,
+        });
+        void db.avatars.where("convoId").equals(current.id).delete();
+        void db.convos.delete(current.id);
+      } else {
+        void updateConvo(current.id, { expiresAtUnix: unix });
+      }
+    }
+  }, [appData?.expiresAtUnix]);
+
   useEffect(() => {
     let cancelled = false;
 
     const init = async () => {
+      log.trace("starting message stream");
       await refresh();
 
       if (cancelled) {
@@ -181,6 +264,13 @@ export const ConvoProvider: React.FC<{
         messagesLoading,
         permissions,
         isLocked,
+        exploding,
+        explodeError,
+        clearExplodeError,
+        pendingExplode,
+        explode,
+        confirmExplode,
+        cancelExplode,
         sending,
         setSending,
         syncing,

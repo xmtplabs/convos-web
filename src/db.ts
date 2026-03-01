@@ -1,4 +1,7 @@
 import Dexie, { type EntityTable, type Table } from "dexie";
+import { createLogger } from "@/utils/log";
+
+const log = createLogger("db");
 
 export type Convo = {
   description?: string;
@@ -15,6 +18,7 @@ export type Convo = {
   slug?: string;
   faved?: boolean;
   locked?: boolean;
+  expiresAtUnix?: number;
 };
 
 export type Profile = {
@@ -46,5 +50,7 @@ db.version(1).stores({
   profiles: "id",
   avatars: "[convoId+inboxId], convoId",
 });
+
+log.trace("database initialized");
 
 export { db };

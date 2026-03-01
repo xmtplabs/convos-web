@@ -2,39 +2,92 @@ import { Button, Loader, Paper, Stack, Text } from "@mantine/core";
 import { Outlet, useNavigate } from "@tanstack/react-router";
 import { useLiveQuery } from "dexie-react-hooks";
 import { SendIcon } from "lucide-react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useContext, useEffect, useRef, useState } from "react";
 import { ConvoHeader } from "@/components/convos/ConvoHeader";
 import { Composer } from "@/components/messages/Composer";
 import { MessageList } from "@/components/messages/MessageList";
 import { LoadingMessage } from "@/components/shared/LoadingMessage";
-import { ConvoProvider } from "@/contexts/ConvoContext";
+import { Modal } from "@/components/shared/Modal";
+import { ConvoContext, ConvoProvider } from "@/contexts/ConvoContext";
+import { XmtpContext } from "@/contexts/XmtpContext";
 import { db } from "@/db";
-import { useClient } from "@/hooks/useClient";
 import { useMessages } from "@/hooks/useMessages";
 import { ConvoLayout } from "@/layouts/ConvoLayout";
 import { Route } from "@/routes/_app/convo/$convoId";
 import { resendJoinRequest } from "@/utils/invite";
+import { createLogger } from "@/utils/log";
+
+const log = createLogger("convo");
 
 const ConvoContent = () => {
   const { messages, messagesLoading } = useMessages();
+  const ctx = useContext(ConvoContext);
 
   return (
-    <ConvoLayout
-      header={<ConvoHeader />}
-      footer={<Composer />}
-      withScrollArea={false}>
-      {messagesLoading ? (
-        <LoadingMessage message="Connecting..." />
-      ) : (
-        <MessageList messages={messages} />
-      )}
-    </ConvoLayout>
+    <>
+      <ConvoLayout
+        header={<ConvoHeader />}
+        footer={<Composer />}
+        loading={ctx?.exploding}
+        withScrollArea={false}>
+        {messagesLoading ? (
+          <LoadingMessage message="Connecting..." />
+        ) : (
+          <MessageList messages={messages} />
+        )}
+      </ConvoLayout>
+      <Modal
+        opened={ctx?.pendingExplode != null}
+        onClose={() => ctx?.cancelExplode()}
+        title={
+          ctx?.pendingExplode?.immediate ? "Explode now?" : "Light the fuse?"
+        }>
+        <Stack gap="md">
+          <Text size="sm">
+            {ctx?.pendingExplode?.immediate
+              ? "This convo will be destroyed immediately for everyone."
+              : "The countdown can\u2019t be changed or cancelled once it starts."}
+          </Text>
+          <Stack gap="xxs">
+            <Button
+              variant="filled"
+              color="red"
+              size="md"
+              radius="lg"
+              onClick={() => ctx?.confirmExplode()}>
+              {ctx?.pendingExplode?.immediate ? "Explode" : "Start"}
+            </Button>
+            <Button
+              variant="default"
+              size="md"
+              radius="lg"
+              onClick={() => ctx?.cancelExplode()}>
+              Cancel
+            </Button>
+          </Stack>
+        </Stack>
+      </Modal>
+      <Modal
+        opened={ctx?.explodeError != null}
+        onClose={() => ctx?.clearExplodeError()}
+        title="Explode Failed">
+        <Stack gap="md">
+          <Text size="sm">{ctx?.explodeError}</Text>
+          <Button
+            variant="default"
+            size="md"
+            radius="lg"
+            onClick={() => ctx?.clearExplodeError()}>
+            OK
+          </Button>
+        </Stack>
+      </Modal>
+    </>
   );
 };
 
-const PendingConvo = () => {
+const PendingConvo: React.FC<{ isChecking: boolean }> = ({ isChecking }) => {
   const convo = Route.useLoaderData();
-  const ctx = useClient();
   const [resending, setResending] = useState(false);
   const [resent, setResent] = useState(false);
 
@@ -45,13 +98,13 @@ const PendingConvo = () => {
       .then(() => {
         setResent(true);
       })
-      .catch(() => {})
+      .catch((err: unknown) => {
+        log.error("resend join request failed", err);
+      })
       .finally(() => {
         setResending(false);
       });
   }, [convo]);
-
-  const isChecking = ctx.status === "loading";
 
   return (
     <ConvoLayout
@@ -102,12 +155,12 @@ export const Convo = () => {
     [loaderConvo.id],
   );
   const convo = liveConvo ?? loaderConvo;
-  const ctx = useClient();
+  const ctx = useContext(XmtpContext);
   const navigate = useNavigate();
   const hasLoaded = useRef(false);
-  const conversationRef = useRef(ctx.conversation);
+  const conversationRef = useRef(ctx?.conversation ?? null);
 
-  if (ctx.conversation) {
+  if (ctx?.conversation) {
     conversationRef.current = ctx.conversation;
   }
   if (liveConvo) {
@@ -116,16 +169,23 @@ export const Convo = () => {
 
   useEffect(() => {
     if (hasLoaded.current && !liveConvo) {
+      log.info("convo deleted, navigating home");
       void navigate({ to: "/" });
     }
   }, [liveConvo, navigate]);
 
   useEffect(() => {
-    ctx.setConvo(loaderConvo);
+    log.trace("mounting", { convoId: loaderConvo.id });
+    ctx?.setConvo(loaderConvo);
     return () => {
-      ctx.setConvo(null);
+      log.trace("unmounting", { convoId: loaderConvo.id });
+      ctx?.setConvo(null);
     };
-  }, [loaderConvo.id, ctx.setConvo]);
+  }, [loaderConvo.id, ctx?.setConvo]);
+
+  if (!ctx) {
+    return <LoadingMessage message="Connecting..." />;
+  }
 
   // keep showing the convo even if status briefly changes
   const conversation = ctx.conversation ?? conversationRef.current;
@@ -141,7 +201,7 @@ export const Convo = () => {
   if (loaderConvo.status === "pending") {
     return (
       <>
-        <PendingConvo />
+        <PendingConvo isChecking={ctx.status === "loading"} />
         <Outlet />
       </>
     );

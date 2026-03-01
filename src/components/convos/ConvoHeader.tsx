@@ -1,6 +1,7 @@
 import {
   ActionIcon,
   Avatar,
+  Badge,
   Group,
   Menu,
   Stack,
@@ -23,47 +24,70 @@ import { ConvoMenu } from "@/components/convos/ConvoMenu";
 import { LinkActionIcon } from "@/components/shared/Button";
 import { useAvatar } from "@/hooks/useAvatar";
 import { useConvo } from "@/hooks/useConvo";
+import { useExplodeCountdown } from "@/hooks/useExplodeCountdown";
 import { removeGroupImage, updateGroupImage } from "@/utils/appData";
 import { validateFile } from "@/utils/attachment";
 import { GROUP_IMAGE_INBOX_ID } from "@/utils/avatars";
+import { createLogger } from "@/utils/log";
+
+const log = createLogger("convo-header");
 
 export const ConvoHeader: React.FC = () => {
-  const { convo, conversation, members, permissions, sync } = useConvo();
+  const { appData, convo, conversation, explode, members, permissions, sync } =
+    useConvo();
   const isPending = convo.status === "pending";
+  const explodeCountdown = useExplodeCountdown(convo.expiresAtUnix);
   const groupImage = useAvatar(convo.id, GROUP_IMAGE_INBOX_ID);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  log.trace("render", { convoId: convo.id, name: convo.name });
 
   const handleFileSelect = useCallback(
     async (e: React.ChangeEvent<HTMLInputElement>) => {
       const file = e.target.files?.[0];
       if (!file) {
+        log.debug("handleFileSelect: no file chosen");
         return;
       }
+      log.info("handleFileSelect: file chosen", {
+        name: file.name,
+        size: file.size,
+        type: file.type,
+      });
       e.target.value = "";
 
       const validation = validateFile(file);
       if (!validation.valid) {
+        log.warn("handleFileSelect: validation failed", { name: file.name });
         return;
       }
 
       if (!(conversation instanceof XmtpGroup)) {
+        log.debug("handleFileSelect: not a group conversation");
         return;
       }
 
+      log.info("handleFileSelect: uploading group image", {
+        convoId: convo.id,
+      });
       const imageData = new Uint8Array(await file.arrayBuffer());
       await updateGroupImage(conversation, imageData);
       await sync();
+      log.info("handleFileSelect: upload complete", { convoId: convo.id });
     },
     [conversation, sync],
   );
 
   const handleRemoveImage = useCallback(async () => {
+    log.info("handleRemoveImage: removing group image", { convoId: convo.id });
     if (!(conversation instanceof XmtpGroup)) {
+      log.debug("handleRemoveImage: not a group conversation");
       return;
     }
     await removeGroupImage(conversation);
     await sync();
-  }, [conversation, sync]);
+    log.info("handleRemoveImage: image removed", { convoId: convo.id });
+  }, [conversation, sync, convo.id]);
   const hasImage = groupImage !== null;
   const canManageImage = !isPending && (permissions?.canEditImage ?? false);
 
@@ -117,6 +141,15 @@ export const ConvoHeader: React.FC = () => {
             <Text fw={500} size="md" truncate flex="1 1 auto">
               {convo.name}
             </Text>
+            {explodeCountdown && (
+              <Badge
+                color="red"
+                variant="light"
+                size="md"
+                style={{ flexShrink: 0 }}>
+                {explodeCountdown}
+              </Badge>
+            )}
           </Group>
           <Group gap="xxxs" align="center" wrap="nowrap">
             <Text size="xs" c="dimmed" truncate>
@@ -137,7 +170,12 @@ export const ConvoHeader: React.FC = () => {
       </Group>
       {!isPending && (
         <Group align="center" gap="md" flex="0 0 auto">
-          <ConvoMenu convo={convo} canLock={permissions?.canLock}>
+          <ConvoMenu
+            convo={convo}
+            appData={appData}
+            canLock={permissions?.canLock}
+            canExplode={permissions?.canRemoveMembers}
+            onExplode={explode}>
             <ActionIcon variant="transparent">
               <EllipsisIcon size={24} />
             </ActionIcon>

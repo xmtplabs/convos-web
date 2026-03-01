@@ -2,7 +2,10 @@ import { db } from "@/db";
 import type { AppData } from "@/utils/appData";
 import { getPresignedUrl } from "@/utils/attachment";
 import { bytesToHex, decrypt, encrypt } from "@/utils/encryption";
+import { createLogger } from "@/utils/log";
 import { pinata } from "@/utils/pinata";
+
+const log = createLogger("avatars");
 
 export const GROUP_IMAGE_INBOX_ID = "__group__";
 
@@ -19,6 +22,7 @@ export const syncAvatars = async (
   appData: AppData,
   signal?: AbortSignal,
 ): Promise<void> => {
+  log.trace("syncAvatars", { convoId, profileCount: appData.profiles.length });
   const keyBytes = appData.imageEncryptionKey;
   if (!keyBytes || keyBytes.length === 0) {
     return;
@@ -33,6 +37,7 @@ export const syncAvatars = async (
         return;
       }
       if (signal?.aborted) {
+        log.info("avatar sync aborted", { convoId, inboxId: profile.inboxId });
         return;
       }
 
@@ -42,13 +47,32 @@ export const syncAvatars = async (
         return;
       }
 
+      log.info("fetching avatar", {
+        convoId,
+        inboxId: profile.inboxId,
+        url: img.url,
+      });
       const response = await fetch(img.url, { signal });
-      const ciphertext = new Uint8Array(await response.arrayBuffer());
 
-      if (signal?.aborted) {
+      if (!response.ok) {
+        log.error("failed to fetch avatar", {
+          convoId,
+          inboxId: profile.inboxId,
+          url: img.url,
+          status: response.status,
+          statusText: response.statusText,
+        });
         return;
       }
 
+      const ciphertext = new Uint8Array(await response.arrayBuffer());
+
+      if (signal?.aborted) {
+        log.info("avatar sync aborted", { convoId, inboxId: profile.inboxId });
+        return;
+      }
+
+      log.info("decrypting avatar");
       const plaintext = await decrypt(
         ciphertext,
         keyHex,
@@ -57,11 +81,13 @@ export const syncAvatars = async (
       );
 
       if (signal?.aborted) {
+        log.info("avatar sync aborted", { convoId, inboxId: profile.inboxId });
         return;
       }
 
       const dataUrl = uint8ToDataUrl(plaintext);
 
+      log.info("saving avatar", { convoId, inboxId: profile.inboxId, dataUrl });
       await db.avatars.put({
         convoId,
         inboxId: profile.inboxId,
@@ -75,17 +101,39 @@ export const syncAvatars = async (
   // Sync group image
   const groupImg = appData.encryptedGroupImage;
   if (!groupImg) {
+    log.info("deleting group image", {
+      convoId,
+      inboxId: GROUP_IMAGE_INBOX_ID,
+    });
     await db.avatars.delete([convoId, GROUP_IMAGE_INBOX_ID]);
   } else {
     try {
       if (signal?.aborted) {
+        log.info("group image sync aborted", {
+          convoId,
+          inboxId: GROUP_IMAGE_INBOX_ID,
+        });
         return;
       }
       const existing = await db.avatars.get([convoId, GROUP_IMAGE_INBOX_ID]);
       if (!existing || existing.sourceUrl !== groupImg.url) {
         const response = await fetch(groupImg.url, { signal });
+        if (!response.ok) {
+          log.error("failed to fetch group image", {
+            convoId,
+            inboxId: GROUP_IMAGE_INBOX_ID,
+            url: groupImg.url,
+            status: response.status,
+            statusText: response.statusText,
+          });
+          return;
+        }
         const ciphertext = new Uint8Array(await response.arrayBuffer());
         if (signal?.aborted) {
+          log.info("group image sync aborted", {
+            convoId,
+            inboxId: GROUP_IMAGE_INBOX_ID,
+          });
           return;
         }
         const plaintext = await decrypt(
@@ -95,9 +143,18 @@ export const syncAvatars = async (
           bytesToHex(groupImg.nonce),
         );
         if (signal?.aborted) {
+          log.info("group image sync aborted", {
+            convoId,
+            inboxId: GROUP_IMAGE_INBOX_ID,
+          });
           return;
         }
         const dataUrl = uint8ToDataUrl(plaintext);
+        log.info("saving group image", {
+          convoId,
+          inboxId: GROUP_IMAGE_INBOX_ID,
+          dataUrl,
+        });
         await db.avatars.put({
           convoId,
           inboxId: GROUP_IMAGE_INBOX_ID,
@@ -105,8 +162,8 @@ export const syncAvatars = async (
           sourceUrl: groupImg.url,
         });
       }
-    } catch {
-      // Group image sync failure is non-fatal
+    } catch (err) {
+      log.warn("group image sync failed (non-fatal)", err);
     }
   }
 };

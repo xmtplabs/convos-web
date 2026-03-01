@@ -13,6 +13,9 @@ import { Modal } from "@/components/shared/Modal";
 import { useConvo } from "@/hooks/useConvo";
 import { useInboxId } from "@/hooks/useInboxId";
 import { createInviteSlug, getInviteUrl } from "@/utils/invite";
+import { createLogger } from "@/utils/log";
+
+const log = createLogger("invite");
 
 type InviteModalProps = {
   opened: boolean;
@@ -27,16 +30,33 @@ export const InviteModal: React.FC<InviteModalProps> = ({
   const inboxId = useInboxId();
   const [inviteUrl, setInviteUrl] = useState<string | null>(null);
 
+  log.trace("render", {
+    convoId: convo.id,
+    hasInviteUrl: !!inviteUrl,
+  });
+
   useEffect(() => {
     if (!opened || !appData) {
+      log.debug("invite link generation skipped", {
+        opened,
+        hasAppData: !!appData,
+      });
       return;
     }
     const slug = createInviteSlug(convo, appData, inboxId);
-    setInviteUrl(getInviteUrl(slug));
+    const url = getInviteUrl(slug);
+    log.info("invite link generated", { convoId: convo.id });
+    setInviteUrl(url);
   }, [opened, convo, appData, inboxId]);
 
   return (
-    <Modal opened={opened} onClose={onClose} title="Invite">
+    <Modal
+      opened={opened}
+      onClose={() => {
+        log.info("invite modal closed", { convoId: convo.id });
+        onClose();
+      }}
+      title="Invite">
       <Stack gap="md" align="center">
         {inviteUrl ? (
           <>
@@ -53,7 +73,10 @@ export const InviteModal: React.FC<InviteModalProps> = ({
                   <Button
                     variant="light"
                     radius="xl"
-                    onClick={copy}
+                    onClick={() => {
+                      log.info("invite link copied");
+                      copy();
+                    }}
                     leftSection={
                       copied ? <CheckIcon size={16} /> : <CopyIcon size={16} />
                     }>

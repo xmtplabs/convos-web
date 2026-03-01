@@ -1,10 +1,11 @@
-import { Avatar, Group, Stack, Text } from "@mantine/core";
+import { Avatar, Badge, Group, Stack, Text } from "@mantine/core";
 import { useInterval } from "@mantine/hooks";
 import { Link } from "@tanstack/react-router";
 import { ImageIcon, StarIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import type { Convo } from "@/db";
 import { useAvatar } from "@/hooks/useAvatar";
+import { useExplodeCountdown } from "@/hooks/useExplodeCountdown";
 import { GROUP_IMAGE_INBOX_ID } from "@/utils/avatars";
 import classes from "./ConvoListItem.module.css";
 
@@ -54,6 +55,7 @@ export const ConvoListItem: React.FC<ConvoListItemProps> = ({
   selected,
 }) => {
   const time = useRelativeTime(convo);
+  const explodeCountdown = useExplodeCountdown(convo.expiresAtUnix);
   const groupImage = useAvatar(convo.id, GROUP_IMAGE_INBOX_ID);
 
   return (
@@ -80,6 +82,15 @@ export const ConvoListItem: React.FC<ConvoListItemProps> = ({
             <Text truncate flex="1 1 auto">
               {convo.name}
             </Text>
+            {explodeCountdown && (
+              <Badge
+                color="red"
+                variant="light"
+                size="sm"
+                style={{ flexShrink: 0 }}>
+                {explodeCountdown}
+              </Badge>
+            )}
           </Group>
           <Text size="xs" c="dimmed" truncate>
             {time}

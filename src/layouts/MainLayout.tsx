@@ -1,4 +1,7 @@
+import { createLogger } from "@/utils/log";
 import classes from "./MainLayout.module.css";
+
+const log = createLogger("layout");
 
 type MainLayoutProps = React.PropsWithChildren & {
   aside?: React.ReactNode;
@@ -10,6 +13,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
   aside,
   opened = false,
 }) => {
+  log.trace("render", { opened });
   return (
     <div className={classes.root} data-state={opened ? "opened" : "closed"}>
       <aside className={classes.aside}>
