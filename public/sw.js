@@ -12,6 +12,17 @@ self.addEventListener("fetch", (e) => {
   if (url.origin !== self.location.origin) return;
   if (request.method !== "GET") return;
 
+  // skip dev server files
+  if (
+    url.pathname.startsWith("/src/") ||
+    url.pathname.startsWith("/node_modules/") ||
+    url.pathname.startsWith("/@") ||
+    url.pathname.startsWith("/__vite") ||
+    url.pathname.startsWith("/__tsd/")
+  ) {
+    return;
+  }
+
   // Hashed assets (e.g. /assets/index-abc123.js) — cache-first
   // New builds produce new filenames, so stale entries are never served.
   if (url.pathname.startsWith("/assets/")) {
