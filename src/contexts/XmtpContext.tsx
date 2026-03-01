@@ -99,12 +99,12 @@ export const XmtpProvider: React.FC<{
       cancelled = true;
     };
 
-    // Wait for previous setup to finish before starting a new one
+    // wait for previous setup to finish before starting a new one
     const prevSetup = setupRef.current;
     setupRef.current = (async () => {
       await prevSetup.catch(() => {});
 
-      // Close previous streams and client after setup has settled
+      // close previous streams and client after setup has settled
       if (groupStreamRef.current) {
         void groupStreamRef.current.end();
         groupStreamRef.current = null;
@@ -139,7 +139,7 @@ export const XmtpProvider: React.FC<{
       clientRef.current = newClient;
       log.info("setup: client ready", { convoId: convo.id });
 
-      // Pending convos: watch for being added to a matching group
+      // pending convos: watch for being added to a matching group
       if (convo.status === "pending") {
         log.trace("setup: pending convo, watching for group match");
         const resolveIfMatch = async (group: Group): Promise<boolean> => {
@@ -159,7 +159,7 @@ export const XmtpProvider: React.FC<{
           const { status, slug, creatorInboxId, ...rest } = convo;
           await db.convos.put({ ...rest, xmtpId: group.id });
 
-          // Re-fetch conversation from client to get a properly bound object
+          // re-fetch conversation from client to get a properly bound object
           await newClient.conversations.sync();
           const conversation =
             await newClient.conversations.getConversationById(group.id);
@@ -174,7 +174,7 @@ export const XmtpProvider: React.FC<{
           return true;
         };
 
-        // Start stream first so no welcome messages are missed
+        // start stream first so no welcome messages are missed
         const stream = await newClient.conversations.streamGroups({
           onValue(group) {
             void resolveIfMatch(group).then((matched) => {
@@ -192,7 +192,7 @@ export const XmtpProvider: React.FC<{
         }
         groupStreamRef.current = stream;
 
-        // Then check existing groups (added before stream started)
+        // then check existing groups (added before stream started)
         const consentStates = [ConsentState.Unknown, ConsentState.Allowed];
         const groups = await newClient.conversations.listGroups({
           consentStates,
@@ -205,7 +205,7 @@ export const XmtpProvider: React.FC<{
           }
         }
 
-        // No match found — show waiting UI while streaming continues
+        // no match found — show waiting UI while streaming continues
         setState({
           status: "connected",
           client: newClient,
@@ -226,7 +226,7 @@ export const XmtpProvider: React.FC<{
         log.info("setup: ready", { convoId: convo.id, xmtpId: convo.xmtpId });
         setState({ status: "ready", client: newClient, conversation });
 
-        // Start DM invite processing for creator convos
+        // start DM invite processing for creator convos
         if (convo.tag && conversation instanceof Group) {
           log.trace("setup: starting DM invite stream");
           const tag = convo.tag;
@@ -314,7 +314,7 @@ export const XmtpProvider: React.FC<{
     if (conversation) {
       setState({ status: "ready", client, conversation });
 
-      // Start DM invite processing for join requests
+      // start DM invite processing for join requests
       const stream = await client.conversations.streamAllDmMessages({
         disableSync: true,
         onValue(value) {

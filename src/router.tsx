@@ -4,7 +4,7 @@ import { routeTree } from "./routeTree.gen";
 
 const log = createLogger("router");
 
-// Create a new router instance
+// create a new router instance
 export const getRouter = () => {
   log.trace("creating");
   const router = createRouter({
@@ -34,7 +34,7 @@ export const getRouter = () => {
     log.info("resolved", toLocation.pathname);
   });
 
-  // Watchdog: if router hasn't resolved within 5s, dump state (client-only)
+  // watchdog: if router hasn't resolved within 5s, dump state (client-only)
   if (typeof window !== "undefined") {
     let resolved = false;
     router.subscribe("onResolved", () => {

@@ -41,7 +41,7 @@ export const syncAvatars = async (
         return;
       }
 
-      // Skip if we already have this exact sourceUrl cached
+      // skip if we already have this exact sourceUrl cached
       const existing = await db.avatars.get([convoId, profile.inboxId]);
       if (existing && existing.sourceUrl === img.url) {
         return;
@@ -98,7 +98,7 @@ export const syncAvatars = async (
 
   await Promise.allSettled(tasks);
 
-  // Sync group image
+  // sync group image
   const groupImg = appData.encryptedGroupImage;
   if (!groupImg) {
     log.info("deleting group image", {

@@ -142,7 +142,7 @@ export const ConvoProvider: React.FC<{
     setMessagesLoading(false);
     setMembers(await conversation.members());
 
-    // Sync conversation metadata and last message to local DB
+    // sync conversation metadata and last message to local DB
     const updates: Partial<Convo> = {};
     if (conversation instanceof Group) {
       const name = conversation.name;
@@ -195,7 +195,7 @@ export const ConvoProvider: React.FC<{
         unix,
       });
       if (unix <= Math.floor(Date.now() / 1000)) {
-        // Already expired — delete immediately instead of waiting for worker
+        // already expired — delete immediately instead of waiting for worker
         log.info("already expired during sync, deleting", {
           convoId: current.id,
         });

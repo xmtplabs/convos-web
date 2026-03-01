@@ -18,14 +18,14 @@ export const setExplodeTimer = async (
 
   const expiresAtUnix = Math.floor(expiresAt.getTime() / 1000);
 
-  // Update local Dexie first for instant UI feedback
+  // update local Dexie first for instant UI feedback
   await updateConvo(convoId, { expiresAtUnix });
 
-  // Sync to other members via XMTP appData (network call)
+  // sync to other members via XMTP appData (network call)
   await updateExpiresAt(conversation, BigInt(expiresAtUnix));
   log.info("explode timer set", { convoId, expiresAtUnix });
 
-  // If already expired, delete immediately instead of waiting for worker
+  // if already expired, delete immediately instead of waiting for worker
   if (expiresAtUnix <= Math.floor(Date.now() / 1000)) {
     log.info("already expired, deleting immediately", { convoId });
     await db.avatars.where("convoId").equals(convoId).delete();

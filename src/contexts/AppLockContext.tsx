@@ -21,7 +21,7 @@ export const AppLockProvider: React.FC<{
   const { lockState, acquireLock } = useAppLock();
   log.debug("lockState", { lockState });
 
-  // Acquire the lock when the app mounts
+  // acquire the lock when the app mounts
   const mountedRef = useRef(false);
   useEffect(() => {
     if (!mountedRef.current) {

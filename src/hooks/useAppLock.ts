@@ -112,7 +112,7 @@ export const useAppLock = (onLockLost?: () => void) => {
   }, [lockState, onLockLost]);
 
   // heartbeat to keep lock alive when active
-  // Writes directly to localStorage to avoid triggering React re-renders
+  // writes directly to localStorage to avoid triggering React re-renders
   // in the active tab. Other tabs pick up the change via the storage event.
   useEffect(() => {
     if (lockState !== "active" || lockId !== lockIdRef.current) {

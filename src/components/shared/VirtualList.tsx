@@ -97,7 +97,7 @@ const VirtualList = <T,>(
     };
   }, [scrollContainerRef, updateScrollbar]);
 
-  // Run on every render to catch virtualizer measurement changes
+  // run on every render to catch virtualizer measurement changes
   useEffect(() => {
     updateScrollbar();
   });

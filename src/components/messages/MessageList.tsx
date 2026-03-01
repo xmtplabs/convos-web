@@ -139,7 +139,7 @@ const buildReactionMap = (
   const map: ReactionMap = new Map();
 
   for (const msg of messages) {
-    // Process reactions embedded on each message (from initial fetch)
+    // process reactions embedded on each message (from initial fetch)
     if (!isReaction(msg) && msg.reactions.length > 0) {
       for (const r of msg.reactions) {
         const reaction = r.content as Reaction;
@@ -155,7 +155,7 @@ const buildReactionMap = (
       }
     }
 
-    // Process standalone reaction messages (from streaming)
+    // process standalone reaction messages (from streaming)
     if (isReaction(msg)) {
       const reaction = msg.content as Reaction;
       if (reaction.reference) {
@@ -182,7 +182,7 @@ const buildRows = (
   const messageIdToIndex = new Map<string, number>();
   let lastMinuteKey = "";
 
-  // Pre-scan: find the last group update with unrecognized metadata changes
+  // pre-scan: find the last group update with unrecognized metadata changes
   // (the one that set the explode timer) so we only show one notification
   let explodeMessageId: string | null = null;
   if (expiresAtUnix != null) {
@@ -235,7 +235,7 @@ const buildRows = (
     });
   }
 
-  // Compute isFirstInGroup / isLastInGroup based on adjacent rows.
+  // compute isFirstInGroup / isLastInGroup based on adjacent rows.
   for (let i = 0; i < rows.length; i++) {
     const row = rows[i];
     if (row.type !== "message") {

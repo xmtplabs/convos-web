@@ -48,7 +48,7 @@ export const Quickname: React.FC<QuicknameProps> = ({ onDirtyChange }) => {
     ? null
     : (pendingPreview ?? decryptedAvatarSrc);
 
-  // Sync state from profile on load/change
+  // sync state from profile on load/change
   useEffect(() => {
     if (profile) {
       setEditingName(profile.name ?? "");
@@ -92,7 +92,7 @@ export const Quickname: React.FC<QuicknameProps> = ({ onDirtyChange }) => {
       setAvatarCleared(false);
       const url = URL.createObjectURL(file);
       setPendingPreview(url);
-      // Reset input so the same file can be re-selected
+      // reset input so the same file can be re-selected
       e.target.value = "";
     },
     [],

@@ -31,6 +31,7 @@ Private messaging web client built on the XMTP protocol.
 - No unused variables (prefix with `_` if intentionally unused)
 - Prettier: double quotes, trailing commas, 80 char width, no tabs
 - ESLint: strict type-checked rules from typescript-eslint
+- Comments: single-line `//` comments start with lowercase (e.g. `// sync data to local DB`)
 
 ## Logging
 

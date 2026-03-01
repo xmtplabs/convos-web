@@ -69,7 +69,7 @@ const encryptConversationToken = (
   const sealed = cipher.encrypt(plaintext);
   // sealed = ciphertext || authTag (16 bytes)
 
-  // Output: version(1) | nonce(12) | sealed(ciphertext + authTag)
+  // output: version(1) | nonce(12) | sealed(ciphertext + authTag)
   const result = new Uint8Array(1 + 12 + sealed.length);
   result[0] = 0x01; // version
   result.set(nonce, 1);
@@ -100,11 +100,11 @@ const signPayload = (
  * Base64url encode without padding, inserting '*' every 300 chars.
  */
 const toUrlSafeSlug = (data: Uint8Array): string => {
-  // Convert to base64, then to base64url
+  // convert to base64, then to base64url
   let b64 = btoa(String.fromCharCode(...data));
   b64 = b64.replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
 
-  // Insert '*' every 300 characters
+  // insert '*' every 300 characters
   if (b64.length <= 300) {
     return b64;
   }
@@ -121,20 +121,20 @@ export const createInviteSlug = (
   inboxId: string,
 ): string => {
   log.trace("createInviteSlug", { convoId: convo.id });
-  // Strip 0x prefix from private key hex and decode to bytes
+  // strip 0x prefix from private key hex and decode to bytes
   const pkHex = convo.privateKey.startsWith("0x")
     ? convo.privateKey.slice(2)
     : convo.privateKey;
   const privateKeyBytes = hexToBytes(pkHex);
 
-  // Encrypt conversation token
+  // encrypt conversation token
   const conversationToken = encryptConversationToken(
     convo.xmtpId,
     privateKeyBytes,
     inboxId,
   );
 
-  // Build InvitePayload
+  // build InvitePayload
   const payload = create(InvitePayloadSchema, {
     conversationToken,
     creatorInboxId: hexToBytes(inboxId),
@@ -146,10 +146,10 @@ export const createInviteSlug = (
 
   const payloadBytes = toBinary(InvitePayloadSchema, payload);
 
-  // Sign
+  // sign
   const signature = signPayload(payloadBytes, privateKeyBytes);
 
-  // Wrap in SignedInvite
+  // wrap in SignedInvite
   const signedInvite = create(SignedInviteSchema, {
     payload: payloadBytes,
     signature,
@@ -171,31 +171,31 @@ export interface ParsedInvite {
 
 export const parseInviteSlug = (slug: string): ParsedInvite => {
   log.trace("parseInviteSlug");
-  // Strip '*' separators
+  // strip '*' separators
   const b64 = slug.replace(/\*/g, "");
 
-  // Base64url → standard base64
+  // base64url → standard base64
   let standard = b64.replace(/-/g, "+").replace(/_/g, "/");
-  // Add padding
+  // add padding
   const pad = standard.length % 4;
   if (pad) {
     standard += "=".repeat(4 - pad);
   }
 
-  // Decode to bytes
+  // decode to bytes
   const binary = atob(standard);
   const bytes = new Uint8Array(binary.length);
   for (let i = 0; i < binary.length; i++) {
     bytes[i] = binary.charCodeAt(i);
   }
 
-  // Deserialize SignedInvite
+  // deserialize SignedInvite
   const signedInvite = fromBinary(SignedInviteSchema, bytes);
 
-  // Deserialize InvitePayload from signedInvite.payload
+  // deserialize InvitePayload from signedInvite.payload
   const payload = fromBinary(InvitePayloadSchema, signedInvite.payload);
 
-  // Convert creatorInboxId bytes to hex string
+  // convert creatorInboxId bytes to hex string
   const creatorInboxId = bytesToHex(payload.creatorInboxId);
 
   return { payload, creatorInboxId, slug };

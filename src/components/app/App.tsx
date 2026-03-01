@@ -65,8 +65,8 @@ export const App = () => {
       return;
     }
 
-    // If a controller already exists, this isn't a fresh install.
-    // Any future controllerchange means a new SW version took over.
+    // if a controller already exists, this isn't a fresh install.
+    // any future controllerchange means a new SW version took over.
     const hadController = !!navigator.serviceWorker.controller;
 
     const onControllerChange = () => {

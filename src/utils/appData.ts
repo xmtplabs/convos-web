@@ -98,7 +98,7 @@ const decode = async (data: string): Promise<ConversationCustomMetadata> => {
 
   let protobuf: Uint8Array;
   if (binary[0] === COMPRESSION_MARKER) {
-    // Skip marker (1 byte) + original size (4 bytes)
+    // skip marker (1 byte) + original size (4 bytes)
     const compressed = binary.slice(5);
     protobuf = await decompress(compressed);
   } else {
