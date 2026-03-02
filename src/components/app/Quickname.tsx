@@ -212,6 +212,8 @@ export const Quickname: React.FC<QuicknameProps> = ({ onDirtyChange }) => {
         onKeyDown={(e) => {
           if (e.key === "Enter" && isDirty && !saving) {
             void handleSave();
+          } else if (e.key === "Escape" && isDirty) {
+            handleUndo();
           }
         }}
         leftSectionPointerEvents="all"
