@@ -78,7 +78,9 @@ export const ConvoProvider: React.FC<{
   const [reply, setReply] = useState<ReplyState | null>(null);
   const location = useLocation();
   const navigate = useNavigate();
-  const detailsOpen = location.pathname.endsWith("/details");
+  const detailsOpen = location.pathname.startsWith(
+    `/convo/${convo.id}/details`,
+  );
   const toggleDetails = useCallback(() => {
     if (detailsOpen) {
       void navigate({
