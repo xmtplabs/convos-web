@@ -11,10 +11,11 @@ import {
 import { createContext, useCallback, useEffect, useRef, useState } from "react";
 import { db, type Convo } from "@/db";
 import { useAppData } from "@/hooks/useAppData";
+import { useInboxId } from "@/hooks/useInboxId";
 import { usePermissions, type ConvoPermissions } from "@/hooks/usePermissions";
 import type { AppData, MemberProfile } from "@/utils/appData";
 import { updateConvo } from "@/utils/convos";
-import { setExplodeTimer } from "@/utils/explode";
+import { isExplodeSettings, setExplodeTimer } from "@/utils/explode";
 import { createLogger } from "@/utils/log";
 import { getContentString } from "@/utils/xmtp";
 
@@ -59,6 +60,7 @@ export const ConvoProvider: React.FC<{
   conversation: Conversation<BuiltInContentTypes>;
   children: React.ReactNode;
 }> = ({ convo, conversation, children }) => {
+  const inboxId = useInboxId();
   const { appData, memberProfiles, refreshAppData } = useAppData(
     conversation,
     convo.id,
@@ -108,7 +110,7 @@ export const ConvoProvider: React.FC<{
     setPendingExplode(null);
     setExploding(true);
     setExplodeError(null);
-    setExplodeTimer(conversation, convo.id, expiresAt)
+    setExplodeTimer(conversation, convo.id, expiresAt, inboxId)
       .catch((err: unknown) => {
         log.error("explode failed", err);
         setExplodeError(
@@ -118,7 +120,7 @@ export const ConvoProvider: React.FC<{
       .finally(() => {
         setExploding(false);
       });
-  }, [pendingExplode, conversation, convo.id]);
+  }, [pendingExplode, conversation, convo.id, inboxId]);
 
   const cancelExplode = useCallback(() => {
     setPendingExplode(null);
@@ -195,8 +197,8 @@ export const ConvoProvider: React.FC<{
         unix,
       });
       if (unix <= Math.floor(Date.now() / 1000)) {
-        // already expired — delete immediately instead of waiting for worker
-        log.info("already expired during sync, deleting", {
+        // already expired — delete locally
+        log.info("already expired during sync, deleting locally", {
           convoId: current.id,
         });
         void db.avatars.where("convoId").equals(current.id).delete();
@@ -220,6 +222,13 @@ export const ConvoProvider: React.FC<{
 
       const stream = await conversation.stream({
         onValue(value) {
+          if (isExplodeSettings(value)) {
+            // appData sync (via GroupUpdated) already handles the timer
+            // when we're in the convo — no action needed here. in the
+            // future, push notifications will use this message to set
+            // the timer on convos that aren't currently selected.
+            return;
+          }
           setMessages((prev) => [...prev, value]);
           const current = convoRef.current;
           void updateConvo(current.id, {

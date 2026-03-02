@@ -20,6 +20,7 @@ import type { Convo } from "@/db";
 import { useAvatar } from "@/hooks/useAvatar";
 import { useConvo } from "@/hooks/useConvo";
 import { useInboxId } from "@/hooks/useInboxId";
+import { isExplodeSettings } from "@/utils/explode";
 import { createLogger } from "@/utils/log";
 import { getContentString, getGroupUpdatedStrings } from "@/utils/xmtp";
 import { MessageActions } from "./MessageActions";
@@ -204,7 +205,7 @@ const buildRows = (
   });
 
   for (const message of messages) {
-    if (isReaction(message)) {
+    if (isReaction(message) || isExplodeSettings(message)) {
       continue;
     }
     if (isGroupUpdated(message)) {

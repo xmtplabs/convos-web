@@ -1,17 +1,29 @@
+import type { Client } from "@xmtp/browser-sdk";
 import { useEffect } from "react";
-import { db } from "@/db";
+import { useClient } from "@/hooks/useClient";
+import { cleanUpExplodedConvo } from "@/utils/explode";
 import { createLogger } from "@/utils/log";
 
 const log = createLogger("explode");
 
-const deleteExpiredConvo = async (convoId: string) => {
+const deleteExpiredConvo = async (client: Client | null, convoId: string) => {
   log.trace("deleteExpiredConvo", { convoId });
-  await db.avatars.where("convoId").equals(convoId).delete();
-  await db.convos.delete(convoId);
-  log.info("expired convo deleted", { convoId });
+  if (!client?.inboxId) return;
+
+  try {
+    const conversation =
+      await client.conversations.getConversationById(convoId);
+    if (conversation) {
+      await cleanUpExplodedConvo(conversation, convoId, client.inboxId);
+    }
+  } catch (err: unknown) {
+    log.error("failed to clean up expired convo", { convoId }, err);
+  }
 };
 
 export const useExplodeWatcher = () => {
+  const { client } = useClient();
+
   useEffect(() => {
     log.trace("mounting explode worker");
     const worker = new Worker(
@@ -26,7 +38,7 @@ export const useExplodeWatcher = () => {
         const convoIds = e.data.convoIds;
         log.info("worker reported expired convos", { convoIds });
         for (const id of convoIds) {
-          deleteExpiredConvo(id).catch((err: unknown) => {
+          deleteExpiredConvo(client, id).catch((err: unknown) => {
             log.error("failed to delete expired convo", { convoId: id }, err);
           });
         }
@@ -34,8 +46,8 @@ export const useExplodeWatcher = () => {
     };
 
     return () => {
-      log.trace("terminating explode watcher worker");
+      log.trace("terminating explode worker");
       worker.terminate();
     };
-  }, []);
+  }, [client]);
 };
