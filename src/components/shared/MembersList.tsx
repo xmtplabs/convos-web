@@ -104,13 +104,13 @@ export const MembersList: React.FC<{
               leftSection={<PlusIcon size={20} />}
               styles={{ section: { marginInlineEnd: 4 } }}
               onClick={() => {
-                log.info("adding member", { convoId: convo.id });
+                log.info("invite action clicked", { convoId: convo.id });
                 void navigate({
                   to: ".",
                   search: { action: "invite" },
                 });
               }}>
-              Add member
+              Invite
             </Button>
           )}
         </Group>
