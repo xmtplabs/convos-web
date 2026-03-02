@@ -1,9 +1,10 @@
-import { Group, Stack, Text, Title } from "@mantine/core";
+import { Stack, Text, Title } from "@mantine/core";
 import { useNavigate } from "@tanstack/react-router";
 import { ExternalLinkIcon } from "lucide-react";
 import { useCallback, useRef } from "react";
 import { Quickname } from "@/components/app/Quickname";
-import { ExternalLinkButton, LinkButton } from "@/components/shared/Button";
+import { LinkButton } from "@/components/shared/Button";
+import { GroupedList, GroupedListItem } from "@/components/shared/GroupedList";
 import { Modal } from "@/components/shared/Modal";
 import { useConvos } from "@/hooks/useConvos";
 import { createLogger } from "@/utils/log";
@@ -44,45 +45,38 @@ export const AboutModal = () => {
           </Stack>
           <Quickname onDirtyChange={onDirtyChange} />
         </Stack>
-        <Stack gap="xxs">
-          <Title order={3}>About</Title>
-          <ExternalLinkButton
-            href="https://xmtp.org/"
-            justify="space-between"
-            variant="filled"
-            size="md"
-            radius="lg"
-            leftSection={<span />}
-            rightSection={<ExternalLinkIcon size={20} />}>
-            Secured by XMTP
-          </ExternalLinkButton>
-          <ExternalLinkButton
-            href="https://hq.convos.org/privacy-and-terms"
-            justify="space-between"
-            size="md"
-            radius="lg"
-            variant="filled"
-            leftSection={<span />}
-            rightSection={<ExternalLinkIcon size={20} />}>
-            Privacy &amp; Terms
-          </ExternalLinkButton>
-          <Group justify="space-between" px="sm">
-            <Text size="xs" c="dimmed">
+        <GroupedList
+          header={
+            <Text size="sm" c="dimmed" fw={500} ml="md">
+              About
+            </Text>
+          }
+          footer={
+            <Text size="xs" c="dimmed" ml="md">
               Made in the open by XMTP Labs
             </Text>
-            <Text size="xs" c="dimmed">
-              v0.1.0
+          }>
+          <GroupedListItem href="https://xmtp.org/">
+            <Text size="sm" flex={1}>
+              Secured by XMTP
             </Text>
-          </Group>
-        </Stack>
+            <ExternalLinkIcon size={16} />
+          </GroupedListItem>
+          <GroupedListItem href="https://hq.convos.org/privacy-and-terms">
+            <Text size="sm" flex={1}>
+              Privacy &amp; Terms
+            </Text>
+            <ExternalLinkIcon size={16} />
+          </GroupedListItem>
+        </GroupedList>
         <LinkButton
           to="/delete-all"
-          variant="light"
+          variant="filled"
           color="red"
           size="md"
-          radius="lg"
+          radius="md"
           disabled={!hasConvos}>
-          Delete all app data
+          Delete all data
         </LinkButton>
       </Stack>
     </Modal>
