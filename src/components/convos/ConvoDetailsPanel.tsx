@@ -2,12 +2,12 @@ import {
   ActionIcon,
   Avatar,
   Box,
+  Button,
   Group,
   Menu,
   Paper,
   Stack,
   Text,
-  UnstyledButton,
 } from "@mantine/core";
 import { useNavigate } from "@tanstack/react-router";
 import { Group as XmtpGroup } from "@xmtp/browser-sdk";
@@ -212,33 +212,30 @@ export const ConvoDetailsPanel: React.FC = () => {
               </div>
             )}
           </Group>
-          <Stack gap="xs">
-            <Text size="sm" c="dimmed" fw={500}>
-              {members.length} member{members.length !== 1 && "s"}
-            </Text>
-            <Paper radius="md" withBorder bg="white" p={0}>
+          <Stack gap="xxxs">
+            <Group justify="space-between" align="center">
+              <Text size="sm" c="dimmed" fw={500} ml="md">
+                {members.length} member{members.length !== 1 && "s"}
+              </Text>
+              {canAddMembers && (
+                <Button
+                  variant="subtle"
+                  size="xs"
+                  radius="lg"
+                  leftSection={<PlusIcon size={20} />}
+                  styles={{ section: { marginInlineEnd: 4 } }}
+                  onClick={() =>
+                    void navigate({
+                      to: ".",
+                      search: { action: "invite" },
+                    })
+                  }>
+                  Add member
+                </Button>
+              )}
+            </Group>
+            <Paper radius="md" bg="white" p={0}>
               <Stack gap={0}>
-                {canAddMembers && (
-                  <UnstyledButton
-                    className={classes.memberRow}
-                    onClick={() =>
-                      void navigate({
-                        to: ".",
-                        search: { action: "invite" },
-                      })
-                    }>
-                    <ActionIcon
-                      variant="light"
-                      color="blue"
-                      size={40}
-                      radius="xl">
-                      <PlusIcon size={20} />
-                    </ActionIcon>
-                    <Text size="sm" fw={500} c="blue">
-                      Add member
-                    </Text>
-                  </UnstyledButton>
-                )}
                 {displayMembers.map((member) => {
                   const profile = memberProfiles.get(member.inboxId);
                   const isYou = member.inboxId === inboxId;
@@ -304,7 +301,7 @@ const MemberRow: React.FC<{
         {displayName[0].toUpperCase()}
       </Avatar>
       <Stack gap={0} flex={1} style={{ overflow: "hidden" }}>
-        <Text size="sm" fw={500} truncate>
+        <Text size="sm" truncate>
           {displayName}
         </Text>
         {isYou && (
