@@ -6,6 +6,8 @@ import { useCallback, useContext, useEffect, useRef, useState } from "react";
 import { ConvoHeader } from "@/components/convos/ConvoHeader";
 import { Composer } from "@/components/messages/Composer";
 import { MessageList } from "@/components/messages/MessageList";
+import { EditConvoModal } from "@/components/modals/EditConvoModal";
+import { InviteModal } from "@/components/modals/InviteModal";
 import { LoadingMessage } from "@/components/shared/LoadingMessage";
 import { Modal } from "@/components/shared/Modal";
 import { ConvoContext, ConvoProvider } from "@/contexts/ConvoContext";
@@ -22,6 +24,15 @@ const log = createLogger("convo");
 const ConvoContent = () => {
   const { messages, messagesLoading } = useMessages();
   const ctx = useContext(ConvoContext);
+  const { action } = Route.useSearch();
+  const navigate = useNavigate();
+
+  const closeModal = useCallback(() => {
+    void navigate({
+      to: ".",
+      search: {},
+    });
+  }, [navigate]);
 
   return (
     <>
@@ -83,6 +94,8 @@ const ConvoContent = () => {
           </Button>
         </Stack>
       </Modal>
+      <EditConvoModal opened={action === "edit"} onClose={closeModal} />
+      <InviteModal opened={action === "invite"} onClose={closeModal} />
     </>
   );
 };

@@ -98,8 +98,8 @@ export const ConvoDetailsPanel: React.FC = () => {
                 radius="xl"
                 onClick={() =>
                   void navigate({
-                    to: "/convo/$convoId/edit",
-                    params: { convoId: convo.id },
+                    to: ".",
+                    search: { action: "edit" },
                   })
                 }>
                 <PencilIcon size={20} />
@@ -223,8 +223,8 @@ export const ConvoDetailsPanel: React.FC = () => {
                     className={classes.memberRow}
                     onClick={() =>
                       void navigate({
-                        to: "/convo/$convoId/invite",
-                        params: { convoId: convo.id },
+                        to: ".",
+                        search: { action: "invite" },
                       })
                     }>
                     <ActionIcon

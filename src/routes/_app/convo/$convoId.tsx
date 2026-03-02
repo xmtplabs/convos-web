@@ -5,9 +5,19 @@ import { createLogger } from "@/utils/log";
 
 const log = createLogger("sync");
 
+export type ConvoSearch = {
+  action?: "edit" | "invite";
+};
+
 export const Route = createFileRoute("/_app/convo/$convoId")({
   component: Convo,
   ssr: false,
+  validateSearch: (search: Record<string, unknown>): ConvoSearch => ({
+    action:
+      search.action === "edit" || search.action === "invite"
+        ? search.action
+        : undefined,
+  }),
   loader: async ({ params }) => {
     log.trace("loader entered", { convoId: params.convoId });
     const convo = await getConvo(params.convoId);

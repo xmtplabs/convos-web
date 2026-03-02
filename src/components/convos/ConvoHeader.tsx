@@ -8,6 +8,7 @@ import {
   Text,
   Tooltip,
 } from "@mantine/core";
+import { useNavigate } from "@tanstack/react-router";
 import { Group as XmtpGroup } from "@xmtp/browser-sdk";
 import {
   EllipsisIcon,
@@ -43,6 +44,7 @@ export const ConvoHeader: React.FC = () => {
     sync,
     toggleDetails,
   } = useConvo();
+  const navigate = useNavigate();
   const isPending = convo.status === "pending";
   const explodeCountdown = useExplodeCountdown(convo.expiresAtUnix);
   const groupImage = useAvatar(convo.id, GROUP_IMAGE_INBOX_ID);
@@ -212,12 +214,13 @@ export const ConvoHeader: React.FC = () => {
             </Tooltip>
           )}
           {!convo.locked && permissions?.canAddMembers && (
-            <LinkActionIcon
+            <ActionIcon
               variant="transparent"
-              to="/convo/$convoId/invite"
-              params={{ convoId: convo.id }}>
+              onClick={() =>
+                void navigate({ to: ".", search: { action: "invite" } })
+              }>
               <ShareIcon size={24} />
-            </LinkActionIcon>
+            </ActionIcon>
           )}
           <ActionIcon variant="transparent" onClick={toggleDetails}>
             <InfoIcon size={24} />
