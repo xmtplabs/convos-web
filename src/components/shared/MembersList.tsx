@@ -96,7 +96,7 @@ export const MembersList: React.FC<{
           <Text size="sm" c="dimmed" fw={500} ml="md">
             {members.length} member{members.length !== 1 && "s"}
           </Text>
-          {canAddMembers && (
+          {canAddMembers && hasMoreMembers && (
             <Button
               variant="subtle"
               size="xs"
@@ -123,7 +123,13 @@ export const MembersList: React.FC<{
               size="xs"
               radius="lg"
               rightSection={<ChevronRightIcon size={16} />}
-              styles={{ section: { marginInlineStart: 4 } }}>
+              styles={{ section: { marginInlineStart: 4 } }}
+              onClick={() => {
+                void navigate({
+                  to: "/convo/$convoId/details/members",
+                  params: { convoId: convo.id },
+                });
+              }}>
               View all members
             </Button>
           </Group>
