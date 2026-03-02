@@ -76,9 +76,7 @@ export const ConvoDetailsPanel: React.FC = () => {
                 }>
                 <PencilIcon size={20} />
               </ActionIcon>
-              <Text size="xs" c="dimmed">
-                Edit
-              </Text>
+              <Text size="xs">Edit</Text>
             </div>
             <div className={classes.action}>
               <ActionIcon
@@ -97,9 +95,7 @@ export const ConvoDetailsPanel: React.FC = () => {
                   <StarIcon size={20} />
                 )}
               </ActionIcon>
-              <Text size="xs" c="dimmed">
-                {convo.faved ? "Unfav" : "Fav"}
-              </Text>
+              <Text size="xs">{convo.faved ? "Unfav" : "Fav"}</Text>
             </div>
             {canExplode && (
               <div className={classes.action}>
@@ -180,9 +176,7 @@ export const ConvoDetailsPanel: React.FC = () => {
                     </Menu.Item>
                   </Menu.Dropdown>
                 </Menu>
-                <Text size="xs" c="dimmed">
-                  More
-                </Text>
+                <Text size="xs">More</Text>
               </div>
             )}
           </Group>
