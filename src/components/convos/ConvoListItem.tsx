@@ -70,7 +70,7 @@ export const ConvoListItem: React.FC<ConvoListItemProps> = ({
         wrap="nowrap"
         className={classes.root}>
         <Avatar radius="xl" size="md" flex="0 0 auto" src={groupImage}>
-          {!groupImage && <ImageIcon size={16} />}
+          {!groupImage && <ImageIcon size={24} />}
         </Avatar>
         <Stack
           flex="1 1 auto"
