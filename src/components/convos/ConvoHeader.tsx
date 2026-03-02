@@ -33,8 +33,16 @@ import { createLogger } from "@/utils/log";
 const log = createLogger("convo-header");
 
 export const ConvoHeader: React.FC = () => {
-  const { appData, convo, conversation, explode, members, permissions, sync } =
-    useConvo();
+  const {
+    appData,
+    convo,
+    conversation,
+    explode,
+    members,
+    permissions,
+    sync,
+    toggleDetails,
+  } = useConvo();
   const isPending = convo.status === "pending";
   const explodeCountdown = useExplodeCountdown(convo.expiresAtUnix);
   const groupImage = useAvatar(convo.id, GROUP_IMAGE_INBOX_ID);
@@ -211,12 +219,9 @@ export const ConvoHeader: React.FC = () => {
               <ShareIcon size={24} />
             </LinkActionIcon>
           )}
-          <LinkActionIcon
-            variant="transparent"
-            to="/convo/$convoId/details"
-            params={{ convoId: convo.id }}>
+          <ActionIcon variant="transparent" onClick={toggleDetails}>
             <InfoIcon size={24} />
-          </LinkActionIcon>
+          </ActionIcon>
         </Group>
       )}
       <input

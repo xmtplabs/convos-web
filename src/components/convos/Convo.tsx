@@ -29,6 +29,7 @@ const ConvoContent = () => {
         header={<ConvoHeader />}
         footer={<Composer />}
         loading={ctx?.exploding}
+        detailsOpen={ctx?.detailsOpen}
         withScrollArea={false}>
         {messagesLoading ? (
           <LoadingMessage message="Connecting..." />

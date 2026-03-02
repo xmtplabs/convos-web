@@ -4,17 +4,69 @@ import { MENU_ICON_SIZE } from "@/utils/constants";
 import { getNextSunday } from "@/utils/explode";
 import { createLogger } from "@/utils/log";
 
-const log = createLogger("explode");
+const log = createLogger("explode-menu");
 
-type ExplodeSubMenuProps = {
+type ExplodeMenuItemsProps = {
   onExplode: (getExpiresAt: () => Date, immediate?: boolean) => void;
   onChooseDateTime: () => void;
 };
 
-export const ExplodeSubMenu: React.FC<ExplodeSubMenuProps> = ({
+export const ExplodeMenuItems: React.FC<ExplodeMenuItemsProps> = ({
   onExplode,
   onChooseDateTime,
 }) => {
+  return (
+    <>
+      <Menu.Label>Start an unstoppable countdown</Menu.Label>
+      <Menu.Item
+        onClick={() => {
+          log.info("explode timer selected: 60s");
+          onExplode(() => new Date(Date.now() + 60 * 1000));
+        }}>
+        60 seconds
+      </Menu.Item>
+      <Menu.Item
+        onClick={() => {
+          log.info("explode timer selected: 1h");
+          onExplode(() => new Date(Date.now() + 60 * 60 * 1000));
+        }}>
+        1 hour
+      </Menu.Item>
+      <Menu.Item
+        onClick={() => {
+          log.info("explode timer selected: 24h");
+          onExplode(() => new Date(Date.now() + 24 * 60 * 60 * 1000));
+        }}>
+        24 hours
+      </Menu.Item>
+      <Menu.Item
+        onClick={() => {
+          log.info("explode timer selected: sunday");
+          onExplode(() => getNextSunday());
+        }}>
+        Sunday at midnight
+      </Menu.Item>
+      <Menu.Item
+        onClick={() => {
+          log.info("explode timer selected: choose date/time");
+          onChooseDateTime();
+        }}>
+        Choose date and time
+      </Menu.Item>
+      <Menu.Divider />
+      <Menu.Item
+        color="red"
+        onClick={() => {
+          log.info("explode timer selected: explode now");
+          onExplode(() => new Date(), true);
+        }}>
+        Explode now
+      </Menu.Item>
+    </>
+  );
+};
+
+export const ExplodeSubMenu: React.FC<ExplodeMenuItemsProps> = (props) => {
   return (
     <Menu.Sub openDelay={150} closeDelay={150}>
       <Menu.Sub.Target>
@@ -25,51 +77,7 @@ export const ExplodeSubMenu: React.FC<ExplodeSubMenuProps> = ({
         </Menu.Sub.Item>
       </Menu.Sub.Target>
       <Menu.Sub.Dropdown>
-        <Menu.Label>Start an unstoppable countdown</Menu.Label>
-        <Menu.Item
-          onClick={() => {
-            log.info("explode timer selected: 60s");
-            onExplode(() => new Date(Date.now() + 60 * 1000));
-          }}>
-          60 seconds
-        </Menu.Item>
-        <Menu.Item
-          onClick={() => {
-            log.info("explode timer selected: 1h");
-            onExplode(() => new Date(Date.now() + 60 * 60 * 1000));
-          }}>
-          1 hour
-        </Menu.Item>
-        <Menu.Item
-          onClick={() => {
-            log.info("explode timer selected: 24h");
-            onExplode(() => new Date(Date.now() + 24 * 60 * 60 * 1000));
-          }}>
-          24 hours
-        </Menu.Item>
-        <Menu.Item
-          onClick={() => {
-            log.info("explode timer selected: sunday");
-            onExplode(() => getNextSunday());
-          }}>
-          Sunday at midnight
-        </Menu.Item>
-        <Menu.Item
-          onClick={() => {
-            log.info("explode timer selected: choose date/time");
-            onChooseDateTime();
-          }}>
-          Choose date and time
-        </Menu.Item>
-        <Menu.Divider />
-        <Menu.Item
-          color="red"
-          onClick={() => {
-            log.info("explode timer selected: explode now");
-            onExplode(() => new Date(), true);
-          }}>
-          Explode now
-        </Menu.Item>
+        <ExplodeMenuItems {...props} />
       </Menu.Sub.Dropdown>
     </Menu.Sub>
   );

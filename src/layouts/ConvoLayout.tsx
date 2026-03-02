@@ -6,6 +6,7 @@ export type ConvoLayoutProps = React.PropsWithChildren<{
   footer: React.ReactNode;
   loading?: boolean;
   withScrollArea?: boolean;
+  detailsOpen?: boolean;
   className?: string;
 }>;
 
@@ -15,6 +16,7 @@ export const ConvoLayout: React.FC<ConvoLayoutProps> = ({
   footer,
   loading = false,
   withScrollArea = true,
+  detailsOpen = false,
   className,
 }) => {
   const rootClassNames = [classes.root, className].filter(Boolean);
@@ -24,7 +26,10 @@ export const ConvoLayout: React.FC<ConvoLayoutProps> = ({
     className,
   ].filter(Boolean);
   return (
-    <Stack className={rootClassNames.join(" ")} gap={0}>
+    <Stack
+      className={rootClassNames.join(" ")}
+      gap={0}
+      data-details={detailsOpen ? "opened" : undefined}>
       <LoadingOverlay visible={loading} />
       <Group align="center" wrap="nowrap" className={classes.header}>
         {header}

@@ -1,22 +1,6 @@
-import { createFileRoute, useRouter } from "@tanstack/react-router";
-import { ConvoDetailsModal } from "@/components/modals/ConvoDetailsModal";
-import { createLogger } from "@/utils/log";
-
-const log = createLogger("convo-details");
-
-const ConvoDetails = () => {
-  const router = useRouter();
-
-  log.trace("render");
-
-  const onClose = () => {
-    log.info("closed");
-    router.history.back();
-  };
-
-  return <ConvoDetailsModal opened onClose={onClose} />;
-};
+import { createFileRoute } from "@tanstack/react-router";
+import { ConvoDetailsPanel } from "@/components/convos/ConvoDetailsPanel";
 
 export const Route = createFileRoute("/_app/convo/$convoId/details")({
-  component: ConvoDetails,
+  component: ConvoDetailsPanel,
 });

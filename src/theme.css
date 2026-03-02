@@ -3,6 +3,7 @@
   --convos-header-height: 112px;
   --convos-header-padding: var(--mantine-spacing-lg);
   --convos-card-height: 80px;
+  --convos-details-width: 360px;
   --convos-modal-bg-color: var(--mantine-color-gray-1);
   --convos-modal-padding: var(--mantine-spacing-lg);
 }

@@ -1,3 +1,4 @@
+import { useLocation, useNavigate } from "@tanstack/react-router";
 import {
   Group,
   isGroupUpdated,
@@ -51,6 +52,8 @@ export type ConvoContextValue = {
   confirmExplode: () => void;
   cancelExplode: () => void;
   refresh: () => Promise<void>;
+  detailsOpen: boolean;
+  toggleDetails: () => void;
 };
 
 export const ConvoContext = createContext<ConvoContextValue | null>(null);
@@ -73,6 +76,22 @@ export const ConvoProvider: React.FC<{
   const [sending, setSending] = useState(false);
   const [syncing, setSyncing] = useState(false);
   const [reply, setReply] = useState<ReplyState | null>(null);
+  const location = useLocation();
+  const navigate = useNavigate();
+  const detailsOpen = location.pathname.endsWith("/details");
+  const toggleDetails = useCallback(() => {
+    if (detailsOpen) {
+      void navigate({
+        to: "/convo/$convoId",
+        params: { convoId: convo.id },
+      });
+    } else {
+      void navigate({
+        to: "/convo/$convoId/details",
+        params: { convoId: convo.id },
+      });
+    }
+  }, [detailsOpen, navigate, convo.id]);
   const streamRef =
     useRef<AsyncStreamProxy<DecodedMessage<BuiltInContentTypes>>>(null);
   const convoRef = useRef(convo);
@@ -287,6 +306,8 @@ export const ConvoProvider: React.FC<{
         reply,
         setReply,
         refresh,
+        detailsOpen,
+        toggleDetails,
       }}>
       {children}
     </ConvoContext.Provider>

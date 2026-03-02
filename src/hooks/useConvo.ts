@@ -26,6 +26,8 @@ export const useConvo = () => {
     cancelExplode,
     setSyncing,
     refresh,
+    detailsOpen,
+    toggleDetails,
   } = context;
 
   const sync = useCallback(async () => {
@@ -53,6 +55,8 @@ export const useConvo = () => {
     explode,
     confirmExplode,
     cancelExplode,
+    detailsOpen,
+    toggleDetails,
     sync,
   };
 };
