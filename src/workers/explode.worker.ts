@@ -5,7 +5,6 @@ const log = createLogger("explode worker");
 const POLL_INTERVAL = 1_000;
 
 const checkExpired = async () => {
-  log.trace("checking for expired convos");
   const nowUnix = Math.floor(Date.now() / 1000);
   const allConvos = await db.convos.toArray();
 
