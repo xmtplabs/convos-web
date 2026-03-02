@@ -8,11 +8,39 @@ import { createLogger } from "@/utils/log";
 
 const log = createLogger("convo-header");
 
-export const AddMenu: React.FC = () => {
+export const AddMenuItems: React.FC = () => {
   const { appData, convo } = useConvo();
   const inboxId = useInboxId();
   const navigate = useNavigate();
 
+  return (
+    <>
+      <Menu.Item
+        leftSection={<LinkIcon size={14} />}
+        onClick={() => {
+          if (!appData) return;
+          const slug = createInviteSlug(convo, appData, inboxId);
+          const url = getInviteUrl(slug);
+          void navigator.clipboard.writeText(url);
+          log.info("invite link copied from menu");
+        }}>
+        Copy invite link
+      </Menu.Item>
+      <Menu.Item
+        leftSection={<QrCodeIcon size={14} />}
+        onClick={() =>
+          void navigate({
+            to: ".",
+            search: { action: "invite" },
+          })
+        }>
+        Show convo QR code
+      </Menu.Item>
+    </>
+  );
+};
+
+export const AddMenu: React.FC = () => {
   return (
     <Menu withArrow position="bottom-end">
       <Menu.Target>
@@ -21,27 +49,7 @@ export const AddMenu: React.FC = () => {
         </ActionIcon>
       </Menu.Target>
       <Menu.Dropdown>
-        <Menu.Item
-          leftSection={<LinkIcon size={14} />}
-          onClick={() => {
-            if (!appData) return;
-            const slug = createInviteSlug(convo, appData, inboxId);
-            const url = getInviteUrl(slug);
-            void navigator.clipboard.writeText(url);
-            log.info("invite link copied from menu");
-          }}>
-          Copy invite link
-        </Menu.Item>
-        <Menu.Item
-          leftSection={<QrCodeIcon size={14} />}
-          onClick={() =>
-            void navigate({
-              to: ".",
-              search: { action: "invite" },
-            })
-          }>
-          Show convo QR code
-        </Menu.Item>
+        <AddMenuItems />
       </Menu.Dropdown>
     </Menu>
   );

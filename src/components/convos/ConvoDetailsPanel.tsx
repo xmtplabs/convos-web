@@ -12,6 +12,7 @@ import {
   Trash2Icon,
   XIcon,
 } from "lucide-react";
+import { AddMenuItems } from "@/components/convos/AddMenu";
 import { ExplodeMenuItems } from "@/components/convos/ExplodeSubMenu";
 import { MembersList } from "@/components/shared/MembersList";
 import { useAvatar } from "@/hooks/useAvatar";
@@ -147,6 +148,8 @@ export const ConvoDetailsPanel: React.FC = () => {
                     </ActionIcon>
                   </Menu.Target>
                   <Menu.Dropdown>
+                    <AddMenuItems />
+                    <Menu.Divider />
                     {canLock && (
                       <Menu.Item
                         leftSection={
