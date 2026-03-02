@@ -6,6 +6,9 @@ import { defineConfig } from "vite";
 import viteTsConfigPaths from "vite-tsconfig-paths";
 
 const config = defineConfig({
+  worker: {
+    plugins: () => [viteTsConfigPaths({ projects: ["./tsconfig.json"] })],
+  },
   optimizeDeps: {
     exclude: ["@xmtp/browser-sdk"],
   },
