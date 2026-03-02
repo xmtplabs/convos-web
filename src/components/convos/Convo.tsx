@@ -3,6 +3,7 @@ import { Outlet, useNavigate } from "@tanstack/react-router";
 import { useLiveQuery } from "dexie-react-hooks";
 import { SendIcon } from "lucide-react";
 import { useCallback, useContext, useEffect, useRef, useState } from "react";
+import { ConvoDetailsPanel } from "@/components/convos/ConvoDetailsPanel";
 import { ConvoHeader } from "@/components/convos/ConvoHeader";
 import { Composer } from "@/components/messages/Composer";
 import { MessageList } from "@/components/messages/MessageList";
@@ -48,6 +49,7 @@ const ConvoContent = () => {
           <MessageList messages={messages} />
         )}
       </ConvoLayout>
+      <ConvoDetailsPanel />
       <Modal
         opened={ctx?.pendingExplode != null}
         onClose={() => ctx?.cancelExplode()}
