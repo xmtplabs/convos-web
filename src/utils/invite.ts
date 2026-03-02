@@ -119,8 +119,9 @@ export const createInviteSlug = (
   convo: Convo,
   appData: AppData,
   inboxId: string,
+  includeInfo = false,
 ): string => {
-  log.trace("createInviteSlug", { convoId: convo.id });
+  log.trace("createInviteSlug", { convoId: convo.id, includeInfo });
   // strip 0x prefix from private key hex and decode to bytes
   const pkHex = convo.privateKey.startsWith("0x")
     ? convo.privateKey.slice(2)
@@ -139,9 +140,10 @@ export const createInviteSlug = (
     conversationToken,
     creatorInboxId: hexToBytes(inboxId),
     tag: appData.tag,
-    name: convo.name,
-    description: convo.description,
-    imageUrl: convo.imageUrl,
+    ...(includeInfo && {
+      name: convo.name,
+      description: convo.description,
+    }),
   });
 
   const payloadBytes = toBinary(InvitePayloadSchema, payload);

@@ -1,21 +1,25 @@
 import {
   Button,
   CopyButton,
+  Group,
   Loader,
   Stack,
+  Switch,
   Text,
+  TextInput,
   Tooltip,
 } from "@mantine/core";
-import { CheckIcon, CopyIcon } from "lucide-react";
+import { CheckIcon, CopyIcon, InfoIcon } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 import { useEffect, useState } from "react";
+import { GroupedList, GroupedListItem } from "@/components/shared/GroupedList";
 import { Modal } from "@/components/shared/Modal";
 import { useConvo } from "@/hooks/useConvo";
 import { useInboxId } from "@/hooks/useInboxId";
 import { createInviteSlug, getInviteUrl } from "@/utils/invite";
 import { createLogger } from "@/utils/log";
 
-const log = createLogger("invite");
+const log = createLogger("invite-modal");
 
 type InviteModalProps = {
   opened: boolean;
@@ -29,10 +33,12 @@ export const InviteModal: React.FC<InviteModalProps> = ({
   const { appData, convo } = useConvo();
   const inboxId = useInboxId();
   const [inviteUrl, setInviteUrl] = useState<string | null>(null);
+  const [includeInfo, setIncludeInfo] = useState(false);
 
   log.trace("render", {
     convoId: convo.id,
     hasInviteUrl: !!inviteUrl,
+    includeInfo,
   });
 
   useEffect(() => {
@@ -43,11 +49,11 @@ export const InviteModal: React.FC<InviteModalProps> = ({
       });
       return;
     }
-    const slug = createInviteSlug(convo, appData, inboxId);
+    const slug = createInviteSlug(convo, appData, inboxId, includeInfo);
     const url = getInviteUrl(slug);
-    log.info("invite link generated", { convoId: convo.id });
+    log.info("invite link generated", { convoId: convo.id, includeInfo });
     setInviteUrl(url);
-  }, [opened, convo, appData, inboxId]);
+  }, [opened, convo, appData, inboxId, includeInfo]);
 
   return (
     <Modal
@@ -56,35 +62,80 @@ export const InviteModal: React.FC<InviteModalProps> = ({
         log.info("invite modal closed", { convoId: convo.id });
         onClose();
       }}
+      size="auto"
       title="Invite">
       <Stack gap="md" align="center">
         {inviteUrl ? (
           <>
-            <QRCodeSVG value={inviteUrl} size={200} />
-            <Text
-              size="xs"
-              c="dimmed"
-              style={{ wordBreak: "break-all", textAlign: "center" }}>
-              {inviteUrl}
+            <QRCodeSVG value={inviteUrl} size={280} />
+            <Text size="sm" fw={500} ta="center">
+              Scan the QR code or share the link below.
             </Text>
             <CopyButton value={inviteUrl}>
               {({ copied, copy }) => (
-                <Tooltip label={copied ? "Copied" : "Copy link"}>
-                  <Button
-                    variant="light"
-                    radius="xl"
-                    onClick={() => {
-                      log.info("invite link copied");
-                      copy();
+                <Group gap={0} w="100%">
+                  <TextInput
+                    flex={1}
+                    readOnly
+                    value={inviteUrl}
+                    styles={{
+                      input: {
+                        borderTopRightRadius: 0,
+                        borderBottomRightRadius: 0,
+                        borderRight: "none",
+                      },
                     }}
-                    leftSection={
-                      copied ? <CheckIcon size={16} /> : <CopyIcon size={16} />
-                    }>
-                    {copied ? "Copied" : "Copy Link"}
-                  </Button>
-                </Tooltip>
+                  />
+                  <Tooltip label={copied ? "Copied" : "Copy link"}>
+                    <Button
+                      color="dark"
+                      radius={0}
+                      onClick={() => {
+                        log.info("invite link copied");
+                        copy();
+                      }}
+                      leftSection={
+                        copied ? (
+                          <CheckIcon size={14} />
+                        ) : (
+                          <CopyIcon size={14} />
+                        )
+                      }
+                      styles={{
+                        root: {
+                          borderTopRightRadius: "var(--mantine-radius-default)",
+                          borderBottomRightRadius:
+                            "var(--mantine-radius-default)",
+                        },
+                      }}>
+                      {copied ? "Copied" : "Copy"}
+                    </Button>
+                  </Tooltip>
+                </Group>
               )}
             </CopyButton>
+            <GroupedList>
+              <GroupedListItem>
+                <InfoIcon size={28} strokeWidth={1.5} />
+                <Stack gap={0} flex={1} style={{ overflow: "hidden" }}>
+                  <Text size="sm">Include info with invites</Text>
+                  <Text size="xs" c="dimmed">
+                    Anyone with your convo code can see its name and description
+                  </Text>
+                </Stack>
+                <Switch
+                  withThumbIndicator={false}
+                  checked={includeInfo}
+                  onChange={(e) => {
+                    const val = e.currentTarget.checked;
+                    log.info("include info toggled", {
+                      includeInfo: val,
+                    });
+                    setIncludeInfo(val);
+                  }}
+                />
+              </GroupedListItem>
+            </GroupedList>
           </>
         ) : (
           <Loader size="md" />
