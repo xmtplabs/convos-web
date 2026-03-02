@@ -207,7 +207,7 @@ export const Convo = () => {
   const conversation = ctx.conversation ?? conversationRef.current;
   if (conversation) {
     return (
-      <ConvoProvider convo={convo} conversation={conversation}>
+      <ConvoProvider key={convo.id} convo={convo} conversation={conversation}>
         <ConvoContent />
         <Outlet />
       </ConvoProvider>
