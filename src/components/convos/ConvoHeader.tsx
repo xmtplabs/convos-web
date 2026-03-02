@@ -8,19 +8,18 @@ import {
   Text,
   Tooltip,
 } from "@mantine/core";
-import { useNavigate } from "@tanstack/react-router";
 import { Group as XmtpGroup } from "@xmtp/browser-sdk";
 import {
   EllipsisIcon,
   ImageIcon,
   InfoIcon,
   LockIcon,
-  ShareIcon,
   StarIcon,
   TrashIcon,
   UploadIcon,
 } from "lucide-react";
 import { useCallback, useRef } from "react";
+import { AddMenu } from "@/components/convos/AddMenu";
 import { ConvoMenu } from "@/components/convos/ConvoMenu";
 import { LinkActionIcon } from "@/components/shared/Button";
 import { useAvatar } from "@/hooks/useAvatar";
@@ -44,7 +43,6 @@ export const ConvoHeader: React.FC = () => {
     sync,
     toggleDetails,
   } = useConvo();
-  const navigate = useNavigate();
   const isPending = convo.status === "pending";
   const explodeCountdown = useExplodeCountdown(convo.expiresAtUnix);
   const groupImage = useAvatar(convo.id, GROUP_IMAGE_INBOX_ID);
@@ -213,15 +211,7 @@ export const ConvoHeader: React.FC = () => {
               </ActionIcon>
             </Tooltip>
           )}
-          {!convo.locked && permissions?.canAddMembers && (
-            <ActionIcon
-              variant="transparent"
-              onClick={() =>
-                void navigate({ to: ".", search: { action: "invite" } })
-              }>
-              <ShareIcon size={24} />
-            </ActionIcon>
-          )}
+          {!convo.locked && permissions?.canAddMembers && <AddMenu />}
           <ActionIcon variant="transparent" onClick={toggleDetails}>
             <InfoIcon size={24} />
           </ActionIcon>
