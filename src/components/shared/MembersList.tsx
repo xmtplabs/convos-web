@@ -86,7 +86,12 @@ export const MembersList: React.FC<{
 
   const canAddMembers = permissions?.canAddMembers ?? false;
   const canRemoveMembers = permissions?.canRemoveMembers ?? false;
-  const displayMembers = members.slice(0, maxDisplay);
+  const sorted = [...members].sort((a, b) => {
+    if (a.inboxId === inboxId) return -1;
+    if (b.inboxId === inboxId) return 1;
+    return 0;
+  });
+  const displayMembers = sorted.slice(0, maxDisplay);
   const hasMoreMembers = members.length > maxDisplay;
 
   return (
