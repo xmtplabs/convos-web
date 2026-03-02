@@ -40,10 +40,3 @@
   min-width: 48px;
   text-align: center;
 }
-
-.memberRow {
-  display: flex;
-  align-items: center;
-  gap: var(--mantine-spacing-sm);
-  padding: var(--mantine-spacing-xs) var(--mantine-spacing-sm);
-}
