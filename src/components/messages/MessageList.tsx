@@ -10,7 +10,7 @@ import {
   type GroupUpdated,
   type Reaction,
 } from "@xmtp/browser-sdk";
-import { ReplyIcon } from "lucide-react";
+import { LockIcon, ReplyIcon } from "lucide-react";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { ConvoCard } from "@/components/convos/ConvoCard";
 import VirtualList, {
@@ -357,6 +357,12 @@ const RowRenderer = ({
     return (
       <Box px="lg" pt="lg">
         <ConvoCard convo={convo} />
+        <Group gap="xxxs" justify="center" mt="md">
+          <LockIcon size={12} />
+          <Text size="xs" c="dimmed">
+            Earlier messages are hidden for privacy
+          </Text>
+        </Group>
       </Box>
     );
   }
