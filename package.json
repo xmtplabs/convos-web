@@ -3,8 +3,9 @@
   "version": "0.0.1",
   "type": "module",
   "scripts": {
-    "build": "vite build",
-    "clean": "rimraf dist node_modules",
+    "build": "yarn clean:build && vite build",
+    "clean": "rimraf node_modules && yarn clean:build",
+    "clean:build": "rimraf dist .output",
     "dev": "vite dev --port 3000",
     "fix": "eslint . --fix && prettier --write .",
     "format:check": "prettier -c .",
