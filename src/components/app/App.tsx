@@ -1,13 +1,14 @@
 import { Text } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
 import { Outlet, useSearch } from "@tanstack/react-router";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { AppHeader } from "@/components/app/AppHeader";
 import { AppLockScreen } from "@/components/app/AppLockScreen";
 import { ConvosList } from "@/components/convos/ConvosList";
 import { AboutModal } from "@/components/modals/AboutModal";
 import { DeleteAllDataModal } from "@/components/modals/DeleteAllDataModal";
 import { AppLockProvider, useAppLockContext } from "@/contexts/AppLockContext";
+import { NavProvider } from "@/contexts/NavContext";
 import { XmtpProvider } from "@/contexts/XmtpContext";
 import { useConvos } from "@/hooks/useConvos";
 import { useExplodeWatcher } from "@/hooks/useExplodeWatcher";
@@ -24,19 +25,34 @@ const AppContent = () => {
   const convos = useConvos();
   log.debug("convos loaded", { count: convos.length });
   const [navOpened, setNavOpened] = useState(false);
+  const openNav = useCallback(() => {
+    setNavOpened(true);
+  }, []);
+  const closeNav = useCallback(() => {
+    setNavOpened(false);
+  }, []);
+  const navInitialized = useRef(false);
   useExplodeWatcher();
 
   useEffect(() => {
-    setNavOpened(convos.length > 0);
+    if (convos.length === 0) {
+      setNavOpened(false);
+      navInitialized.current = false;
+    } else if (!navInitialized.current) {
+      setNavOpened(true);
+      navInitialized.current = true;
+    }
   }, [convos]);
 
   return (
-    <MainLayout opened={navOpened} aside={<ConvosList convos={convos} />}>
-      <AppHeader />
-      <Outlet />
-      {modal === "about" && <AboutModal />}
-      {modal === "delete-all" && <DeleteAllDataModal />}
-    </MainLayout>
+    <NavProvider value={{ navOpened, openNav, closeNav }}>
+      <MainLayout opened={navOpened} aside={<ConvosList convos={convos} />}>
+        <AppHeader />
+        <Outlet />
+        {modal === "about" && <AboutModal />}
+        {modal === "delete-all" && <DeleteAllDataModal />}
+      </MainLayout>
+    </NavProvider>
   );
 };
 

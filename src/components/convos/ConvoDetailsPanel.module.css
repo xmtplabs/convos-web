@@ -6,7 +6,6 @@
   width: var(--convos-details-width);
   z-index: 100;
   background-color: var(--mantine-color-gray-1);
-  transition: right 0.2s ease-in-out;
   display: flex;
   flex-direction: column;
   border-left: 1px solid var(--mantine-color-default-border);
@@ -80,4 +79,17 @@
 
 .page[data-page="members"][data-offscreen] {
   transform: translateX(100%);
+}
+
+@media (max-width: 768px) {
+  .panel {
+    top: 0;
+    z-index: 1100;
+    transition: transform 0.25s ease-in-out;
+  }
+
+  .panel[data-state="closed"] {
+    right: 0;
+    transform: translateX(100%);
+  }
 }

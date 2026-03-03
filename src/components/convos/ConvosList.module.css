@@ -4,6 +4,11 @@
   flex-grow: 1;
 }
 
+.header {
+  height: var(--convos-header-height);
+  flex-shrink: 0;
+}
+
 .outer {
   flex-grow: 1;
 }

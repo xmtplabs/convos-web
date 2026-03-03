@@ -14,6 +14,7 @@ import {
   ImageIcon,
   InfoIcon,
   LockIcon,
+  MenuIcon,
   StarIcon,
   TrashIcon,
   UploadIcon,
@@ -22,6 +23,7 @@ import { useCallback, useRef } from "react";
 import { AddMenu } from "@/components/convos/AddMenu";
 import { ConvoMenu } from "@/components/convos/ConvoMenu";
 import { LinkActionIcon } from "@/components/shared/Button";
+import { useNav } from "@/contexts/NavContext";
 import { useAvatar } from "@/hooks/useAvatar";
 import { useConvo } from "@/hooks/useConvo";
 import { useExplodeCountdown } from "@/hooks/useExplodeCountdown";
@@ -43,6 +45,7 @@ export const ConvoHeader: React.FC = () => {
     sync,
     toggleDetails,
   } = useConvo();
+  const { openNav } = useNav();
   const isPending = convo.status === "pending";
   const explodeCountdown = useExplodeCountdown(convo.expiresAtUnix);
   const groupImage = useAvatar(convo.id, GROUP_IMAGE_INBOX_ID);
@@ -113,6 +116,9 @@ export const ConvoHeader: React.FC = () => {
       wrap="nowrap"
       flex="1 1 auto">
       <Group gap="sm" wrap="nowrap" style={{ overflow: "hidden" }}>
+        <ActionIcon variant="transparent" onClick={openNav} hiddenFrom="sm">
+          <MenuIcon size={24} />
+        </ActionIcon>
         {canManageImage ? (
           <Menu withArrow position="bottom-start">
             <Menu.Target>

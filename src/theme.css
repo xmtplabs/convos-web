@@ -7,3 +7,33 @@
   --convos-modal-bg-color: var(--mantine-color-gray-1);
   --convos-modal-padding: var(--mantine-spacing-lg);
 }
+
+@media (max-width: 1200px) {
+  :root {
+    --convos-nav-width: 340px;
+    --convos-details-width: 300px;
+  }
+}
+
+@media (max-width: 992px) {
+  :root {
+    --convos-nav-width: 300px;
+    --convos-details-width: 280px;
+  }
+}
+
+@media (max-width: 768px) {
+  :root {
+    --convos-nav-width: 100dvw;
+    --convos-details-width: 100dvw;
+    --convos-header-padding: var(--mantine-spacing-md);
+    --convos-modal-padding: var(--mantine-spacing-md);
+    --mantine-spacing-xxxs: 0.125rem;
+    --mantine-spacing-xxs: 0.25rem;
+    --mantine-spacing-xs: 0.5rem;
+    --mantine-spacing-sm: 0.625rem;
+    --mantine-spacing-md: 0.75rem;
+    --mantine-spacing-lg: 1rem;
+    --mantine-spacing-xl: 1.5rem;
+  }
+}

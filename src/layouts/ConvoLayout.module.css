@@ -2,7 +2,6 @@
   position: relative;
   z-index: 20;
   flex-grow: 1;
-  transition: margin-right 0.2s ease-in-out;
 }
 
 .root[data-details="opened"] {
@@ -39,4 +38,14 @@
   flex-shrink: 0;
   z-index: 10;
   background-color: var(--mantine-color-body);
+}
+
+@media (max-width: 768px) {
+  .root[data-details="opened"] {
+    margin-right: 0;
+  }
+
+  .header {
+    border-left: none;
+  }
 }

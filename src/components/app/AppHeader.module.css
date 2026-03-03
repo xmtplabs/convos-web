@@ -6,3 +6,9 @@
   width: var(--convos-nav-width);
   height: var(--convos-header-height);
 }
+
+@media (max-width: 768px) {
+  .root {
+    width: 100dvw;
+  }
+}
