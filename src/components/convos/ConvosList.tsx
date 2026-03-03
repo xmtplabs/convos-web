@@ -1,5 +1,4 @@
 import { ActionIcon, Box, Group, Text } from "@mantine/core";
-import { useMediaQuery } from "@mantine/hooks";
 import { useParams } from "@tanstack/react-router";
 import { XIcon } from "lucide-react";
 import { useMemo } from "react";
@@ -7,6 +6,7 @@ import { Logo } from "@/components/shared/Logo";
 import VirtualList from "@/components/shared/VirtualList";
 import { useNav } from "@/contexts/NavContext";
 import type { Convo } from "@/db";
+import { useIsMobile } from "@/hooks/useMobile";
 import { createLogger } from "@/utils/log";
 import { ConvoListItem } from "./ConvoListItem";
 import classes from "./ConvosList.module.css";
@@ -21,7 +21,7 @@ export const ConvosList: React.FC<ConvosListProps> = ({ convos }) => {
   log.trace("render", { count: convos.length });
   const { convoId } = useParams({ strict: false });
   const { closeNav } = useNav();
-  const isMobile = useMediaQuery("(max-width: 768px)");
+  const isMobile = useIsMobile();
   const selectedConversationIndex = useMemo(
     () => convos.findIndex((convo) => convo.id === convoId),
     [convos, convoId],

@@ -2,14 +2,17 @@ import { Menu } from "@mantine/core";
 import { useNavigate } from "@tanstack/react-router";
 import {
   BombIcon,
+  InfoIcon,
   LockIcon,
   LockOpenIcon,
   StarIcon,
   StarOffIcon,
   Trash2Icon,
 } from "lucide-react";
+import { AddMenuItems } from "@/components/convos/AddMenu";
 import { ExplodeSubMenu } from "@/components/convos/ExplodeSubMenu";
 import type { Convo } from "@/db";
+import { useIsMobile } from "@/hooks/useMobile";
 import type { AppData } from "@/utils/appData";
 import { MENU_ICON_SIZE } from "@/utils/constants";
 import { updateConvo } from "@/utils/convos";
@@ -21,19 +24,24 @@ export type ConvoMenuProps = React.PropsWithChildren<{
   convo: Convo;
   appData?: AppData | null;
   canLock?: boolean;
+  canAddMembers?: boolean;
   canExplode?: boolean;
   onExplode?: (getExpiresAt: () => Date, immediate?: boolean) => void;
+  onToggleDetails?: () => void;
 }>;
 
 export const ConvoMenu: React.FC<ConvoMenuProps> = ({
   convo,
   appData,
   canLock,
+  canAddMembers,
   canExplode,
   onExplode,
+  onToggleDetails,
   children,
 }) => {
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
   const hasActiveTimer = appData?.expiresAtUnix != null;
 
   return (
@@ -98,6 +106,22 @@ export const ConvoMenu: React.FC<ConvoMenuProps> = ({
             }}>
             Explode now
           </Menu.Item>
+        )}
+        {isMobile && canAddMembers && !convo.locked && (
+          <>
+            <Menu.Divider />
+            <AddMenuItems />
+          </>
+        )}
+        {isMobile && onToggleDetails && (
+          <>
+            <Menu.Divider />
+            <Menu.Item
+              leftSection={<InfoIcon size={MENU_ICON_SIZE} />}
+              onClick={onToggleDetails}>
+              Details
+            </Menu.Item>
+          </>
         )}
         <Menu.Divider />
         <Menu.Item

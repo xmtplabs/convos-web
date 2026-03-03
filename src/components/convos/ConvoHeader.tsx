@@ -188,8 +188,10 @@ export const ConvoHeader: React.FC = () => {
             convo={convo}
             appData={appData}
             canLock={permissions?.canLock}
+            canAddMembers={permissions?.canAddMembers}
             canExplode={permissions?.canRemoveMembers}
-            onExplode={explode}>
+            onExplode={explode}
+            onToggleDetails={toggleDetails}>
             <ActionIcon variant="transparent">
               <EllipsisIcon size={24} />
             </ActionIcon>
@@ -198,7 +200,8 @@ export const ConvoHeader: React.FC = () => {
             <LinkActionIcon
               variant="transparent"
               to="."
-              search={{ action: "unlock" }}>
+              search={{ action: "unlock" }}
+              visibleFrom="sm">
               <LockIcon size={24} />
             </LinkActionIcon>
           )}
@@ -212,13 +215,18 @@ export const ConvoHeader: React.FC = () => {
                 </Text>
               }
               withArrow>
-              <ActionIcon variant="transparent" c="dimmed">
+              <ActionIcon variant="transparent" c="dimmed" visibleFrom="sm">
                 <LockIcon size={24} />
               </ActionIcon>
             </Tooltip>
           )}
-          {!convo.locked && permissions?.canAddMembers && <AddMenu />}
-          <ActionIcon variant="transparent" onClick={toggleDetails}>
+          {!convo.locked && permissions?.canAddMembers && (
+            <AddMenu visibleFrom="sm" />
+          )}
+          <ActionIcon
+            variant="transparent"
+            onClick={toggleDetails}
+            visibleFrom="sm">
             <InfoIcon size={24} />
           </ActionIcon>
         </Group>

@@ -1,5 +1,4 @@
 import { Button, Modal as MantineModal, type ModalProps } from "@mantine/core";
-import { useMediaQuery } from "@mantine/hooks";
 import {
   createContext,
   useCallback,
@@ -8,6 +7,7 @@ import {
   useRef,
   useState,
 } from "react";
+import { useIsMobile } from "@/hooks/useMobile";
 import classes from "./Modal.module.css";
 
 // animation duration for closing the modal
@@ -56,7 +56,7 @@ export const ModalCloseButton: React.FC<
 export const Modal: React.FC<
   React.PropsWithChildren<Omit<ModalProps, "opened">>
 > = ({ children, onClose, ...props }) => {
-  const isMobile = useMediaQuery("(max-width: 768px)");
+  const isMobile = useIsMobile();
   const [isOpen, setIsOpen] = useState(false);
   const closingRef = useRef(false);
   const onCloseRef = useRef(onClose);

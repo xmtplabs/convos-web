@@ -45,11 +45,15 @@ export const AddMenuItems: React.FC = () => {
   );
 };
 
-export const AddMenu: React.FC = () => {
+export type AddMenuProps = {
+  visibleFrom?: string;
+};
+
+export const AddMenu: React.FC<AddMenuProps> = ({ visibleFrom }) => {
   return (
     <Menu withArrow position="bottom-end">
       <Menu.Target>
-        <ActionIcon variant="transparent">
+        <ActionIcon variant="transparent" visibleFrom={visibleFrom}>
           <PlusIcon size={24} />
         </ActionIcon>
       </Menu.Target>
