@@ -71,6 +71,7 @@ export const EditConvoModal: React.FC<EditConvoModalProps> = ({
       <Stack gap="md">
         <TextInput
           label="Name"
+          size="md"
           disabled={!canEditName}
           value={name}
           onChange={(e) => {
@@ -79,6 +80,7 @@ export const EditConvoModal: React.FC<EditConvoModalProps> = ({
         />
         <Textarea
           label="Description"
+          size="md"
           disabled={!canEditDescription}
           value={description}
           onChange={(e) => {
