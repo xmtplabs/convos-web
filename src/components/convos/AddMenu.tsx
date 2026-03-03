@@ -1,4 +1,5 @@
 import { ActionIcon, Menu } from "@mantine/core";
+import { notifications } from "@mantine/notifications";
 import { useNavigate } from "@tanstack/react-router";
 import { LinkIcon, PlusIcon, QrCodeIcon } from "lucide-react";
 import { useConvo } from "@/hooks/useConvo";
@@ -23,6 +24,10 @@ export const AddMenuItems: React.FC = () => {
           const url = getInviteUrl(slug);
           void navigator.clipboard.writeText(url);
           log.info("invite link copied from menu");
+          notifications.show({
+            message: "Invite link copied to clipboard",
+            color: "green",
+          });
         }}>
         Copy invite link
       </Menu.Item>
