@@ -70,7 +70,8 @@ export const AboutModal = () => {
           </GroupedListItem>
         </GroupedList>
         <LinkButton
-          to="/delete-all"
+          to="."
+          search={{ modal: "delete-all" }}
           variant="filled"
           color="red"
           size="md"

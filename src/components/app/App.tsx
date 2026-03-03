@@ -5,6 +5,7 @@ import { AppLockScreen } from "@/components/app/AppLockScreen";
 import { UpdateNotification } from "@/components/app/UpdateNotification";
 import { ConvosList } from "@/components/convos/ConvosList";
 import { AboutModal } from "@/components/modals/AboutModal";
+import { DeleteAllDataModal } from "@/components/modals/DeleteAllDataModal";
 import { AppLockProvider, useAppLockContext } from "@/contexts/AppLockContext";
 import { XmtpProvider } from "@/contexts/XmtpContext";
 import { useConvos } from "@/hooks/useConvos";
@@ -33,6 +34,7 @@ const AppContent = () => {
       <AppHeader />
       <Outlet />
       {modal === "about" && <AboutModal />}
+      {modal === "delete-all" && <DeleteAllDataModal />}
     </MainLayout>
   );
 };

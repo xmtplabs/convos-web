@@ -1,5 +1,5 @@
 import { Button, Stack, Text } from "@mantine/core";
-import { useNavigate } from "@tanstack/react-router";
+import { useNavigate, useRouter } from "@tanstack/react-router";
 import { Opfs } from "@xmtp/browser-sdk";
 import { useState } from "react";
 import { Modal } from "@/components/shared/Modal";
@@ -9,23 +9,22 @@ import { clearConvos } from "@/utils/convos";
 import { createLogger } from "@/utils/log";
 import { clearProfiles } from "@/utils/profile";
 
-const log = createLogger("db");
+const log = createLogger("delete-all-data");
 
-type DeleteAllDataModalProps = {
-  opened: boolean;
-  onClose: () => void;
-};
-
-export const DeleteAllDataModal: React.FC<DeleteAllDataModalProps> = ({
-  opened,
-  onClose,
-}) => {
+export const DeleteAllDataModal: React.FC = () => {
   const ctx = useClient();
   const navigate = useNavigate();
   const [deleting, setDeleting] = useState(false);
 
+  const router = useRouter();
+
+  const onClose = () => {
+    log.info("closed");
+    router.history.back();
+  };
+
   const handleDelete = async () => {
-    log.trace("deleteAllData");
+    log.trace("handleDelete");
     setDeleting(true);
     try {
       ctx.setConvo(null);
@@ -48,7 +47,7 @@ export const DeleteAllDataModal: React.FC<DeleteAllDataModalProps> = ({
   };
 
   return (
-    <Modal opened={opened} onClose={onClose} title="Delete all app data">
+    <Modal opened onClose={onClose} title="Delete all app data">
       <Stack gap="md">
         <Text size="sm">
           This action is permanent and cannot be undone. All conversations,
