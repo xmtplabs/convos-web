@@ -11,7 +11,7 @@ import { useIsMobile } from "@/hooks/useMobile";
 import classes from "./Modal.module.css";
 
 const CLOSE_DURATION = 150;
-const MOBILE_CLOSE_DURATION = 250;
+const MOBILE_CLOSE_DURATION = 200;
 
 const ModalCloseContext = createContext<(() => void) | null>(null);
 
