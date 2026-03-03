@@ -98,7 +98,7 @@ export const MembersList: React.FC<{
     <GroupedList
       header={
         <Group justify="space-between" align="center">
-          <Text size="sm" c="dimmed" fw={500} ml="md">
+          <Text size="sm" c="dimmed" fw={500} ml="lg">
             {members.length} member{members.length !== 1 && "s"}
           </Text>
           {canAddMembers && hasMoreMembers && (
