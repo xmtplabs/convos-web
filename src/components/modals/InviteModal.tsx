@@ -22,14 +22,10 @@ import { createLogger } from "@/utils/log";
 const log = createLogger("invite-modal");
 
 type InviteModalProps = {
-  opened: boolean;
   onClose: () => void;
 };
 
-export const InviteModal: React.FC<InviteModalProps> = ({
-  opened,
-  onClose,
-}) => {
+export const InviteModal: React.FC<InviteModalProps> = ({ onClose }) => {
   const { appData, convo } = useConvo();
   const inboxId = useInboxId();
   const [inviteUrl, setInviteUrl] = useState<string | null>(null);
@@ -42,22 +38,18 @@ export const InviteModal: React.FC<InviteModalProps> = ({
   });
 
   useEffect(() => {
-    if (!opened || !appData) {
-      log.debug("invite link generation skipped", {
-        opened,
-        hasAppData: !!appData,
-      });
+    if (!appData) {
+      log.debug("invite link generation skipped", { hasAppData: false });
       return;
     }
     const slug = createInviteSlug(convo, appData, inboxId, includeInfo);
     const url = getInviteUrl(slug);
     log.info("invite link generated", { convoId: convo.id, includeInfo });
     setInviteUrl(url);
-  }, [opened, convo, appData, inboxId, includeInfo]);
+  }, [convo, appData, inboxId, includeInfo]);
 
   return (
     <Modal
-      opened={opened}
       onClose={() => {
         log.info("invite modal closed", { convoId: convo.id });
         onClose();

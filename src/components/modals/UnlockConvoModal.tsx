@@ -5,7 +5,7 @@ import {
   Group as XmtpGroup,
 } from "@xmtp/browser-sdk";
 import { useState } from "react";
-import { Modal } from "@/components/shared/Modal";
+import { Modal, ModalCloseButton } from "@/components/shared/Modal";
 import { useConvo } from "@/hooks/useConvo";
 import { updateConvo } from "@/utils/convos";
 import { createLogger } from "@/utils/log";
@@ -13,12 +13,10 @@ import { createLogger } from "@/utils/log";
 const log = createLogger("app-lock");
 
 type UnlockConvoModalProps = {
-  opened: boolean;
   onClose: () => void;
 };
 
 export const UnlockConvoModal: React.FC<UnlockConvoModalProps> = ({
-  opened,
   onClose,
 }) => {
   const { convo, conversation } = useConvo();
@@ -51,7 +49,6 @@ export const UnlockConvoModal: React.FC<UnlockConvoModalProps> = ({
 
   return (
     <Modal
-      opened={opened}
       onClose={() => {
         log.info("unlock modal closed", { convoId: convo.id });
         onClose();
@@ -74,14 +71,7 @@ export const UnlockConvoModal: React.FC<UnlockConvoModalProps> = ({
             loading={loading}>
             Unlock
           </Button>
-          <Button
-            variant="default"
-            size="md"
-            radius="lg"
-            onClick={onClose}
-            disabled={loading}>
-            Cancel
-          </Button>
+          <ModalCloseButton disabled={loading}>Cancel</ModalCloseButton>
         </Stack>
       </Stack>
     </Modal>

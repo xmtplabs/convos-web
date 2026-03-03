@@ -9,14 +9,10 @@ import { createLogger } from "@/utils/log";
 const log = createLogger("edit-convo");
 
 type EditConvoModalProps = {
-  opened: boolean;
   onClose: () => void;
 };
 
-export const EditConvoModal: React.FC<EditConvoModalProps> = ({
-  opened,
-  onClose,
-}) => {
+export const EditConvoModal: React.FC<EditConvoModalProps> = ({ onClose }) => {
   const { convo, conversation, permissions } = useConvo();
   const canEditName = permissions?.canEditName ?? false;
   const canEditDescription = permissions?.canEditDescription ?? false;
@@ -60,7 +56,6 @@ export const EditConvoModal: React.FC<EditConvoModalProps> = ({
 
   return (
     <Modal
-      opened={opened}
       closeOnEscape={false}
       closeOnClickOutside={false}
       onClose={() => {

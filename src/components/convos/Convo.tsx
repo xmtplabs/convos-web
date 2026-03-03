@@ -14,7 +14,7 @@ import { InviteModal } from "@/components/modals/InviteModal";
 import { LockConvoModal } from "@/components/modals/LockConvoModal";
 import { UnlockConvoModal } from "@/components/modals/UnlockConvoModal";
 import { LoadingMessage } from "@/components/shared/LoadingMessage";
-import { Modal } from "@/components/shared/Modal";
+import { Modal, ModalCloseButton } from "@/components/shared/Modal";
 import { ConvoContext, ConvoProvider } from "@/contexts/ConvoContext";
 import { XmtpContext } from "@/contexts/XmtpContext";
 import { db } from "@/db";
@@ -54,58 +54,54 @@ const ConvoContent = () => {
         )}
       </ConvoLayout>
       <ConvoDetailsPanel />
-      <Modal
-        opened={ctx?.pendingExplode != null}
-        onClose={() => ctx?.cancelExplode()}
-        title={
-          ctx?.pendingExplode?.immediate ? "Explode now?" : "Light the fuse?"
-        }>
-        <Stack gap="md">
-          <Text size="sm">
-            {ctx?.pendingExplode?.immediate
-              ? "This convo will be destroyed immediately for everyone."
-              : "The countdown can\u2019t be changed or cancelled once it starts."}
-          </Text>
-          <Stack gap="xxs">
-            <Button
-              variant="filled"
-              color="red"
-              size="md"
-              radius="lg"
-              onClick={() => ctx?.confirmExplode()}>
-              {ctx?.pendingExplode?.immediate ? "Explode" : "Start"}
-            </Button>
-            <Button
-              variant="default"
-              size="md"
-              radius="lg"
-              onClick={() => ctx?.cancelExplode()}>
-              Cancel
-            </Button>
+      {ctx?.pendingExplode != null && (
+        <Modal
+          onClose={() => {
+            ctx.cancelExplode();
+          }}
+          title={
+            ctx.pendingExplode.immediate ? "Explode now?" : "Light the fuse?"
+          }>
+          <Stack gap="md">
+            <Text size="sm">
+              {ctx.pendingExplode.immediate
+                ? "This convo will be destroyed immediately for everyone."
+                : "The countdown can\u2019t be changed or cancelled once it starts."}
+            </Text>
+            <Stack gap="xxs">
+              <Button
+                variant="filled"
+                color="red"
+                size="md"
+                radius="lg"
+                onClick={() => {
+                  ctx.confirmExplode();
+                }}>
+                {ctx.pendingExplode.immediate ? "Explode" : "Start"}
+              </Button>
+              <ModalCloseButton>Cancel</ModalCloseButton>
+            </Stack>
           </Stack>
-        </Stack>
-      </Modal>
-      <Modal
-        opened={ctx?.explodeError != null}
-        onClose={() => ctx?.clearExplodeError()}
-        title="Explode Failed">
-        <Stack gap="md">
-          <Text size="sm">{ctx?.explodeError}</Text>
-          <Button
-            variant="default"
-            size="md"
-            radius="lg"
-            onClick={() => ctx?.clearExplodeError()}>
-            OK
-          </Button>
-        </Stack>
-      </Modal>
-      <EditConvoModal opened={action === "edit"} onClose={closeModal} />
-      <InviteModal opened={action === "invite"} onClose={closeModal} />
-      <DeleteConvoModal opened={action === "delete"} onClose={closeModal} />
-      <LockConvoModal opened={action === "lock"} onClose={closeModal} />
-      <UnlockConvoModal opened={action === "unlock"} onClose={closeModal} />
-      <ExplodeConvoModal opened={action === "explode"} onClose={closeModal} />
+        </Modal>
+      )}
+      {ctx != null && ctx.explodeError != null && (
+        <Modal
+          onClose={() => {
+            ctx.clearExplodeError();
+          }}
+          title="Explode Failed">
+          <Stack gap="md">
+            <Text size="sm">{ctx.explodeError}</Text>
+            <ModalCloseButton>OK</ModalCloseButton>
+          </Stack>
+        </Modal>
+      )}
+      {action === "edit" && <EditConvoModal onClose={closeModal} />}
+      {action === "invite" && <InviteModal onClose={closeModal} />}
+      {action === "delete" && <DeleteConvoModal onClose={closeModal} />}
+      {action === "lock" && <LockConvoModal onClose={closeModal} />}
+      {action === "unlock" && <UnlockConvoModal onClose={closeModal} />}
+      {action === "explode" && <ExplodeConvoModal onClose={closeModal} />}
     </>
   );
 };

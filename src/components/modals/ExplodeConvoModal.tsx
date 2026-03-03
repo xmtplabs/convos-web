@@ -1,19 +1,17 @@
 import { Button, Stack, Text } from "@mantine/core";
 import { DateTimePicker, type DateStringValue } from "@mantine/dates";
 import { useState } from "react";
-import { Modal } from "@/components/shared/Modal";
+import { Modal, ModalCloseButton } from "@/components/shared/Modal";
 import { useConvo } from "@/hooks/useConvo";
 import { createLogger } from "@/utils/log";
 
 const log = createLogger("explode");
 
 type ExplodeConvoModalProps = {
-  opened: boolean;
   onClose: () => void;
 };
 
 export const ExplodeConvoModal: React.FC<ExplodeConvoModalProps> = ({
-  opened,
   onClose,
 }) => {
   const { explode, permissions } = useConvo();
@@ -41,7 +39,6 @@ export const ExplodeConvoModal: React.FC<ExplodeConvoModalProps> = ({
 
   return (
     <Modal
-      opened={opened}
       onClose={() => {
         log.info("explode modal closed");
         onClose();
@@ -72,9 +69,7 @@ export const ExplodeConvoModal: React.FC<ExplodeConvoModalProps> = ({
             disabled={!date}>
             Set Explode Timer
           </Button>
-          <Button variant="default" size="md" radius="lg" onClick={onClose}>
-            Cancel
-          </Button>
+          <ModalCloseButton>Cancel</ModalCloseButton>
         </Stack>
       </Stack>
     </Modal>

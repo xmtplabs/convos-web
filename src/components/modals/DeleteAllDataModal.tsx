@@ -2,7 +2,7 @@ import { Button, Stack, Text } from "@mantine/core";
 import { useNavigate, useRouter } from "@tanstack/react-router";
 import { Opfs } from "@xmtp/browser-sdk";
 import { useState } from "react";
-import { Modal } from "@/components/shared/Modal";
+import { Modal, ModalCloseButton } from "@/components/shared/Modal";
 import { useClient } from "@/hooks/useClient";
 import { clearAllAvatars } from "@/utils/avatars";
 import { clearConvos } from "@/utils/convos";
@@ -11,13 +11,7 @@ import { clearProfiles } from "@/utils/profile";
 
 const log = createLogger("delete-all-data");
 
-type DeleteAllDataModalProps = {
-  opened: boolean;
-};
-
-export const DeleteAllDataModal: React.FC<DeleteAllDataModalProps> = ({
-  opened,
-}) => {
+export const DeleteAllDataModal: React.FC = () => {
   const ctx = useClient();
   const navigate = useNavigate();
   const [deleting, setDeleting] = useState(false);
@@ -53,7 +47,7 @@ export const DeleteAllDataModal: React.FC<DeleteAllDataModalProps> = ({
   };
 
   return (
-    <Modal opened={opened} onClose={onClose} title="Delete all app data">
+    <Modal onClose={onClose} title="Delete all app data">
       <Stack gap="md">
         <Text size="sm">
           This action is permanent and cannot be undone. All conversations,
@@ -72,14 +66,7 @@ export const DeleteAllDataModal: React.FC<DeleteAllDataModalProps> = ({
             loading={deleting}>
             Delete
           </Button>
-          <Button
-            variant="default"
-            size="md"
-            radius="lg"
-            onClick={onClose}
-            disabled={deleting}>
-            Cancel
-          </Button>
+          <ModalCloseButton disabled={deleting}>Cancel</ModalCloseButton>
         </Stack>
       </Stack>
     </Modal>

@@ -2,7 +2,7 @@ import { Button, Stack, Text } from "@mantine/core";
 import { useNavigate } from "@tanstack/react-router";
 import { Opfs } from "@xmtp/browser-sdk";
 import { useState } from "react";
-import { Modal } from "@/components/shared/Modal";
+import { Modal, ModalCloseButton } from "@/components/shared/Modal";
 import { useClient } from "@/hooks/useClient";
 import { useInboxId } from "@/hooks/useInboxId";
 import { Route } from "@/routes/_app/convo/$convoId";
@@ -13,12 +13,10 @@ import { createLogger } from "@/utils/log";
 const log = createLogger("db");
 
 type DeleteConvoModalProps = {
-  opened: boolean;
   onClose: () => void;
 };
 
 export const DeleteConvoModal: React.FC<DeleteConvoModalProps> = ({
-  opened,
   onClose,
 }) => {
   const convo = Route.useLoaderData();
@@ -54,7 +52,6 @@ export const DeleteConvoModal: React.FC<DeleteConvoModalProps> = ({
 
   return (
     <Modal
-      opened={opened}
       onClose={onClose}
       title="Delete conversation"
       withCloseButton={false}>
@@ -76,14 +73,7 @@ export const DeleteConvoModal: React.FC<DeleteConvoModalProps> = ({
             loading={deleting}>
             Delete
           </Button>
-          <Button
-            variant="default"
-            size="md"
-            radius="lg"
-            onClick={onClose}
-            disabled={deleting}>
-            Cancel
-          </Button>
+          <ModalCloseButton disabled={deleting}>Cancel</ModalCloseButton>
         </Stack>
       </Stack>
     </Modal>
