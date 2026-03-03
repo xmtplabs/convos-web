@@ -10,8 +10,8 @@ import {
 import { useIsMobile } from "@/hooks/useMobile";
 import classes from "./Modal.module.css";
 
-// animation duration for closing the modal
-const CLOSE_ANIMATION_DURATION = 150;
+const CLOSE_DURATION = 150;
+const MOBILE_CLOSE_DURATION = 250;
 
 const ModalCloseContext = createContext<(() => void) | null>(null);
 
@@ -82,6 +82,8 @@ export const Modal: React.FC<
     };
   }, []);
 
+  const closeDuration = isMobile ? MOBILE_CLOSE_DURATION : CLOSE_DURATION;
+
   // animate out, then notify parent
   const handleClose = useCallback(() => {
     if (closingRef.current) return;
@@ -89,8 +91,8 @@ export const Modal: React.FC<
     setIsOpen(false);
     timerRef.current = setTimeout(() => {
       onCloseRef.current();
-    }, CLOSE_ANIMATION_DURATION);
-  }, []);
+    }, closeDuration);
+  }, [closeDuration]);
 
   return (
     <ModalCloseContext.Provider value={handleClose}>
@@ -105,7 +107,7 @@ export const Modal: React.FC<
           isMobile
             ? {
                 transition: "slide-up",
-                duration: CLOSE_ANIMATION_DURATION,
+                duration: MOBILE_CLOSE_DURATION,
                 timingFunction: "ease-out",
               }
             : undefined

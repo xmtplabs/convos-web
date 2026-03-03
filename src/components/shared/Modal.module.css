@@ -34,4 +34,5 @@
   border-bottom-left-radius: 0;
   border-bottom-right-radius: 0;
   width: 100dvw;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
 }
