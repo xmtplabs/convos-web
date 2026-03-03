@@ -1,4 +1,4 @@
-import { Button, Group, Stack, Text } from "@mantine/core";
+import { Button, Stack, Text } from "@mantine/core";
 import { useNavigate } from "@tanstack/react-router";
 import { Opfs } from "@xmtp/browser-sdk";
 import { useState } from "react";
@@ -64,25 +64,27 @@ export const DeleteConvoModal: React.FC<DeleteConvoModalProps> = ({
           on this machine will be lost and the XMTP identity for this
           conversation will be destroyed.
         </Text>
-        <Group justify="flex-end" gap="xxs">
-          <Button
-            variant="default"
-            radius="xl"
-            onClick={onClose}
-            disabled={deleting}>
-            Cancel
-          </Button>
+        <Stack gap="xxs">
           <Button
             variant="filled"
             color="red"
-            radius="xl"
+            size="md"
+            radius="lg"
             onClick={() => {
               void handleDelete();
             }}
             loading={deleting}>
             Delete
           </Button>
-        </Group>
+          <Button
+            variant="default"
+            size="md"
+            radius="lg"
+            onClick={onClose}
+            disabled={deleting}>
+            Cancel
+          </Button>
+        </Stack>
       </Stack>
     </Modal>
   );
