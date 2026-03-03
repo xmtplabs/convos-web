@@ -23,3 +23,15 @@
 .content {
   background-color: var(--convos-modal-bg-color);
 }
+
+.innerMobile {
+  align-items: flex-end;
+  padding: 0;
+}
+
+.contentMobile {
+  max-height: calc(100dvh - var(--mantine-spacing-xl));
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+  width: 100dvw;
+}

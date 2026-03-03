@@ -7,8 +7,12 @@ import { ConvoDetailsPanel } from "@/components/convos/ConvoDetailsPanel";
 import { ConvoHeader } from "@/components/convos/ConvoHeader";
 import { Composer } from "@/components/messages/Composer";
 import { MessageList } from "@/components/messages/MessageList";
+import { DeleteConvoModal } from "@/components/modals/DeleteConvoModal";
 import { EditConvoModal } from "@/components/modals/EditConvoModal";
+import { ExplodeConvoModal } from "@/components/modals/ExplodeConvoModal";
 import { InviteModal } from "@/components/modals/InviteModal";
+import { LockConvoModal } from "@/components/modals/LockConvoModal";
+import { UnlockConvoModal } from "@/components/modals/UnlockConvoModal";
 import { LoadingMessage } from "@/components/shared/LoadingMessage";
 import { Modal } from "@/components/shared/Modal";
 import { ConvoContext, ConvoProvider } from "@/contexts/ConvoContext";
@@ -98,6 +102,10 @@ const ConvoContent = () => {
       </Modal>
       <EditConvoModal opened={action === "edit"} onClose={closeModal} />
       <InviteModal opened={action === "invite"} onClose={closeModal} />
+      <DeleteConvoModal opened={action === "delete"} onClose={closeModal} />
+      <LockConvoModal opened={action === "lock"} onClose={closeModal} />
+      <UnlockConvoModal opened={action === "unlock"} onClose={closeModal} />
+      <ExplodeConvoModal opened={action === "explode"} onClose={closeModal} />
     </>
   );
 };

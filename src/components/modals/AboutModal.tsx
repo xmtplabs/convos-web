@@ -11,7 +11,11 @@ import { createLogger } from "@/utils/log";
 
 const log = createLogger("settings");
 
-export const AboutModal = () => {
+type AboutModalProps = {
+  opened: boolean;
+};
+
+export const AboutModal: React.FC<AboutModalProps> = ({ opened }) => {
   log.trace("render");
   const navigate = useNavigate();
   const convos = useConvos();
@@ -33,7 +37,7 @@ export const AboutModal = () => {
   };
 
   return (
-    <Modal opened onClose={onClose} title="Settings">
+    <Modal opened={opened} onClose={onClose} title="Settings">
       <Stack gap="md">
         <Stack gap="xs">
           <Title order={3}>My info</Title>

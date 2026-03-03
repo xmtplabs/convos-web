@@ -134,8 +134,8 @@ export const ConvoDetailsPanel: React.FC = () => {
                           onExplode={explode}
                           onChooseDateTime={() => {
                             void navigate({
-                              to: "/convo/$convoId/explode",
-                              params: { convoId: convo.id },
+                              to: ".",
+                              search: { action: "explode" },
                             });
                           }}
                         />
@@ -180,7 +180,10 @@ export const ConvoDetailsPanel: React.FC = () => {
                           }
                           onClick={() => {
                             void navigate({
-                              to: `/convo/${convo.id}/${convo.locked ? "unlock" : "lock"}`,
+                              to: ".",
+                              search: {
+                                action: convo.locked ? "unlock" : "lock",
+                              },
                             });
                           }}>
                           {convo.locked ? "Unlock" : "Lock"}
@@ -191,8 +194,8 @@ export const ConvoDetailsPanel: React.FC = () => {
                         leftSection={<Trash2Icon size={MENU_ICON_SIZE} />}
                         onClick={() => {
                           void navigate({
-                            to: "/convo/$convoId/delete",
-                            params: { convoId: convo.id },
+                            to: ".",
+                            search: { action: "delete" },
                           });
                         }}>
                         Delete

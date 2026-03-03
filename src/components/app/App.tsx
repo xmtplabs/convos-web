@@ -49,8 +49,8 @@ const AppContent = () => {
       <MainLayout opened={navOpened} aside={<ConvosList convos={convos} />}>
         <AppHeader />
         <Outlet />
-        {modal === "about" && <AboutModal />}
-        {modal === "delete-all" && <DeleteAllDataModal />}
+        <AboutModal opened={modal === "about"} />
+        <DeleteAllDataModal opened={modal === "delete-all"} />
       </MainLayout>
     </NavProvider>
   );

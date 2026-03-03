@@ -197,8 +197,8 @@ export const ConvoHeader: React.FC = () => {
           {convo.locked && permissions?.canLock && (
             <LinkActionIcon
               variant="transparent"
-              to="/convo/$convoId/unlock"
-              params={{ convoId: convo.id }}>
+              to="."
+              search={{ action: "unlock" }}>
               <LockIcon size={24} />
             </LinkActionIcon>
           )}

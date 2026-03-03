@@ -11,7 +11,13 @@ import { clearProfiles } from "@/utils/profile";
 
 const log = createLogger("delete-all-data");
 
-export const DeleteAllDataModal: React.FC = () => {
+type DeleteAllDataModalProps = {
+  opened: boolean;
+};
+
+export const DeleteAllDataModal: React.FC<DeleteAllDataModalProps> = ({
+  opened,
+}) => {
   const ctx = useClient();
   const navigate = useNavigate();
   const [deleting, setDeleting] = useState(false);
@@ -47,7 +53,7 @@ export const DeleteAllDataModal: React.FC = () => {
   };
 
   return (
-    <Modal opened onClose={onClose} title="Delete all app data">
+    <Modal opened={opened} onClose={onClose} title="Delete all app data">
       <Stack gap="md">
         <Text size="sm">
           This action is permanent and cannot be undone. All conversations,

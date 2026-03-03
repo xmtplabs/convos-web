@@ -5,18 +5,28 @@ import { createLogger } from "@/utils/log";
 
 const log = createLogger("sync");
 
+const VALID_ACTIONS = [
+  "edit",
+  "invite",
+  "delete",
+  "lock",
+  "unlock",
+  "explode",
+] as const;
+
+export type ConvoAction = (typeof VALID_ACTIONS)[number];
+
 export type ConvoSearch = {
-  action?: "edit" | "invite";
+  action?: ConvoAction;
 };
 
 export const Route = createFileRoute("/_app/convo/$convoId")({
   component: Convo,
   ssr: false,
   validateSearch: (search: Record<string, unknown>): ConvoSearch => ({
-    action:
-      search.action === "edit" || search.action === "invite"
-        ? search.action
-        : undefined,
+    action: VALID_ACTIONS.includes(search.action as ConvoAction)
+      ? (search.action as ConvoAction)
+      : undefined,
   }),
   loader: async ({ params }) => {
     log.trace("loader entered", { convoId: params.convoId });
