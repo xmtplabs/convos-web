@@ -15,7 +15,6 @@
   padding: 0 var(--convos-header-padding);
   height: var(--convos-header-height);
   background-color: var(--mantine-color-body);
-  border-left: 1px solid var(--mantine-color-default-border);
 }
 
 .content {
@@ -43,9 +42,5 @@
 @media (max-width: 768px) {
   .root[data-details="opened"] {
     margin-right: 0;
-  }
-
-  .header {
-    border-left: none;
   }
 }

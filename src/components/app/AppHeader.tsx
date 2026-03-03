@@ -3,11 +3,13 @@ import { useLocalStorage } from "@mantine/hooks";
 import {
   CheckIcon,
   ListFilterIcon,
+  MenuIcon,
   SettingsIcon,
   SquarePenIcon,
 } from "lucide-react";
 import { LinkActionIcon } from "@/components/shared/Button";
 import { Logo } from "@/components/shared/Logo";
+import { useNav } from "@/contexts/NavContext";
 import { createLogger } from "@/utils/log";
 import classes from "./AppHeader.module.css";
 
@@ -18,6 +20,7 @@ type Filter = "all" | "unread";
 const ICON_SIZE = 14;
 
 export const AppHeader = () => {
+  const { openNav } = useNav();
   const [filter, setFilter] = useLocalStorage<Filter>({
     key: "convos-filter",
     defaultValue: "all",
@@ -31,6 +34,9 @@ export const AppHeader = () => {
       justify="space-between"
       className={classes.root}>
       <Group gap="xxxs" align="center" wrap="nowrap">
+        <ActionIcon variant="transparent" onClick={openNav} hiddenFrom="sm">
+          <MenuIcon size={24} />
+        </ActionIcon>
         <Logo size={36} />
         <Text fw="bold" size="xl">
           Convos

@@ -5,10 +5,12 @@
   z-index: 1000;
   width: var(--convos-nav-width);
   height: var(--convos-header-height);
+  border-right: 1px solid var(--mantine-color-default-border);
 }
 
 @media (max-width: 768px) {
   .root {
     width: 100dvw;
+    border-right: none;
   }
 }

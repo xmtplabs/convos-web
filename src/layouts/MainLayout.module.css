@@ -52,6 +52,7 @@
   .aside {
     top: 0;
     z-index: 1100;
+    border-right: none;
     transition: transform 0.25s ease-in-out;
   }
 
