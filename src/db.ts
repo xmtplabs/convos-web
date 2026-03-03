@@ -19,6 +19,7 @@ export type Convo = {
   faved?: boolean;
   locked?: boolean;
   expiresAtUnix?: number;
+  blurImages?: boolean;
 };
 
 export type Profile = {

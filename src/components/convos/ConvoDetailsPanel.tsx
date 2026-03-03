@@ -14,6 +14,7 @@ import {
   XIcon,
 } from "lucide-react";
 import { AddMenuItems } from "@/components/convos/AddMenu";
+import { ConvoPreferences } from "@/components/convos/ConvoPreferences";
 import { ExplodeMenuItems } from "@/components/convos/ExplodeSubMenu";
 import { MembersList } from "@/components/shared/MembersList";
 import { useAvatar } from "@/hooks/useAvatar";
@@ -203,6 +204,7 @@ export const ConvoDetailsPanel: React.FC = () => {
               )}
             </Group>
             <MembersList />
+            <ConvoPreferences />
           </Stack>
         </div>
         <div

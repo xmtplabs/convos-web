@@ -1,9 +1,19 @@
-import { Box, Button, Loader, Stack, Text } from "@mantine/core";
+import {
+  ActionIcon,
+  Box,
+  Button,
+  Image,
+  Loader,
+  Stack,
+  Text,
+} from "@mantine/core";
 import type { RemoteAttachment } from "@xmtp/browser-sdk";
-import { AlertCircleIcon } from "lucide-react";
+import { AlertCircleIcon, EyeIcon } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useConvo } from "@/hooks/useConvo";
 import { downloadAttachment, getFileType } from "@/utils/attachment";
 import { createLogger } from "@/utils/log";
+import classes from "./RemoteAttachmentContent.module.css";
 
 const log = createLogger("messaging");
 
@@ -12,9 +22,11 @@ const urlCache = new Map<string, { blobUrl: string | null; failed: boolean }>();
 export const RemoteAttachmentContent: React.FC<{
   content: RemoteAttachment;
 }> = ({ content }) => {
+  const { convo } = useConvo();
   const [decryptedUrl, setDecryptedUrl] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [revealed, setRevealed] = useState(false);
   const loadingRef = useRef(false);
 
   const loadAttachment = useCallback(
@@ -71,6 +83,10 @@ export const RemoteAttachmentContent: React.FC<{
     void loadAttachment();
   }, [loadAttachment]);
 
+  useEffect(() => {
+    setRevealed(false);
+  }, [decryptedUrl]);
+
   if (isLoading) {
     return (
       <Stack
@@ -78,13 +94,7 @@ export const RemoteAttachmentContent: React.FC<{
         justify="center"
         gap="xs"
         p="xl"
-        style={{
-          minWidth: 200,
-          minHeight: 120,
-          backgroundColor:
-            "light-dark(var(--mantine-color-gray-1), var(--mantine-color-dark-5))",
-          borderRadius: "var(--mantine-radius-lg)",
-        }}>
+        className={`${classes.placeholder} ${classes.placeholderLoading}`}>
         <Loader size="sm" />
         <Text size="xs" c="dimmed">
           Loading attachment...
@@ -100,12 +110,7 @@ export const RemoteAttachmentContent: React.FC<{
         justify="center"
         gap="xs"
         p="md"
-        style={{
-          minWidth: 200,
-          backgroundColor:
-            "light-dark(var(--mantine-color-gray-1), var(--mantine-color-dark-5))",
-          borderRadius: "var(--mantine-radius-lg)",
-        }}>
+        className={classes.placeholder}>
         <AlertCircleIcon size={24} />
         <Text size="xs" c="dimmed">
           {error}
@@ -131,41 +136,41 @@ export const RemoteAttachmentContent: React.FC<{
   const fileType = getFileType(content.filename ?? "");
 
   if (fileType === "image") {
+    const blurred = convo.blurImages && !revealed;
     return (
-      <img
-        src={decryptedUrl}
-        alt={content.filename ?? "Attachment"}
-        style={{
-          maxWidth: "100%",
-          height: "auto",
-          display: "block",
-        }}
-      />
+      <div className={classes.imageWrapper}>
+        <Image
+          src={decryptedUrl}
+          alt={content.filename ?? "Attachment"}
+          maw="100%"
+          className={`${classes.image} ${blurred ? classes.imageBlurred : ""}`}
+        />
+        {blurred && (
+          <div className={classes.revealOverlay}>
+            <ActionIcon
+              variant="filled"
+              color="dark"
+              radius="xl"
+              size="xl"
+              onClick={() => {
+                setRevealed(true);
+              }}>
+              <EyeIcon size={24} />
+            </ActionIcon>
+          </div>
+        )}
+      </div>
     );
   }
 
   if (fileType === "video") {
-    return (
-      <video
-        src={decryptedUrl}
-        controls
-        style={{
-          maxWidth: "100%",
-          height: "auto",
-          display: "block",
-        }}
-      />
-    );
+    return <video src={decryptedUrl} controls className={classes.video} />;
   }
 
   if (fileType === "audio") {
     return (
       <Box p="sm">
-        <audio
-          src={decryptedUrl}
-          controls
-          style={{ width: "100%", display: "block" }}
-        />
+        <audio src={decryptedUrl} controls className={classes.audio} />
       </Box>
     );
   }

@@ -1,0 +1,43 @@
+.placeholder {
+  min-width: 200px;
+  background-color: light-dark(
+    var(--mantine-color-gray-1),
+    var(--mantine-color-dark-5)
+  );
+  border-radius: var(--mantine-radius-lg);
+}
+
+.placeholderLoading {
+  min-height: 120px;
+}
+
+.imageWrapper {
+  position: relative;
+}
+
+.image {
+  transition: filter 0.2s ease;
+}
+
+.imageBlurred {
+  filter: blur(40px);
+}
+
+.revealOverlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.video {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+.audio {
+  width: 100%;
+  display: block;
+}
