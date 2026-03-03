@@ -100,6 +100,7 @@ export const Modal: React.FC<
         onClose={handleClose}
         radius="lg"
         centered={!isMobile}
+        size={isMobile ? "100%" : props.size}
         transitionProps={
           isMobile
             ? {
