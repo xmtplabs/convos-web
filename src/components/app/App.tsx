@@ -17,7 +17,7 @@ import { createLogger } from "@/utils/log";
 
 const log = createLogger("app");
 
-const UPDATE_POLL_INTERVAL = 5 * 60 * 1000;
+const UPDATE_POLL_INTERVAL = 60 * 1000;
 
 const AppContent = () => {
   log.trace("content render");
