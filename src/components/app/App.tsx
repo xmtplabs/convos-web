@@ -1,8 +1,9 @@
+import { Text } from "@mantine/core";
+import { notifications } from "@mantine/notifications";
 import { Outlet, useSearch } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { AppHeader } from "@/components/app/AppHeader";
 import { AppLockScreen } from "@/components/app/AppLockScreen";
-import { UpdateNotification } from "@/components/app/UpdateNotification";
 import { ConvosList } from "@/components/convos/ConvosList";
 import { AboutModal } from "@/components/modals/AboutModal";
 import { DeleteAllDataModal } from "@/components/modals/DeleteAllDataModal";
@@ -57,7 +58,6 @@ const AppGate = () => {
 
 export const App = () => {
   log.trace("render");
-  const [updateAvailable, setUpdateAvailable] = useState(false);
   const intervalRef = useRef<ReturnType<typeof setInterval>>(null);
 
   useEffect(() => {
@@ -74,7 +74,26 @@ export const App = () => {
     const onControllerChange = () => {
       if (hadController) {
         log.info("update available (new service worker)");
-        setUpdateAvailable(true);
+        notifications.show({
+          color: "green",
+          title: "A new version is available",
+          withBorder: true,
+          autoClose: false,
+          message: (
+            <Text
+              component="span"
+              size="sm"
+              c="blue"
+              td="underline"
+              style={{ cursor: "pointer" }}
+              onClick={() => {
+                log.info("reload clicked");
+                window.location.reload();
+              }}>
+              Click to upgrade
+            </Text>
+          ),
+        });
       }
     };
 
@@ -107,13 +126,6 @@ export const App = () => {
 
   return (
     <AppLockProvider>
-      {updateAvailable && (
-        <UpdateNotification
-          onClose={() => {
-            setUpdateAvailable(false);
-          }}
-        />
-      )}
       <AppGate />
     </AppLockProvider>
   );

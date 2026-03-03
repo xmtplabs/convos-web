@@ -1,5 +1,6 @@
 import mantineCss from "@mantine/core/styles.css?url";
 import mantineDatesCss from "@mantine/dates/styles.css?url";
+import mantineNotificationsCss from "@mantine/notifications/styles.css?url";
 import {
   createRootRoute,
   ErrorComponent,
@@ -60,6 +61,10 @@ export const Route = createRootRoute({
       {
         rel: "stylesheet",
         href: mantineDatesCss,
+      },
+      {
+        rel: "stylesheet",
+        href: mantineNotificationsCss,
       },
       {
         rel: "stylesheet",

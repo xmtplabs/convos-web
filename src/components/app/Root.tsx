@@ -1,4 +1,5 @@
 import { MantineProvider } from "@mantine/core";
+import { Notifications } from "@mantine/notifications";
 // import { TanStackDevtools } from "@tanstack/react-devtools";
 import { HeadContent, Scripts } from "@tanstack/react-router";
 // import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
@@ -23,7 +24,10 @@ export const Root = ({ children }: { children: React.ReactNode }) => {
         <script dangerouslySetInnerHTML={{ __html: GLOBAL_ERROR_SCRIPT }} />
       </head>
       <body>
-        <MantineProvider theme={theme}>{children}</MantineProvider>
+        <MantineProvider theme={theme}>
+          <Notifications position="top-right" limit={5} />
+          {children}
+        </MantineProvider>
         {/* <TanStackDevtools
           config={{
             position: "bottom-right",
