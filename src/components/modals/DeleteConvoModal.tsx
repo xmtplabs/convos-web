@@ -9,6 +9,7 @@ import { Route } from "@/routes/_app/convo/$convoId";
 import { clearAvatars } from "@/utils/avatars";
 import { deleteConvo } from "@/utils/convos";
 import { createLogger } from "@/utils/log";
+import { unregisterConvo } from "@/utils/notifications";
 
 const log = createLogger("db");
 
@@ -29,6 +30,13 @@ export const DeleteConvoModal: React.FC<DeleteConvoModalProps> = ({
     log.trace("deleteConvoData", { convoId: convo.id });
     setDeleting(true);
     try {
+      if (ctx.client?.installationId) {
+        await unregisterConvo(ctx.client.installationId).catch(
+          (err: unknown) => {
+            log.warn("push unregister failed", err);
+          },
+        );
+      }
       ctx.setConvo(null);
       await deleteConvo(convo.id);
       await clearAvatars(convo.id);

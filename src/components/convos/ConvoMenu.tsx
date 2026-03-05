@@ -1,10 +1,14 @@
 import { Menu } from "@mantine/core";
 import { useNavigate } from "@tanstack/react-router";
 import {
+  BellIcon,
+  BellOffIcon,
   BombIcon,
   InfoIcon,
   LockIcon,
   LockOpenIcon,
+  MailIcon,
+  MailOpenIcon,
   StarIcon,
   StarOffIcon,
   Trash2Icon,
@@ -63,6 +67,41 @@ export const ConvoMenu: React.FC<ConvoMenuProps> = ({
             void updateConvo(convo.id, { faved: !convo.faved });
           }}>
           {convo.faved ? "Unfav" : "Fav"}
+        </Menu.Item>
+        <Menu.Item
+          leftSection={
+            convo.muted ? (
+              <BellIcon size={MENU_ICON_SIZE} />
+            ) : (
+              <BellOffIcon size={MENU_ICON_SIZE} />
+            )
+          }
+          onClick={() => {
+            log.info(convo.muted ? "unmute clicked" : "mute clicked", {
+              convoId: convo.id,
+            });
+            void updateConvo(convo.id, { muted: !convo.muted });
+          }}>
+          {convo.muted ? "Unmute" : "Mute"}
+        </Menu.Item>
+        <Menu.Item
+          leftSection={
+            convo.unread ? (
+              <MailOpenIcon size={MENU_ICON_SIZE} />
+            ) : (
+              <MailIcon size={MENU_ICON_SIZE} />
+            )
+          }
+          onClick={() => {
+            log.info(
+              convo.unread ? "mark read clicked" : "mark unread clicked",
+              {
+                convoId: convo.id,
+              },
+            );
+            void updateConvo(convo.id, { unread: !convo.unread });
+          }}>
+          {convo.unread ? "Mark as read" : "Mark as unread"}
         </Menu.Item>
         {canLock && (
           <Menu.Item

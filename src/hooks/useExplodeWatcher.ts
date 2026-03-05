@@ -14,7 +14,12 @@ const deleteExpiredConvo = async (client: Client | null, convoId: string) => {
     const conversation =
       await client.conversations.getConversationById(convoId);
     if (conversation) {
-      await cleanUpExplodedConvo(conversation, convoId, client.inboxId);
+      await cleanUpExplodedConvo(
+        conversation,
+        convoId,
+        client.inboxId,
+        client.installationId,
+      );
     }
   } catch (err: unknown) {
     log.error("failed to clean up expired convo", { convoId }, err);

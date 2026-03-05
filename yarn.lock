@@ -374,6 +374,35 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@connectrpc/connect-node@npm:^2.1.1":
+  version: 2.1.1
+  resolution: "@connectrpc/connect-node@npm:2.1.1"
+  peerDependencies:
+    "@bufbuild/protobuf": ^2.7.0
+    "@connectrpc/connect": 2.1.1
+  checksum: 10/ae73390a07268ad5dcf8df8368dddb689d1f97a7b2542df7bd66e46b74e95d12b00733f0af00e7413ed366ec2ff018de3ee317111c5c0938478dc21fc4f55e9c
+  languageName: node
+  linkType: hard
+
+"@connectrpc/connect-web@npm:^2.1.1":
+  version: 2.1.1
+  resolution: "@connectrpc/connect-web@npm:2.1.1"
+  peerDependencies:
+    "@bufbuild/protobuf": ^2.7.0
+    "@connectrpc/connect": 2.1.1
+  checksum: 10/37b6c70d959b03fb0bb02b59a3a189d449508a5c504120dc08baddfc8548c0ea16a4f8fd3d7293be7a5ac9eacbc2faaf319895622ddd82a89fc402569dfcb2ea
+  languageName: node
+  linkType: hard
+
+"@connectrpc/connect@npm:^2.1.1":
+  version: 2.1.1
+  resolution: "@connectrpc/connect@npm:2.1.1"
+  peerDependencies:
+    "@bufbuild/protobuf": ^2.7.0
+  checksum: 10/828af3061f091d6474cd44c2cbc4386408188c6ada789d041e4683d2f4f7937d295ae8adeab54a7713e5dd4572bbe493c99f86d596bdbb8aeff655378c4182c0
+  languageName: node
+  linkType: hard
+
 "@emnapi/core@npm:^1.7.1":
   version: 1.8.1
   resolution: "@emnapi/core@npm:1.8.1"
@@ -2321,13 +2350,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@xmtp/browser-sdk@npm:^6.3.0":
-  version: 6.3.0
-  resolution: "@xmtp/browser-sdk@npm:6.3.0"
+"@xmtp/browser-sdk@npm:^6.5.0":
+  version: 6.5.0
+  resolution: "@xmtp/browser-sdk@npm:6.5.0"
   dependencies:
     "@xmtp/content-type-primitives": "npm:3.0.0"
     "@xmtp/wasm-bindings": "npm:1.9.1"
-  checksum: 10/1a48a10b2bf79df5023f327b34ce8ca060e0a00c3c83135763f817e72e642760d433b14a300e54db5e6fab88653e8e3b3521a0ea9c616199ea7448347bf2386d
+  checksum: 10/e35bf859dfa17c050190ce7c8d5c403694d63e24cb075db69dceb439a3d867ec50c990e88516ec68e1eef14c82277d328b790fe43f8f2853c65e2dad9b149a9f
   languageName: node
   linkType: hard
 
@@ -2344,6 +2373,18 @@ __metadata:
   version: 1.8.0
   resolution: "@xmtp/node-bindings@npm:1.8.0"
   checksum: 10/bd9678d21f5e2ab12350ad12f500d2e7d9b4b7c479e38d4ddc45c5691d226460b2aa024c1eed21934d63ea600103dd0e267d04a4b25972b6c7cb68bc2045a892
+  languageName: node
+  linkType: hard
+
+"@xmtp/notifications-client@npm:^0.0.1":
+  version: 0.0.1
+  resolution: "@xmtp/notifications-client@npm:0.0.1"
+  dependencies:
+    "@bufbuild/protobuf": "npm:^2.11.0"
+    "@connectrpc/connect": "npm:^2.1.1"
+    "@connectrpc/connect-node": "npm:^2.1.1"
+    "@connectrpc/connect-web": "npm:^2.1.1"
+  checksum: 10/30d971bd0b91378168d7d244338d27bee813d98f55c31ae060bf2a5bf68bc8d83e09447a9b8e6bbe47c7c19f71ef943e95cf9a67574563a8b7e345ef46b85281
   languageName: node
   linkType: hard
 
@@ -2804,7 +2845,8 @@ __metadata:
     "@types/react": "npm:^19.2.14"
     "@types/react-dom": "npm:^19.2.3"
     "@vitejs/plugin-react": "npm:^5.1.4"
-    "@xmtp/browser-sdk": "npm:^6.3.0"
+    "@xmtp/browser-sdk": "npm:^6.5.0"
+    "@xmtp/notifications-client": "npm:^0.0.1"
     date-fns: "npm:^4.1.0"
     dayjs: "npm:^1.11.19"
     dexie: "npm:^4.3.0"

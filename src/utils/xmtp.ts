@@ -1,7 +1,10 @@
 import {
   Client,
   IdentifierKind,
+  isAttachment,
+  isMultiRemoteAttachment,
   isReaction,
+  isRemoteAttachment,
   isText,
   isTextReply,
   LogLevel,
@@ -48,19 +51,13 @@ export const createClient = async (privateKey: Hex) => {
   return client;
 };
 
-export const buildClient = async (privateKey: Hex) => {
-  log.trace("buildClient", { env: xmtpEnv });
-  const signer = createSigner(privateKey);
-  const identifier = await signer.getIdentifier();
-  const client = await Client.build(identifier, {
-    env: xmtpEnv,
-    disableDeviceSync: true,
-    loggingLevel: LogLevel.Off,
-    appVersion: `convos-web/${version}`,
-  });
-  log.info("client built", { env: xmtpEnv });
-  return client;
-};
+function attachmentLabel(mimeType?: string): string {
+  if (!mimeType) return "An attachment was sent";
+  if (mimeType.startsWith("image/")) return "An image was sent";
+  if (mimeType.startsWith("video/")) return "A video was sent";
+  if (mimeType.startsWith("audio/")) return "An audio file was sent";
+  return "An attachment was sent";
+}
 
 export const getContentString = (message: DecodedMessage) => {
   log.trace("getContentString", { message });
@@ -72,6 +69,15 @@ export const getContentString = (message: DecodedMessage) => {
   }
   if (isReaction(message)) {
     return message.content?.content;
+  }
+  if (isAttachment(message) && message.content) {
+    return attachmentLabel(message.content.mimeType);
+  }
+  if (isRemoteAttachment(message)) {
+    return "An attachment was sent";
+  }
+  if (isMultiRemoteAttachment(message)) {
+    return "Attachments were sent";
   }
   return undefined;
 };

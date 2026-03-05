@@ -1,7 +1,7 @@
 import { Avatar, Badge, Group, Stack, Text } from "@mantine/core";
 import { useInterval } from "@mantine/hooks";
 import { Link } from "@tanstack/react-router";
-import { ImageIcon, StarIcon } from "lucide-react";
+import { BellOffIcon, ImageIcon, StarIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import type { Convo } from "@/db";
 import { useAvatar } from "@/hooks/useAvatar";
@@ -65,6 +65,7 @@ export const ConvoListItem: React.FC<ConvoListItemProps> = ({
       params={{ convoId: convo.id }}>
       <Group
         data-selected={selected || undefined}
+        data-unread={convo.unread || undefined}
         gap="xs"
         align="center"
         wrap="nowrap"
@@ -91,10 +92,36 @@ export const ConvoListItem: React.FC<ConvoListItemProps> = ({
                 {explodeCountdown}
               </Badge>
             )}
+            {convo.muted && (
+              <BellOffIcon
+                size={16}
+                color="var(--mantine-color-dimmed)"
+                style={{ flexShrink: 0 }}
+              />
+            )}
+            {convo.unread && <div className={classes.unreadDot} />}
           </Group>
-          <Text size="xs" c="dimmed" truncate>
-            {time}
-          </Text>
+          <Group
+            gap="xxxs"
+            wrap="nowrap"
+            style={{ overflow: "hidden" }}
+            maw="100%">
+            {time && (
+              <Text size="sm" c="dimmed" style={{ flexShrink: 0 }}>
+                {time}
+              </Text>
+            )}
+            {time && convo.lastMessage && (
+              <Text size="sm" c="dimmed" style={{ flexShrink: 0 }}>
+                &bull;
+              </Text>
+            )}
+            {convo.lastMessage && (
+              <Text size="sm" c="dimmed" truncate>
+                {convo.lastMessage}
+              </Text>
+            )}
+          </Group>
         </Stack>
       </Group>
     </Link>

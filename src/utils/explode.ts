@@ -12,6 +12,7 @@ import { db } from "@/db";
 import { updateExpiresAt } from "@/utils/appData";
 import { updateConvo } from "@/utils/convos";
 import { createLogger } from "@/utils/log";
+import { unregisterConvo } from "@/utils/notifications";
 
 const log = createLogger("explode");
 const contentTypeLog = createLogger("explode content type");
@@ -73,6 +74,7 @@ export const setExplodeTimer = async (
   convoId: string,
   expiresAt: Date,
   selfInboxId: string,
+  installationId?: string,
 ) => {
   log.trace("setExplodeTimer", {
     convoId,
@@ -99,7 +101,12 @@ export const setExplodeTimer = async (
 
   // if already expired, remove members, deny consent, and delete locally
   if (expiresAtUnix <= Math.floor(Date.now() / 1000)) {
-    await cleanUpExplodedConvo(conversation, convoId, selfInboxId);
+    await cleanUpExplodedConvo(
+      conversation,
+      convoId,
+      selfInboxId,
+      installationId,
+    );
   }
 };
 
@@ -108,6 +115,7 @@ export const cleanUpExplodedConvo = async (
   conversation: Conversation,
   convoId: string,
   selfInboxId: string,
+  installationId?: string,
 ) => {
   log.info("cleaning up exploded convo", { convoId, selfInboxId });
 
@@ -131,6 +139,12 @@ export const cleanUpExplodedConvo = async (
     } catch (err: unknown) {
       log.error("failed to deny consent", { convoId }, err);
     }
+  }
+
+  if (installationId) {
+    await unregisterConvo(installationId).catch((err: unknown) => {
+      log.warn("push unregister failed", { convoId }, err);
+    });
   }
 
   await db.avatars.where("convoId").equals(convoId).delete();

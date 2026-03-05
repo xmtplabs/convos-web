@@ -1,21 +1,32 @@
 import {
   ConsentState,
   Group,
+  isGroupUpdated,
+  isReaction,
   type AsyncStreamProxy,
   type BuiltInContentTypes,
   type Client,
   type Conversation,
   type DecodedMessage,
 } from "@xmtp/browser-sdk";
-import { createContext, useCallback, useRef, useState } from "react";
+import { createContext, useCallback, useEffect, useRef, useState } from "react";
 import { generatePrivateKey } from "viem/accounts";
 import { db, type Convo } from "@/db";
 import { decodeAppData, initGroupAppData } from "@/utils/appData";
+import { updateConvo } from "@/utils/convos";
 import { processDmInvite, processExistingDms } from "@/utils/invite";
 import { createLogger } from "@/utils/log";
-import { buildClient, createClient } from "@/utils/xmtp";
+import { registerConvo } from "@/utils/notifications";
+import { buildClient, createClient, getContentString } from "@/utils/xmtp";
 
 const log = createLogger("xmtp");
+
+function postActiveConvo(xmtpId: string | null) {
+  navigator.serviceWorker.controller?.postMessage({
+    type: "active-convo",
+    xmtpId,
+  });
+}
 
 type XmtpState =
   | { status: "idle"; client: null; conversation: null }
@@ -85,12 +96,14 @@ export const XmtpProvider: React.FC<{
       }
       convoIdRef.current = null;
       setupRef.current = Promise.resolve();
+      postActiveConvo(null);
       setState(idleState);
       log.info("disconnected");
       return;
     }
 
     convoIdRef.current = convo.id;
+    void updateConvo(convo.id, { unread: false });
 
     setState(loadingState);
 
@@ -171,6 +184,17 @@ export const XmtpProvider: React.FC<{
             client: newClient,
             conversation,
           });
+          postActiveConvo(group.id);
+
+          // register for push notifications (fire-and-forget)
+          if (newClient.installationId) {
+            registerConvo(newClient.installationId, conversation.topic).catch(
+              (err: unknown) => {
+                log.warn("push registration failed", err);
+              },
+            );
+          }
+
           return true;
         };
 
@@ -225,6 +249,16 @@ export const XmtpProvider: React.FC<{
       if (conversation) {
         log.info("setup: ready", { convoId: convo.id, xmtpId: convo.xmtpId });
         setState({ status: "ready", client: newClient, conversation });
+        postActiveConvo(convo.xmtpId);
+
+        // register for push notifications (fire-and-forget)
+        if (newClient.installationId) {
+          registerConvo(newClient.installationId, conversation.topic).catch(
+            (err: unknown) => {
+              log.warn("push registration failed", err);
+            },
+          );
+        }
 
         // start DM invite processing for creator convos
         if (convo.tag && conversation instanceof Group) {
@@ -313,6 +347,16 @@ export const XmtpProvider: React.FC<{
 
     if (conversation) {
       setState({ status: "ready", client, conversation });
+      postActiveConvo(group.id);
+
+      // register for push notifications (fire-and-forget)
+      if (client.installationId) {
+        registerConvo(client.installationId, conversation.topic).catch(
+          (err: unknown) => {
+            log.warn("push registration failed", err);
+          },
+        );
+      }
 
       // start DM invite processing for join requests
       const stream = await client.conversations.streamAllDmMessages({
@@ -328,6 +372,203 @@ export const XmtpProvider: React.FC<{
 
     return convo;
   }, []);
+
+  // sync active convo with SW on visibility changes so push notifications
+  // are suppressed while viewing a convo but not when the app is backgrounded
+  useEffect(() => {
+    const onVisibilityChange = () => {
+      if (document.visibilityState === "hidden") {
+        postActiveConvo(null);
+      } else if (state.conversation) {
+        postActiveConvo(state.conversation.id);
+      }
+    };
+    document.addEventListener("visibilitychange", onVisibilityChange);
+    return () => {
+      document.removeEventListener("visibilitychange", onVisibilityChange);
+    };
+  }, [state.conversation]);
+
+  // listen for decrypt-message from service worker
+  useEffect(() => {
+    if (!("serviceWorker" in navigator)) return;
+
+    const handler = (e: MessageEvent) => {
+      const data = e.data as { type?: string } | null;
+      if (!data || data.type !== "decrypt-message") return;
+
+      const { messageId, xmtpId, payload } = data as {
+        type: string;
+        messageId: string;
+        xmtpId: string;
+        payload: { message?: string; shouldPush?: boolean };
+      };
+
+      void handleDecrypt(messageId, xmtpId, payload);
+    };
+
+    const handleDecrypt = async (
+      reqId: string,
+      xmtpId: string,
+      payload: { message?: string; shouldPush?: boolean },
+    ) => {
+      // reply to SW: title+body = show notification, skip = suppress
+      const reply = (result: { title: string; body: string } | "skip") => {
+        navigator.serviceWorker.controller?.postMessage({
+          type: "decrypt-result",
+          messageId: reqId,
+          ...(result === "skip"
+            ? { skip: true }
+            : { title: result.title, body: result.body }),
+        });
+      };
+
+      try {
+        const convos = await db.convos.toArray();
+        const convo = convos.find((c) => c.xmtpId === xmtpId);
+        if (!convo) {
+          log.warn("decrypt: convo not found", { xmtpId });
+          return;
+        }
+
+        const convoName = convo.name || "Convo";
+
+        if (!payload.message) {
+          log.warn("decrypt: no message in payload");
+          reply("skip");
+          return;
+        }
+
+        const envelopeBytes = Uint8Array.from(atob(payload.message), (c) =>
+          c.charCodeAt(0),
+        );
+
+        // close active client to release OPFS lock
+        cancelRef.current?.();
+        cancelRef.current = null;
+        if (groupStreamRef.current) {
+          void groupStreamRef.current.end();
+          groupStreamRef.current = null;
+        }
+        if (dmStreamRef.current) {
+          void dmStreamRef.current.end();
+          dmStreamRef.current = null;
+        }
+        if (clientRef.current) {
+          clientRef.current.close();
+          clientRef.current = null;
+        }
+
+        log.debug("decrypt: building client", { xmtpId });
+        const tempClient = await buildClient(convo.privateKey);
+        try {
+          const conversation =
+            await tempClient.conversations.getConversationById(xmtpId);
+          if (!conversation) {
+            log.warn("decrypt: conversation not found", { xmtpId });
+            reply("skip");
+            return;
+          }
+
+          const processed =
+            await conversation.processStreamedMessage(envelopeBytes);
+          if (processed.length === 0) {
+            reply("skip");
+            return;
+          }
+
+          const decoded = await tempClient.conversations.getMessageById(
+            processed[0].id,
+          );
+          if (!decoded) {
+            reply("skip");
+            return;
+          }
+
+          const isSelf = decoded.senderInboxId === tempClient.inboxId;
+
+          // always update dexie with the new message
+          const dbUpdates: Partial<Convo> = {
+            lastUpdatedAtNs: decoded.sentAtNs,
+            unread: !isSelf,
+          };
+
+          // update db fields and determine whether to notify
+          if (isGroupUpdated(decoded) && decoded.content) {
+            const nameChange = decoded.content.metadataFieldChanges.find(
+              (c) => c.fieldName === "group_name" && c.newValue,
+            );
+            if (nameChange) {
+              dbUpdates.name = nameChange.newValue;
+              dbUpdates.lastMessage = convo.lastMessage;
+              if (!isSelf) {
+                const oldName = nameChange.oldValue || convoName;
+                reply({
+                  title: oldName,
+                  body: `The group name was changed to "${nameChange.newValue}"`,
+                });
+              } else {
+                reply("skip");
+              }
+            } else {
+              dbUpdates.lastMessage = convo.lastMessage;
+              reply("skip");
+            }
+          } else {
+            const content = getContentString(decoded);
+            dbUpdates.lastMessage = content ?? convo.lastMessage;
+            if (
+              !isSelf &&
+              content &&
+              (payload.shouldPush || isReaction(decoded))
+            ) {
+              reply({ title: convoName, body: content });
+            } else {
+              reply("skip");
+            }
+          }
+
+          void updateConvo(convo.id, dbUpdates);
+        } finally {
+          tempClient.close();
+        }
+
+        // silently reconnect without intermediate loading state
+        const activeConvoId = convoIdRef.current;
+        if (activeConvoId) {
+          const activeConvo = await db.convos.get(activeConvoId);
+          if (activeConvo) {
+            log.debug("decrypt: reconnecting to active convo", {
+              convoId: activeConvoId,
+            });
+            const newClient = await buildClient(activeConvo.privateKey);
+            clientRef.current = newClient;
+            await newClient.conversations.sync();
+            const newConversation =
+              await newClient.conversations.getConversationById(
+                activeConvo.xmtpId,
+              );
+            if (newConversation) {
+              // single state update — no loading flash
+              setState({
+                status: "ready",
+                client: newClient,
+                conversation: newConversation,
+              });
+              postActiveConvo(activeConvo.xmtpId);
+            }
+          }
+        }
+      } catch (err) {
+        log.error("decrypt: failed", err);
+      }
+    };
+
+    navigator.serviceWorker.addEventListener("message", handler);
+    return () => {
+      navigator.serviceWorker.removeEventListener("message", handler);
+    };
+  }, [setConvo]);
 
   return (
     <XmtpContext.Provider value={{ ...state, setConvo, createConvo }}>

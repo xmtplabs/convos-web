@@ -10,6 +10,7 @@ import {
 } from "@mantine/core";
 import { Group as XmtpGroup } from "@xmtp/browser-sdk";
 import {
+  BellOffIcon,
   EllipsisIcon,
   ImageIcon,
   InfoIcon,
@@ -146,7 +147,7 @@ export const ConvoHeader: React.FC = () => {
         <Stack flex="1 1 auto" gap="0" style={{ overflow: "hidden" }}>
           <Group gap={4} align="center" wrap="nowrap">
             {convo.faved && <StarIcon size={16} style={{ flexShrink: 0 }} />}
-            <Text fw={500} size="md" truncate flex="1 1 auto">
+            <Text fw={500} size="md" truncate>
               {convo.name}
             </Text>
             {explodeCountdown && (
@@ -157,6 +158,13 @@ export const ConvoHeader: React.FC = () => {
                 style={{ flexShrink: 0 }}>
                 {explodeCountdown}
               </Badge>
+            )}
+            {convo.muted && (
+              <BellOffIcon
+                size={16}
+                color="var(--mantine-color-dimmed)"
+                style={{ flexShrink: 0 }}
+              />
             )}
           </Group>
           <Group gap="xxxs" align="center" wrap="nowrap">

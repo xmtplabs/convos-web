@@ -12,3 +12,11 @@
 .root:hover {
   background: var(--mantine-color-gray-2);
 }
+
+.unreadDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--mantine-color-blue-6);
+  flex: 0 0 auto;
+}

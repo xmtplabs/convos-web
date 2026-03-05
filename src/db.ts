@@ -20,6 +20,8 @@ export type Convo = {
   locked?: boolean;
   expiresAtUnix?: number;
   blurImages?: boolean;
+  muted?: boolean;
+  unread?: boolean;
 };
 
 export type Profile = {

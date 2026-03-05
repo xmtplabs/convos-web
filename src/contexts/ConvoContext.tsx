@@ -12,6 +12,7 @@ import {
 import { createContext, useCallback, useEffect, useRef, useState } from "react";
 import { db, type Convo } from "@/db";
 import { useAppData } from "@/hooks/useAppData";
+import { useClient } from "@/hooks/useClient";
 import { useInboxId } from "@/hooks/useInboxId";
 import { usePermissions, type ConvoPermissions } from "@/hooks/usePermissions";
 import type { AppData, MemberProfile } from "@/utils/appData";
@@ -63,6 +64,7 @@ export const ConvoProvider: React.FC<{
   conversation: Conversation<BuiltInContentTypes>;
   children: React.ReactNode;
 }> = ({ convo, conversation, children }) => {
+  const { client } = useClient();
   const inboxId = useInboxId();
   const { appData, memberProfiles, refreshAppData } = useAppData(
     conversation,
@@ -131,7 +133,13 @@ export const ConvoProvider: React.FC<{
     setPendingExplode(null);
     setExploding(true);
     setExplodeError(null);
-    setExplodeTimer(conversation, convo.id, expiresAt, inboxId)
+    setExplodeTimer(
+      conversation,
+      convo.id,
+      expiresAt,
+      inboxId,
+      client?.installationId,
+    )
       .catch((err: unknown) => {
         log.error("explode failed", err);
         setExplodeError(
@@ -141,7 +149,7 @@ export const ConvoProvider: React.FC<{
       .finally(() => {
         setExploding(false);
       });
-  }, [pendingExplode, conversation, convo.id, inboxId]);
+  }, [pendingExplode, conversation, convo.id, inboxId, client?.installationId]);
 
   const cancelExplode = useCallback(() => {
     setPendingExplode(null);
