@@ -1,3 +1,5 @@
+declare const __SW_VERSION__: string;
+
 declare module "*.module.css" {
   const classes: { [key: string]: string };
   export default classes;

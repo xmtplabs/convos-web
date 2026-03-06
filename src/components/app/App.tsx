@@ -153,7 +153,7 @@ export const App = () => {
     navigator.serviceWorker.addEventListener("message", onMessage);
 
     navigator.serviceWorker
-      .register("/sw.js")
+      .register(`/sw.js?v=${__SW_VERSION__}`)
       .then((registration) => {
         log.info("service worker registered");
         // poll for updates so updates are discovered without navigation
