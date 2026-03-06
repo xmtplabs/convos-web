@@ -17,7 +17,7 @@ import { updateConvo } from "@/utils/convos";
 import { processDmInvite, processExistingDms } from "@/utils/invite";
 import { createLogger } from "@/utils/log";
 import { registerConvo } from "@/utils/notifications";
-import { buildClient, createClient, getContentString } from "@/utils/xmtp";
+import { createClient, getContentString } from "@/utils/xmtp";
 
 const log = createLogger("xmtp");
 
@@ -137,7 +137,7 @@ export const XmtpProvider: React.FC<{
       }
 
       log.trace("setup: building client", { convoId: convo.id });
-      const newClient = await buildClient(convo.privateKey);
+      const newClient = await createClient(convo.privateKey);
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       if (cancelled) {
         newClient.close();
@@ -460,7 +460,7 @@ export const XmtpProvider: React.FC<{
         }
 
         log.debug("decrypt: building client", { xmtpId });
-        const tempClient = await buildClient(convo.privateKey);
+        const tempClient = await createClient(convo.privateKey);
         try {
           const conversation =
             await tempClient.conversations.getConversationById(xmtpId);
@@ -541,7 +541,7 @@ export const XmtpProvider: React.FC<{
             log.debug("decrypt: reconnecting to active convo", {
               convoId: activeConvoId,
             });
-            const newClient = await buildClient(activeConvo.privateKey);
+            const newClient = await createClient(activeConvo.privateKey);
             clientRef.current = newClient;
             await newClient.conversations.sync();
             const newConversation =
