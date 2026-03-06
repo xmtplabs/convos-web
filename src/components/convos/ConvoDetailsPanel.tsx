@@ -1,4 +1,4 @@
-import { ActionIcon, Avatar, Group, Menu, Stack, Text } from "@mantine/core";
+import { ActionIcon, Avatar, Group, Stack, Text } from "@mantine/core";
 import { useLocation, useNavigate } from "@tanstack/react-router";
 import {
   ArrowLeftIcon,
@@ -17,7 +17,8 @@ import {
 } from "lucide-react";
 import { AddMenuItems } from "@/components/convos/AddMenu";
 import { ConvoPreferences } from "@/components/convos/ConvoPreferences";
-import { ExplodeMenuItems } from "@/components/convos/ExplodeSubMenu";
+import { ExplodeItems } from "@/components/convos/ExplodeSubMenu";
+import { ActionSheet } from "@/components/shared/ActionSheet";
 import { MembersList } from "@/components/shared/MembersList";
 import { useAvatar } from "@/hooks/useAvatar";
 import { useConvo } from "@/hooks/useConvo";
@@ -140,18 +141,18 @@ export const ConvoDetailsPanel: React.FC = () => {
               </div>
               {canExplode && (
                 <div className={classes.action}>
-                  <Menu withArrow position="bottom">
-                    <Menu.Target>
+                  <ActionSheet withArrow position="bottom">
+                    <ActionSheet.Target>
                       <ActionIcon variant="default" size={48} radius="xl">
                         <BombIcon
                           size={20}
                           color="var(--mantine-color-red-6)"
                         />
                       </ActionIcon>
-                    </Menu.Target>
-                    <Menu.Dropdown>
+                    </ActionSheet.Target>
+                    <ActionSheet.Dropdown>
                       {!hasActiveTimer && (
-                        <ExplodeMenuItems
+                        <ExplodeItems
                           onExplode={explode}
                           onChooseDateTime={() => {
                             void navigate({
@@ -162,7 +163,7 @@ export const ConvoDetailsPanel: React.FC = () => {
                         />
                       )}
                       {hasActiveTimer && (
-                        <Menu.Item
+                        <ActionSheet.Item
                           color="red"
                           leftSection={<BombIcon size={MENU_ICON_SIZE} />}
                           onClick={() => {
@@ -170,10 +171,10 @@ export const ConvoDetailsPanel: React.FC = () => {
                             explode(() => new Date(), true);
                           }}>
                           Explode now
-                        </Menu.Item>
+                        </ActionSheet.Item>
                       )}
-                    </Menu.Dropdown>
-                  </Menu>
+                    </ActionSheet.Dropdown>
+                  </ActionSheet>
                   <Text size="xs" c="red">
                     Explode
                   </Text>
@@ -181,17 +182,17 @@ export const ConvoDetailsPanel: React.FC = () => {
               )}
               {(canLock || canExplode) && (
                 <div className={classes.action}>
-                  <Menu withArrow position="bottom">
-                    <Menu.Target>
+                  <ActionSheet withArrow position="bottom">
+                    <ActionSheet.Target>
                       <ActionIcon variant="default" size={48} radius="xl">
                         <EllipsisIcon size={20} />
                       </ActionIcon>
-                    </Menu.Target>
-                    <Menu.Dropdown>
+                    </ActionSheet.Target>
+                    <ActionSheet.Dropdown>
                       <AddMenuItems />
-                      <Menu.Divider />
+                      <ActionSheet.ItemDivider />
                       {canLock && (
-                        <Menu.Item
+                        <ActionSheet.Item
                           leftSection={
                             convo.locked ? (
                               <LockOpenIcon size={MENU_ICON_SIZE} />
@@ -208,9 +209,9 @@ export const ConvoDetailsPanel: React.FC = () => {
                             });
                           }}>
                           {convo.locked ? "Unlock" : "Lock"}
-                        </Menu.Item>
+                        </ActionSheet.Item>
                       )}
-                      <Menu.Item
+                      <ActionSheet.Item
                         color="red"
                         leftSection={<Trash2Icon size={MENU_ICON_SIZE} />}
                         onClick={() => {
@@ -220,9 +221,9 @@ export const ConvoDetailsPanel: React.FC = () => {
                           });
                         }}>
                         Delete
-                      </Menu.Item>
-                    </Menu.Dropdown>
-                  </Menu>
+                      </ActionSheet.Item>
+                    </ActionSheet.Dropdown>
+                  </ActionSheet>
                   <Text size="xs">More</Text>
                 </div>
               )}

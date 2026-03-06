@@ -1,7 +1,8 @@
-import { ActionIcon, Menu } from "@mantine/core";
+import { ActionIcon } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
 import { useNavigate } from "@tanstack/react-router";
 import { LinkIcon, PlusIcon, QrCodeIcon } from "lucide-react";
+import { ActionSheet } from "@/components/shared/ActionSheet";
 import { useConvo } from "@/hooks/useConvo";
 import { useInboxId } from "@/hooks/useInboxId";
 import { createInviteSlug, getInviteUrl } from "@/utils/invite";
@@ -16,7 +17,7 @@ export const AddMenuItems: React.FC = () => {
 
   return (
     <>
-      <Menu.Item
+      <ActionSheet.Item
         leftSection={<LinkIcon size={14} />}
         onClick={() => {
           if (!appData) return;
@@ -30,8 +31,8 @@ export const AddMenuItems: React.FC = () => {
           });
         }}>
         Copy invite link
-      </Menu.Item>
-      <Menu.Item
+      </ActionSheet.Item>
+      <ActionSheet.Item
         leftSection={<QrCodeIcon size={14} />}
         onClick={() =>
           void navigate({
@@ -40,7 +41,7 @@ export const AddMenuItems: React.FC = () => {
           })
         }>
         Show convo QR code
-      </Menu.Item>
+      </ActionSheet.Item>
     </>
   );
 };
@@ -51,15 +52,15 @@ export type AddMenuProps = {
 
 export const AddMenu: React.FC<AddMenuProps> = ({ visibleFrom }) => {
   return (
-    <Menu withArrow position="bottom-end">
-      <Menu.Target>
+    <ActionSheet withArrow position="bottom-end">
+      <ActionSheet.Target>
         <ActionIcon variant="transparent" visibleFrom={visibleFrom}>
           <PlusIcon size={24} />
         </ActionIcon>
-      </Menu.Target>
-      <Menu.Dropdown>
+      </ActionSheet.Target>
+      <ActionSheet.Dropdown>
         <AddMenuItems />
-      </Menu.Dropdown>
-    </Menu>
+      </ActionSheet.Dropdown>
+    </ActionSheet>
   );
 };

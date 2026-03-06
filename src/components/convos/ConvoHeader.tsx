@@ -26,6 +26,7 @@ import { LinkActionIcon } from "@/components/shared/Button";
 import { useAvatar } from "@/hooks/useAvatar";
 import { useConvo } from "@/hooks/useConvo";
 import { useExplodeCountdown } from "@/hooks/useExplodeCountdown";
+import { useIsMobile } from "@/hooks/useMobile";
 import { removeGroupImage, updateGroupImage } from "@/utils/appData";
 import { validateFile } from "@/utils/attachment";
 import { GROUP_IMAGE_INBOX_ID } from "@/utils/avatars";
@@ -44,6 +45,7 @@ export const ConvoHeader: React.FC = () => {
     sync,
     toggleDetails,
   } = useConvo();
+  const isMobile = useIsMobile();
   const isPending = convo.status === "pending";
   const explodeCountdown = useExplodeCountdown(convo.expiresAtUnix);
   const groupImage = useAvatar(convo.id, GROUP_IMAGE_INBOX_ID);
@@ -186,18 +188,22 @@ export const ConvoHeader: React.FC = () => {
       </Group>
       {!isPending && (
         <Group align="center" gap="md" flex="0 0 auto">
-          <ConvoMenu
-            convo={convo}
-            appData={appData}
-            canLock={permissions?.canLock}
-            canAddMembers={permissions?.canAddMembers}
-            canExplode={permissions?.canRemoveMembers}
-            onExplode={explode}
-            onToggleDetails={toggleDetails}>
-            <ActionIcon variant="transparent">
-              <EllipsisIcon size={24} />
+          {isMobile ? (
+            <ActionIcon variant="transparent" onClick={toggleDetails}>
+              <InfoIcon size={24} />
             </ActionIcon>
-          </ConvoMenu>
+          ) : (
+            <ConvoMenu
+              convo={convo}
+              appData={appData}
+              canLock={permissions?.canLock}
+              canExplode={permissions?.canRemoveMembers}
+              onExplode={explode}>
+              <ActionIcon variant="transparent">
+                <EllipsisIcon size={24} />
+              </ActionIcon>
+            </ConvoMenu>
+          )}
           {convo.locked && permissions?.canLock && (
             <LinkActionIcon
               variant="transparent"

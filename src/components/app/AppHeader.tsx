@@ -1,4 +1,4 @@
-import { ActionIcon, Box, Group, Menu, Text } from "@mantine/core";
+import { ActionIcon, Box, Group, Text } from "@mantine/core";
 import { useLocalStorage } from "@mantine/hooks";
 import {
   CheckIcon,
@@ -7,6 +7,7 @@ import {
   SettingsIcon,
   SquarePenIcon,
 } from "lucide-react";
+import { ActionSheet } from "@/components/shared/ActionSheet";
 import { LinkActionIcon } from "@/components/shared/Button";
 import { Logo } from "@/components/shared/Logo";
 import { useNav } from "@/contexts/NavContext";
@@ -51,14 +52,14 @@ export const AppHeader = () => {
           search={{ modal: "about" }}>
           <SettingsIcon size={24} />
         </LinkActionIcon>
-        <Menu withArrow position="bottom">
-          <Menu.Target>
+        <ActionSheet withArrow position="bottom">
+          <ActionSheet.Target>
             <ActionIcon radius="xl" size="lg" variant="transparent">
               <ListFilterIcon size={24} />
             </ActionIcon>
-          </Menu.Target>
-          <Menu.Dropdown>
-            <Menu.Item
+          </ActionSheet.Target>
+          <ActionSheet.Dropdown>
+            <ActionSheet.Item
               leftSection={
                 filter === "all" ? (
                   <CheckIcon size={ICON_SIZE} />
@@ -71,8 +72,8 @@ export const AppHeader = () => {
                 setFilter("all");
               }}>
               All
-            </Menu.Item>
-            <Menu.Item
+            </ActionSheet.Item>
+            <ActionSheet.Item
               leftSection={
                 filter === "unread" ? (
                   <CheckIcon size={ICON_SIZE} />
@@ -85,9 +86,9 @@ export const AppHeader = () => {
                 setFilter("unread");
               }}>
               Unread
-            </Menu.Item>
-          </Menu.Dropdown>
-        </Menu>
+            </ActionSheet.Item>
+          </ActionSheet.Dropdown>
+        </ActionSheet>
         <LinkActionIcon radius="xl" size="lg" to="/new" variant="transparent">
           <SquarePenIcon size={24} />
         </LinkActionIcon>

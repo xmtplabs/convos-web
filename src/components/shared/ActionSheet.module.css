@@ -1,0 +1,37 @@
+.drawer {
+  border-radius: var(--mantine-radius-lg) var(--mantine-radius-lg) 0 0;
+  max-height: calc(100dvh - var(--mantine-spacing-xl));
+  height: fit-content !important;
+}
+
+.body {
+  padding: var(--mantine-spacing-xs) 0
+    calc(var(--mantine-spacing-md) + env(safe-area-inset-bottom));
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  gap: var(--mantine-spacing-sm);
+  width: 100%;
+  padding: var(--mantine-spacing-sm) var(--mantine-spacing-md);
+}
+
+.item:active {
+  background-color: var(--mantine-color-gray-light-hover);
+}
+
+.icon {
+  display: flex;
+  align-items: center;
+  width: 20px;
+  justify-content: center;
+}
+
+@media (display-mode: standalone) {
+  .body {
+    padding-bottom: calc(
+      env(safe-area-inset-bottom, 0px) + var(--mantine-spacing-md)
+    );
+  }
+}
