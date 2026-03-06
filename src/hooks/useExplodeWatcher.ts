@@ -6,13 +6,16 @@ import { createLogger } from "@/utils/log";
 
 const log = createLogger("explode");
 
-const deleteExpiredConvo = async (client: Client | null, convoId: string) => {
-  log.trace("deleteExpiredConvo", { convoId });
+const deleteExpiredConvo = async (
+  client: Client | null,
+  convoId: string,
+  xmtpId: string,
+) => {
+  log.trace("deleteExpiredConvo", { convoId, xmtpId });
   if (!client?.inboxId) return;
 
   try {
-    const conversation =
-      await client.conversations.getConversationById(convoId);
+    const conversation = await client.conversations.getConversationById(xmtpId);
     if (conversation) {
       await cleanUpExplodedConvo(
         conversation,
@@ -37,13 +40,17 @@ export const useExplodeWatcher = () => {
     );
 
     worker.onmessage = (
-      e: MessageEvent<{ type: string; convoIds: string[] }>,
+      e: MessageEvent<{
+        type: string;
+        convos: { id: string; xmtpId: string }[];
+      }>,
     ) => {
       if (e.data.type === "convos-expired") {
-        const convoIds = e.data.convoIds;
-        log.info("worker reported expired convos", { convoIds });
-        for (const id of convoIds) {
-          deleteExpiredConvo(client, id).catch((err: unknown) => {
+        log.info("worker reported expired convos", {
+          convos: e.data.convos,
+        });
+        for (const { id, xmtpId } of e.data.convos) {
+          deleteExpiredConvo(client, id, xmtpId).catch((err: unknown) => {
             log.error("failed to delete expired convo", { convoId: id }, err);
           });
         }
