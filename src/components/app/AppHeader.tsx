@@ -1,5 +1,4 @@
-import { ActionIcon, Box, Group, Text } from "@mantine/core";
-import { useLocalStorage } from "@mantine/hooks";
+import { ActionIcon, Box, Group, Menu, Text } from "@mantine/core";
 import {
   CheckIcon,
   ListFilterIcon,
@@ -7,7 +6,7 @@ import {
   SettingsIcon,
   SquarePenIcon,
 } from "lucide-react";
-import { ActionSheet } from "@/components/shared/ActionSheet";
+import { useConvosFilter } from "@/components/convos/ConvosList";
 import { LinkActionIcon } from "@/components/shared/Button";
 import { Logo } from "@/components/shared/Logo";
 import { useNav } from "@/contexts/NavContext";
@@ -16,16 +15,11 @@ import classes from "./AppHeader.module.css";
 
 const log = createLogger("app-header");
 
-type Filter = "all" | "unread";
-
 const ICON_SIZE = 14;
 
 export const AppHeader = () => {
   const { openNav } = useNav();
-  const [filter, setFilter] = useLocalStorage<Filter>({
-    key: "convos-filter",
-    defaultValue: "all",
-  });
+  const [filter, setFilter] = useConvosFilter();
 
   return (
     <Group
@@ -52,14 +46,18 @@ export const AppHeader = () => {
           search={{ modal: "about" }}>
           <SettingsIcon size={24} />
         </LinkActionIcon>
-        <ActionSheet withArrow position="bottom">
-          <ActionSheet.Target>
-            <ActionIcon radius="xl" size="lg" variant="transparent">
+        <Menu withArrow position="bottom">
+          <Menu.Target>
+            <ActionIcon
+              radius="xl"
+              size="lg"
+              variant="transparent"
+              visibleFrom="sm">
               <ListFilterIcon size={24} />
             </ActionIcon>
-          </ActionSheet.Target>
-          <ActionSheet.Dropdown>
-            <ActionSheet.Item
+          </Menu.Target>
+          <Menu.Dropdown>
+            <Menu.Item
               leftSection={
                 filter === "all" ? (
                   <CheckIcon size={ICON_SIZE} />
@@ -72,8 +70,8 @@ export const AppHeader = () => {
                 setFilter("all");
               }}>
               All
-            </ActionSheet.Item>
-            <ActionSheet.Item
+            </Menu.Item>
+            <Menu.Item
               leftSection={
                 filter === "unread" ? (
                   <CheckIcon size={ICON_SIZE} />
@@ -86,9 +84,9 @@ export const AppHeader = () => {
                 setFilter("unread");
               }}>
               Unread
-            </ActionSheet.Item>
-          </ActionSheet.Dropdown>
-        </ActionSheet>
+            </Menu.Item>
+          </Menu.Dropdown>
+        </Menu>
         <LinkActionIcon radius="xl" size="lg" to="/new" variant="transparent">
           <SquarePenIcon size={24} />
         </LinkActionIcon>

@@ -90,17 +90,18 @@ const Target: React.FC<{ children: ReactNode }> = ({ children }) => {
 };
 
 const Dropdown: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const { mobile, opened, close } = useActionSheet();
-  if (!mobile) {
+  const ctx = useActionSheet();
+  if (!ctx.mobile) {
     return <Menu.Dropdown>{children}</Menu.Dropdown>;
   }
   return (
     <Drawer
-      opened={opened}
-      onClose={close ?? (() => {})}
+      opened={ctx.opened}
+      onClose={ctx.close ?? (() => {})}
       position="bottom"
       withCloseButton={false}
       size="auto"
+      zIndex={1200}
       transitionProps={{
         transition: "slide-up",
         duration: 200,
@@ -110,7 +111,9 @@ const Dropdown: React.FC<{ children: ReactNode }> = ({ children }) => {
         content: classes.drawer,
         body: classes.body,
       }}>
-      {children}
+      <ActionSheetContext.Provider value={ctx}>
+        {children}
+      </ActionSheetContext.Provider>
     </Drawer>
   );
 };
