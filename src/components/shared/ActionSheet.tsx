@@ -101,7 +101,6 @@ const Dropdown: React.FC<{ children: ReactNode }> = ({ children }) => {
       position="bottom"
       withCloseButton={false}
       size="auto"
-      zIndex={1200}
       transitionProps={{
         transition: "slide-up",
         duration: 200,
