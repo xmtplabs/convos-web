@@ -13,11 +13,12 @@ import { ExplodeConvoModal } from "@/components/modals/ExplodeConvoModal";
 import { InviteModal } from "@/components/modals/InviteModal";
 import { LockConvoModal } from "@/components/modals/LockConvoModal";
 import { UnlockConvoModal } from "@/components/modals/UnlockConvoModal";
-import { LoadingMessage } from "@/components/shared/LoadingMessage";
+import { MessagesSkeleton } from "@/components/shared/MessagesSkeleton";
 import { Modal, ModalCloseButton } from "@/components/shared/Modal";
-import { ConvoContext, ConvoProvider } from "@/contexts/ConvoContext";
+import { ConvoProvider } from "@/contexts/ConvoContext";
 import { XmtpContext } from "@/contexts/XmtpContext";
 import { db } from "@/db";
+import { useConvo } from "@/hooks/useConvo";
 import { useMessages } from "@/hooks/useMessages";
 import { ConvoLayout } from "@/layouts/ConvoLayout";
 import { Route } from "@/routes/_app/convo/$convoId";
@@ -28,7 +29,7 @@ const log = createLogger("convo");
 
 const ConvoContent = () => {
   const { messages, messagesLoading } = useMessages();
-  const ctx = useContext(ConvoContext);
+  const ctx = useConvo();
   const { action } = Route.useSearch();
   const navigate = useNavigate();
 
@@ -44,17 +45,17 @@ const ConvoContent = () => {
       <ConvoLayout
         header={<ConvoHeader />}
         footer={<Composer />}
-        loading={ctx?.exploding}
-        detailsOpen={ctx?.detailsOpen}
+        loading={ctx.exploding}
+        detailsOpen={ctx.detailsOpen}
         withScrollArea={false}>
         {messagesLoading ? (
-          <LoadingMessage message="Connecting..." />
+          <MessagesSkeleton convo={ctx.convo} />
         ) : (
           <MessageList messages={messages} />
         )}
       </ConvoLayout>
       <ConvoDetailsPanel />
-      {ctx?.pendingExplode != null && (
+      {ctx.pendingExplode != null && (
         <Modal
           onClose={() => {
             ctx.cancelExplode();
@@ -84,7 +85,7 @@ const ConvoContent = () => {
           </Stack>
         </Modal>
       )}
-      {ctx != null && ctx.explodeError != null && (
+      {ctx.explodeError != null && (
         <Modal
           onClose={() => {
             ctx.clearExplodeError();
@@ -204,7 +205,7 @@ export const Convo = () => {
   }, [loaderConvo.id, ctx?.setConvo]);
 
   if (!ctx) {
-    return <LoadingMessage message="Connecting..." />;
+    return <MessagesSkeleton />;
   }
 
   // keep showing the convo even if status briefly changes
@@ -227,5 +228,5 @@ export const Convo = () => {
     );
   }
 
-  return <LoadingMessage message="Connecting..." />;
+  return <MessagesSkeleton />;
 };
