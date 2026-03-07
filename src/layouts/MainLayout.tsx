@@ -16,10 +16,12 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
   log.trace("render", { opened });
   return (
     <div className={classes.root} data-state={opened ? "opened" : "closed"}>
-      <aside className={classes.aside}>
-        <nav className={classes.asideNav}>{aside}</nav>
-      </aside>
-      <main className={classes.main}>
+      {aside && (
+        <aside className={classes.aside}>
+          <nav className={classes.asideNav}>{aside}</nav>
+        </aside>
+      )}
+      <main className={aside ? classes.main : classes.mainFull}>
         <div className={classes.mainContent}>{children}</div>
       </main>
     </div>

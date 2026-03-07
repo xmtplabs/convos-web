@@ -15,6 +15,14 @@
   flex-direction: column;
 }
 
+.mainFull {
+  position: relative;
+  background-color: var(--mantine-color-body);
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+}
+
 .mainContent {
   flex-grow: 1;
   display: flex;

@@ -72,10 +72,12 @@ const AppContent = () => {
       <MainLayout
         opened={navOpened}
         aside={
-          <>
-            <AppHeader />
-            <ConvosList convos={convos} />
-          </>
+          convos.length > 0 ? (
+            <>
+              <AppHeader />
+              <ConvosList convos={convos} />
+            </>
+          ) : null
         }>
         <Outlet />
         {modal === "about" && <AboutModal />}
