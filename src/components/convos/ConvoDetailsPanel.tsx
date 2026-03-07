@@ -9,6 +9,8 @@ import {
   ImageIcon,
   LockIcon,
   LockOpenIcon,
+  MailIcon,
+  MailOpenIcon,
   PencilIcon,
   StarIcon,
   StarOffIcon,
@@ -180,18 +182,42 @@ export const ConvoDetailsPanel: React.FC = () => {
                   </Text>
                 </div>
               )}
-              {(canLock || canExplode) && (
-                <div className={classes.action}>
-                  <ActionSheet withArrow position="bottom">
-                    <ActionSheet.Target>
-                      <ActionIcon variant="default" size={48} radius="xl">
-                        <EllipsisIcon size={20} />
-                      </ActionIcon>
-                    </ActionSheet.Target>
-                    <ActionSheet.Dropdown>
-                      <AddMenuItems />
-                      <ActionSheet.ItemDivider />
-                      {canLock && (
+              <div className={classes.action}>
+                <ActionSheet withArrow position="bottom">
+                  <ActionSheet.Target>
+                    <ActionIcon variant="default" size={48} radius="xl">
+                      <EllipsisIcon size={20} />
+                    </ActionIcon>
+                  </ActionSheet.Target>
+                  <ActionSheet.Dropdown>
+                    <ActionSheet.Item
+                      leftSection={
+                        convo.unread ? (
+                          <MailOpenIcon size={MENU_ICON_SIZE} />
+                        ) : (
+                          <MailIcon size={MENU_ICON_SIZE} />
+                        )
+                      }
+                      onClick={() => {
+                        log.info(
+                          convo.unread
+                            ? "mark read clicked"
+                            : "mark unread clicked",
+                          { convoId: convo.id },
+                        );
+                        void updateConvo(convo.id, { unread: !convo.unread });
+                      }}>
+                      {convo.unread ? "Mark as read" : "Mark as unread"}
+                    </ActionSheet.Item>
+                    {!convo.locked && permissions?.canAddMembers && (
+                      <>
+                        <ActionSheet.ItemDivider />
+                        <AddMenuItems />
+                      </>
+                    )}
+                    {canLock && (
+                      <>
+                        <ActionSheet.ItemDivider />
                         <ActionSheet.Item
                           leftSection={
                             convo.locked ? (
@@ -210,23 +236,24 @@ export const ConvoDetailsPanel: React.FC = () => {
                           }}>
                           {convo.locked ? "Unlock" : "Lock"}
                         </ActionSheet.Item>
-                      )}
-                      <ActionSheet.Item
-                        color="red"
-                        leftSection={<Trash2Icon size={MENU_ICON_SIZE} />}
-                        onClick={() => {
-                          void navigate({
-                            to: ".",
-                            search: { action: "delete" },
-                          });
-                        }}>
-                        Delete
-                      </ActionSheet.Item>
-                    </ActionSheet.Dropdown>
-                  </ActionSheet>
-                  <Text size="xs">More</Text>
-                </div>
-              )}
+                      </>
+                    )}
+                    <ActionSheet.ItemDivider />
+                    <ActionSheet.Item
+                      color="red"
+                      leftSection={<Trash2Icon size={MENU_ICON_SIZE} />}
+                      onClick={() => {
+                        void navigate({
+                          to: ".",
+                          search: { action: "delete" },
+                        });
+                      }}>
+                      Delete
+                    </ActionSheet.Item>
+                  </ActionSheet.Dropdown>
+                </ActionSheet>
+                <Text size="xs">More</Text>
+              </div>
             </Group>
             <MembersList />
             <ConvoPreferences />
