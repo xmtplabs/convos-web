@@ -1,29 +1,7 @@
-import { createNotificationsClient } from "@xmtp/notifications-client/browser";
 import { createLogger } from "@/utils/log";
 
 const log = createLogger("notifications");
 
-const NOTIFICATIONS_URL = import.meta.env.VITE_XMTP_NOTIFICATIONS_URL;
-const VAPID_PUBLIC_KEY = import.meta.env.VITE_VAPID_PUBLIC_KEY;
-
-type NotificationsClient = ReturnType<typeof createNotificationsClient>;
-
-let notificationsClient: NotificationsClient | null = null;
-
-function getClient(): NotificationsClient | null {
-  if (!NOTIFICATIONS_URL) {
-    log.warn("VITE_XMTP_NOTIFICATIONS_URL not set, skipping");
-    return null;
-  }
-  if (!notificationsClient) {
-    notificationsClient = createNotificationsClient({
-      baseUrl: NOTIFICATIONS_URL,
-    });
-  }
-  return notificationsClient;
-}
-
-// convert a base64url-encoded VAPID key to a Uint8Array for pushManager
 function urlBase64ToUint8Array(base64String: string) {
   const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
   const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
@@ -35,15 +13,50 @@ function urlBase64ToUint8Array(base64String: string) {
   return arr;
 }
 
+function keysEqual(a: Uint8Array, b: Uint8Array): boolean {
+  if (a.length !== b.length) {
+    return false;
+  }
+  for (let i = 0; i < a.length; i++) {
+    if (a[i] !== b[i]) {
+      return false;
+    }
+  }
+  return true;
+}
+
+let cachedVapidKey: string | null = null;
+
+async function getVapidKey(): Promise<string | null> {
+  if (cachedVapidKey) {
+    return cachedVapidKey;
+  }
+
+  try {
+    const res = await fetch("/api/v1/notifications/vapid-key");
+    if (!res.ok) {
+      log.warn("failed to fetch VAPID key", { status: res.status });
+      return null;
+    }
+    const data = (await res.json()) as { key: string };
+    cachedVapidKey = data.key;
+    return cachedVapidKey;
+  } catch (err) {
+    log.error("failed to fetch VAPID key", err);
+    return null;
+  }
+}
+
 let cachedSubscription: PushSubscription | null = null;
 
-// request permission and subscribe via pushManager, caching the result.
-// if the VAPID key changed since the last subscription, unsubscribe first.
 async function ensurePushSubscription(): Promise<PushSubscription | null> {
-  if (cachedSubscription) return cachedSubscription;
+  if (cachedSubscription) {
+    return cachedSubscription;
+  }
 
-  if (!VAPID_PUBLIC_KEY) {
-    log.warn("VITE_VAPID_PUBLIC_KEY not set, skipping push subscription");
+  const vapidKey = await getVapidKey();
+  if (!vapidKey) {
+    log.error("failed to get VAPID key");
     return null;
   }
 
@@ -61,7 +74,7 @@ async function ensurePushSubscription(): Promise<PushSubscription | null> {
   const pushManager =
     (navigator as unknown as { pushManager?: PushManager }).pushManager ??
     registration.pushManager;
-  const expectedKey = urlBase64ToUint8Array(VAPID_PUBLIC_KEY);
+  const expectedKey = urlBase64ToUint8Array(vapidKey);
 
   // check if existing subscription uses a different VAPID key
   const existing = await pushManager.getSubscription();
@@ -84,24 +97,16 @@ async function ensurePushSubscription(): Promise<PushSubscription | null> {
   return cachedSubscription;
 }
 
-function keysEqual(a: Uint8Array, b: Uint8Array): boolean {
-  if (a.length !== b.length) return false;
-  for (let i = 0; i < a.length; i++) {
-    if (a[i] !== b[i]) return false;
-  }
-  return true;
-}
-
 // register a single convo for push notifications
 export async function registerConvo(
   installationId: string,
   topic: string,
 ): Promise<boolean> {
-  const client = getClient();
-  if (!client) return false;
-
   const subscription = await ensurePushSubscription();
-  if (!subscription) return false;
+  if (!subscription) {
+    log.error("failed to ensure push subscription");
+    return false;
+  }
 
   const { endpoint, keys } = subscription.toJSON();
   if (!endpoint || !keys?.p256dh || !keys.auth) {
@@ -109,26 +114,45 @@ export async function registerConvo(
     return false;
   }
 
-  log.info("registering installation", { installationId, endpoint });
-  await client.register(installationId, {
-    kind: "webPush",
-    endpoint,
-    p256dh: keys.p256dh,
-    auth: keys.auth,
-  });
+  log.info("subscribing", { installationId, topic });
+  try {
+    const res = await fetch("/api/v1/notifications/subscribe", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        installationId,
+        subscription: { endpoint, p256dh: keys.p256dh, auth: keys.auth },
+        topic,
+      }),
+    });
 
-  log.info("subscribing to topic", { installationId, topic });
-  await client.subscribe(installationId, [{ topic }]);
+    if (!res.ok) {
+      log.error("subscribe failed", { status: res.status });
+      return false;
+    }
 
-  log.info("push registration complete", { installationId });
-  return true;
+    log.info("push registration complete", { installationId });
+    return true;
+  } catch (err) {
+    log.error("subscribe failed", installationId, topic, err);
+    return false;
+  }
 }
 
 // unregister an installation from push notifications
 export async function unregisterConvo(installationId: string): Promise<void> {
-  const client = getClient();
-  if (!client) return;
+  log.info("unsubscribing", { installationId });
+  try {
+    const res = await fetch("/api/v1/notifications/unsubscribe", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ installationId }),
+    });
 
-  log.info("deleting installation %s", installationId);
-  await client.delete(installationId);
+    if (!res.ok) {
+      log.error("unsubscribe failed", { status: res.status });
+    }
+  } catch (err) {
+    log.error("unsubscribe failed", installationId, err);
+  }
 }
