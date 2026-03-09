@@ -3,7 +3,10 @@ import { Notifications } from "@mantine/notifications";
 // import { TanStackDevtools } from "@tanstack/react-devtools";
 import { HeadContent, Scripts } from "@tanstack/react-router";
 // import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
+import { createLogger } from "@/utils/log";
 import { theme } from "@/utils/theme";
+
+const log = createLogger("root");
 
 const GLOBAL_ERROR_SCRIPT = `
 window.onerror = function(msg, src, line, col, err) {
@@ -12,11 +15,10 @@ window.onerror = function(msg, src, line, col, err) {
 window.onunhandledrejection = function(e) {
   console.error('[global] unhandled rejection:', e.reason);
 };
-console.debug('[ui] global error handlers installed');
 `;
 
 export const Root = ({ children }: { children: React.ReactNode }) => {
-  console.debug("[ui] Root shell render");
+  log.debug("shell render");
   return (
     <html lang="en">
       <head>

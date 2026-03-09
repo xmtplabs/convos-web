@@ -1,4 +1,7 @@
-const LEVELS = ["trace", "debug", "info", "warn", "error"] as const;
+const OUTPUT_LEVELS = ["trace", "debug", "info", "warn", "error"] as const;
+type OutputLevel = (typeof OUTPUT_LEVELS)[number];
+
+const LEVELS = [...OUTPUT_LEVELS, "off"] as const;
 export type LogLevel = (typeof LEVELS)[number];
 export type LogDomain = string;
 
@@ -8,6 +11,7 @@ const LEVEL_INDEX: Record<LogLevel, number> = {
   info: 2,
   warn: 3,
   error: 4,
+  off: 5,
 };
 
 const STORAGE_KEY = "convos-log-config";
@@ -24,12 +28,32 @@ const getStoredConfig = (): LogConfig => {
   return {};
 };
 
+const isServer = typeof window === "undefined";
+
+const getEnv = (name: string): string | undefined => {
+  if (isServer) {
+    try {
+      return process.env[name];
+    } catch {
+      return undefined;
+    }
+  }
+  try {
+    return import.meta.env[`VITE_${name}`] as string | undefined;
+  } catch {
+    return undefined;
+  }
+};
+
 const parseEnvDomains = (): LogConfig => {
-  const raw = import.meta.env.VITE_LOG_DOMAINS;
+  const raw = getEnv("LOG_DOMAINS");
   if (!raw) return {};
   const config: LogConfig = {};
   for (const entry of raw.split(",")) {
-    const [domain, level] = entry.split(":") as [string, string];
+    const [domain, level] = entry.split(":").map((s) => s.trim()) as [
+      string,
+      string,
+    ];
     if (domain && LEVELS.includes(level as LogLevel)) {
       config[domain] = level as LogLevel;
     }
@@ -38,8 +62,10 @@ const parseEnvDomains = (): LogConfig => {
 };
 
 const getGlobalDefault = (): LogLevel => {
-  const raw = import.meta.env.VITE_LOG_LEVEL;
-  if (raw && LEVELS.includes(raw as LogLevel)) return raw as LogLevel;
+  const raw = getEnv("LOG_LEVEL");
+  if (raw && LEVELS.includes(raw.trim() as LogLevel)) {
+    return raw.trim() as LogLevel;
+  }
   return "trace";
 };
 
@@ -54,11 +80,11 @@ const resolveLevel = (domain: LogDomain): LogLevel => {
   return getGlobalDefault();
 };
 
-export type Logger = Record<LogLevel, (...args: unknown[]) => void>;
+export type Logger = Record<OutputLevel, (...args: unknown[]) => void>;
 
 export const createLogger = (domain: LogDomain): Logger => {
   const make =
-    (level: LogLevel) =>
+    (level: OutputLevel) =>
     (...args: unknown[]) => {
       const threshold = resolveLevel(domain);
       if (LEVEL_INDEX[level] < LEVEL_INDEX[threshold]) return;
