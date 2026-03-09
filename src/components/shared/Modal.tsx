@@ -28,7 +28,7 @@ export const ModalCloseButton: React.FC<
 > = ({
   children = "Cancel",
   variant = "default",
-  size = "md",
+  size = "lg",
   radius = "lg",
   onClick,
   ...props

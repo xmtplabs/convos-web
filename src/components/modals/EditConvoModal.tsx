@@ -87,7 +87,7 @@ export const EditConvoModal: React.FC<EditConvoModalProps> = ({ onClose }) => {
         <Stack gap="xxs">
           <Button
             variant="filled"
-            size="md"
+            size="lg"
             radius="lg"
             onClick={() => {
               void handleSave();

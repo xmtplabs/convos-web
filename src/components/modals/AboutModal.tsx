@@ -74,8 +74,8 @@ export const AboutModal: React.FC = () => {
           search={{ modal: "delete-all" }}
           variant="filled"
           color="red"
-          size="md"
-          radius="md"
+          size="lg"
+          radius="lg"
           disabled={!hasConvos}>
           Delete all data
         </LinkButton>

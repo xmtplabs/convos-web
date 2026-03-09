@@ -68,7 +68,7 @@ export const Welcome = () => {
               <Text c="dimmed">No account. New you every time.</Text>
             </Stack>
             <Box>
-              <Button component={Link} to="/new" size="md" radius="xl">
+              <Button component={Link} to="/new" size="lg" radius="xl">
                 Start a convo
               </Button>
             </Box>

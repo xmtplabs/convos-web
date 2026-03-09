@@ -64,7 +64,7 @@ export const LockConvoModal: React.FC<LockConvoModalProps> = ({ onClose }) => {
         <Stack gap="xxs">
           <Button
             variant="filled"
-            size="md"
+            size="lg"
             radius="lg"
             onClick={() => {
               void handleLock();

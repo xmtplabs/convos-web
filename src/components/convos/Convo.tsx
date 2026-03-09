@@ -73,7 +73,7 @@ const ConvoContent = () => {
               <Button
                 variant="filled"
                 color="red"
-                size="md"
+                size="lg"
                 radius="lg"
                 onClick={() => {
                   ctx.confirmExplode();

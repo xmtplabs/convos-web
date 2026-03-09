@@ -63,7 +63,7 @@ export const ExplodeConvoModal: React.FC<ExplodeConvoModalProps> = ({
           <Button
             variant="filled"
             color="red"
-            size="md"
+            size="lg"
             radius="lg"
             onClick={handleExplode}
             disabled={!date}>

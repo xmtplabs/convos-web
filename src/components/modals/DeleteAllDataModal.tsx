@@ -57,7 +57,7 @@ export const DeleteAllDataModal: React.FC = () => {
         <Stack gap="xxs">
           <Button
             variant="filled"
-            size="md"
+            size="lg"
             radius="lg"
             color="red"
             onClick={() => {

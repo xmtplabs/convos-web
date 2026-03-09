@@ -73,7 +73,7 @@ export const DeleteConvoModal: React.FC<DeleteConvoModalProps> = ({
           <Button
             variant="filled"
             color="red"
-            size="md"
+            size="lg"
             radius="lg"
             onClick={() => {
               void handleDelete();
