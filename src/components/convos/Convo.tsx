@@ -8,7 +8,6 @@ import { ConvoHeader } from "@/components/convos/ConvoHeader";
 import { Composer } from "@/components/messages/Composer";
 import { MessageList } from "@/components/messages/MessageList";
 import { DeleteConvoModal } from "@/components/modals/DeleteConvoModal";
-import { EditConvoModal } from "@/components/modals/EditConvoModal";
 import { ExplodeConvoModal } from "@/components/modals/ExplodeConvoModal";
 import { InviteModal } from "@/components/modals/InviteModal";
 import { LockConvoModal } from "@/components/modals/LockConvoModal";
@@ -97,7 +96,6 @@ const ConvoContent = () => {
           </Stack>
         </Modal>
       )}
-      {action === "edit" && <EditConvoModal onClose={closeModal} />}
       {action === "invite" && <InviteModal onClose={closeModal} />}
       {action === "delete" && <DeleteConvoModal onClose={closeModal} />}
       {action === "lock" && <LockConvoModal onClose={closeModal} />}

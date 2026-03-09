@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { AddMenuItems } from "@/components/convos/AddMenu";
 import { ConvoPreferences } from "@/components/convos/ConvoPreferences";
+import { EditConvoPanel } from "@/components/convos/EditConvoPanel";
 import { ExplodeItems } from "@/components/convos/ExplodeSubMenu";
 import { ActionSheet } from "@/components/shared/ActionSheet";
 import { MembersList } from "@/components/shared/MembersList";
@@ -43,13 +44,24 @@ export const ConvoDetailsPanel: React.FC = () => {
   const canLock = permissions?.canLock ?? false;
   const hasActiveTimer = appData?.expiresAtUnix != null;
   const showMembers = location.pathname.endsWith("/details/members");
+  const showEdit = location.pathname.endsWith("/details/edit");
+  const showSubpage = showMembers || showEdit;
 
-  log.trace("render", { convoId: convo.id, detailsOpen, showMembers });
+  let headerTitle = "Convo details";
+  if (showEdit) headerTitle = "Edit convo";
+  else if (showMembers) headerTitle = "All members";
+
+  log.trace("render", {
+    convoId: convo.id,
+    detailsOpen,
+    showMembers,
+    showEdit,
+  });
 
   return (
     <div className={classes.panel} data-state={detailsOpen ? "open" : "closed"}>
       <div className={classes.header}>
-        {showMembers && (
+        {showSubpage && (
           <ActionIcon
             variant="subtle"
             onClick={() =>
@@ -62,7 +74,7 @@ export const ConvoDetailsPanel: React.FC = () => {
           </ActionIcon>
         )}
         <Text fw={600} size="lg" className={classes.headerTitle}>
-          {showMembers ? "All members" : "Convo details"}
+          {headerTitle}
         </Text>
         <ActionIcon variant="subtle" onClick={toggleDetails}>
           <XIcon size={20} />
@@ -72,7 +84,7 @@ export const ConvoDetailsPanel: React.FC = () => {
         <div
           className={classes.page}
           data-page="details"
-          {...(showMembers ? { "data-offscreen": true } : {})}>
+          {...(showSubpage ? { "data-offscreen": true } : {})}>
           <Stack gap="lg">
             <Stack align="center" gap="xs">
               <Avatar radius="100%" size="140" src={groupImage}>
@@ -95,8 +107,8 @@ export const ConvoDetailsPanel: React.FC = () => {
                   radius="xl"
                   onClick={() =>
                     void navigate({
-                      to: ".",
-                      search: { action: "edit" },
+                      to: "/convo/$convoId/details/edit",
+                      params: { convoId: convo.id },
                     })
                   }>
                   <PencilIcon size={20} />
@@ -264,6 +276,19 @@ export const ConvoDetailsPanel: React.FC = () => {
           data-page="members"
           {...(showMembers ? {} : { "data-offscreen": true })}>
           <MembersList maxDisplay={Infinity} />
+        </div>
+        <div
+          className={classes.page}
+          data-page="edit"
+          {...(showEdit ? {} : { "data-offscreen": true })}>
+          <EditConvoPanel
+            onDone={() =>
+              void navigate({
+                to: "/convo/$convoId/details",
+                params: { convoId: convo.id },
+              })
+            }
+          />
         </div>
       </div>
     </div>

@@ -6,7 +6,6 @@ import { createLogger } from "@/utils/log";
 const log = createLogger("sync");
 
 const VALID_ACTIONS = [
-  "edit",
   "invite",
   "delete",
   "lock",

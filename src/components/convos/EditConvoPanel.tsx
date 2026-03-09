@@ -1,18 +1,17 @@
-import { Button, Stack, Textarea, TextInput } from "@mantine/core";
+import { Button, Stack, TextInput } from "@mantine/core";
 import { Group as XmtpGroup } from "@xmtp/browser-sdk";
 import { useState } from "react";
-import { Modal } from "@/components/shared/Modal";
 import { useConvo } from "@/hooks/useConvo";
 import { updateConvo } from "@/utils/convos";
 import { createLogger } from "@/utils/log";
 
 const log = createLogger("edit-convo");
 
-type EditConvoModalProps = {
-  onClose: () => void;
+type EditConvoPanelProps = {
+  onDone: () => void;
 };
 
-export const EditConvoModal: React.FC<EditConvoModalProps> = ({ onClose }) => {
+export const EditConvoPanel: React.FC<EditConvoPanelProps> = ({ onDone }) => {
   const { convo, conversation, permissions } = useConvo();
   const canEditName = permissions?.canEditName ?? false;
   const canEditDescription = permissions?.canEditDescription ?? false;
@@ -45,7 +44,7 @@ export const EditConvoModal: React.FC<EditConvoModalProps> = ({ onClose }) => {
         description: description || undefined,
       });
       log.info("save succeeded", { convoId: convo.id });
-      onClose();
+      onDone();
     } catch (err) {
       log.error("save failed", err);
       throw err;
@@ -55,48 +54,36 @@ export const EditConvoModal: React.FC<EditConvoModalProps> = ({ onClose }) => {
   };
 
   return (
-    <Modal
-      closeOnEscape={false}
-      closeOnClickOutside={false}
-      onClose={() => {
-        log.info("edit modal closed", { convoId: convo.id });
-        onClose();
-      }}
-      title="Edit convo">
-      <Stack gap="md">
-        <TextInput
-          label="Name"
-          size="md"
-          disabled={!canEditName}
-          value={name}
-          onChange={(e) => {
-            setName(e.currentTarget.value);
-          }}
-        />
-        <Textarea
-          label="Description"
-          size="md"
-          disabled={!canEditDescription}
-          value={description}
-          onChange={(e) => {
-            setDescription(e.currentTarget.value);
-          }}
-          autosize
-          minRows={2}
-        />
-        <Stack gap="xxs">
-          <Button
-            variant="filled"
-            size="lg"
-            radius="lg"
-            onClick={() => {
-              void handleSave();
-            }}
-            loading={saving}>
-            Save
-          </Button>
-        </Stack>
-      </Stack>
-    </Modal>
+    <Stack gap="md">
+      <TextInput
+        label="Name"
+        size="md"
+        disabled={!canEditName}
+        value={name}
+        onChange={(e) => {
+          setName(e.currentTarget.value);
+        }}
+      />
+      <TextInput
+        label="Description"
+        description="Descriptions are optional"
+        size="md"
+        disabled={!canEditDescription}
+        value={description}
+        onChange={(e) => {
+          setDescription(e.currentTarget.value);
+        }}
+      />
+      <Button
+        variant="filled"
+        size="lg"
+        radius="lg"
+        onClick={() => {
+          void handleSave();
+        }}
+        loading={saving}>
+        Save
+      </Button>
+    </Stack>
   );
 };

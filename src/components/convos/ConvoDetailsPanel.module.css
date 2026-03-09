@@ -72,11 +72,7 @@
   transform: translateX(-100%);
 }
 
-.page[data-page="members"] {
-  transform: translateX(0);
-}
-
-.page[data-page="members"][data-offscreen] {
+.page[data-offscreen] {
   transform: translateX(100%);
 }
 
