@@ -1,7 +1,7 @@
 import { db } from "@/db";
 import { createLogger } from "@/utils/log";
 
-const log = createLogger("explode worker");
+const log = createLogger("explode-worker");
 const POLL_INTERVAL = 1_000;
 
 const checkExpired = async () => {
