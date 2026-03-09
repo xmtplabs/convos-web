@@ -281,14 +281,7 @@ export const ConvoDetailsPanel: React.FC = () => {
           className={classes.page}
           data-page="edit"
           {...(showEdit ? {} : { "data-offscreen": true })}>
-          <EditConvoPanel
-            onDone={() =>
-              void navigate({
-                to: "/convo/$convoId/details",
-                params: { convoId: convo.id },
-              })
-            }
-          />
+          <EditConvoPanel />
         </div>
       </div>
     </div>

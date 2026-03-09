@@ -28,11 +28,7 @@ import { createLogger } from "@/utils/log";
 
 const log = createLogger("edit-convo");
 
-type EditConvoPanelProps = {
-  onDone: () => void;
-};
-
-export const EditConvoPanel: React.FC<EditConvoPanelProps> = ({ onDone }) => {
+export const EditConvoPanel: React.FC = () => {
   const { convo, conversation, permissions, sync } = useConvo();
   const canEditName = permissions?.canEditName ?? false;
   const canEditDescription = permissions?.canEditDescription ?? false;
@@ -137,7 +133,6 @@ export const EditConvoPanel: React.FC<EditConvoPanelProps> = ({ onDone }) => {
         description: description || undefined,
       });
       log.info("save succeeded", { convoId: convo.id });
-      onDone();
     } catch (err) {
       log.error("save failed", err);
       throw err;
@@ -239,6 +234,14 @@ export const EditConvoPanel: React.FC<EditConvoPanelProps> = ({ onDone }) => {
         onChange={(e) => {
           setName(e.currentTarget.value);
         }}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" && hasChanges) {
+            void handleSave();
+          }
+          if (e.key === "Escape") {
+            setName(convo.name ?? "");
+          }
+        }}
       />
       <TextInput
         label="Description"
@@ -248,6 +251,14 @@ export const EditConvoPanel: React.FC<EditConvoPanelProps> = ({ onDone }) => {
         value={description}
         onChange={(e) => {
           setDescription(e.currentTarget.value);
+        }}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" && hasChanges) {
+            void handleSave();
+          }
+          if (e.key === "Escape") {
+            setDescription(convo.description ?? "");
+          }
         }}
       />
       <Button
