@@ -111,6 +111,9 @@ export const EditConvoPanel: React.FC<EditConvoPanelProps> = ({ onDone }) => {
     }
   }, [conversation, sync, convo.id]);
 
+  const hasChanges =
+    name !== (convo.name ?? "") || description !== (convo.description ?? "");
+
   const handleSave = async () => {
     if (!(conversation instanceof XmtpGroup)) {
       log.debug("save skipped, not a group", { convoId: convo.id });
@@ -254,7 +257,8 @@ export const EditConvoPanel: React.FC<EditConvoPanelProps> = ({ onDone }) => {
         onClick={() => {
           void handleSave();
         }}
-        loading={saving}>
+        loading={saving}
+        disabled={!hasChanges}>
         Save
       </Button>
       <input
