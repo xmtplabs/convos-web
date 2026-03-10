@@ -32,6 +32,7 @@ export const LOG_DOMAINS = [
   "notifications-api-vapid-key",
   "notifications-server",
   "quickname",
+  "qrcode",
   "root",
   "router",
   "service-worker",

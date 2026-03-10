@@ -10,10 +10,10 @@ import {
   Tooltip,
 } from "@mantine/core";
 import { CheckIcon, CopyIcon, InfoIcon } from "lucide-react";
-import { QRCodeSVG } from "qrcode.react";
-import { useEffect, useState } from "react";
+import { useMemo, useState } from "react";
 import { GroupedList, GroupedListItem } from "@/components/shared/GroupedList";
 import { Modal } from "@/components/shared/Modal";
+import { QRCode } from "@/components/shared/QRCode";
 import { useConvo } from "@/hooks/useConvo";
 import { useInboxId } from "@/hooks/useInboxId";
 import { createInviteSlug, getInviteUrl } from "@/utils/invite";
@@ -28,24 +28,22 @@ type InviteModalProps = {
 export const InviteModal: React.FC<InviteModalProps> = ({ onClose }) => {
   const { appData, convo } = useConvo();
   const inboxId = useInboxId();
-  const [inviteUrl, setInviteUrl] = useState<string | null>(null);
   const [includeInfo, setIncludeInfo] = useState(false);
 
   log.trace("render", {
     convoId: convo.id,
-    hasInviteUrl: !!inviteUrl,
     includeInfo,
   });
 
-  useEffect(() => {
+  const inviteUrl = useMemo(() => {
     if (!appData) {
       log.debug("invite link generation skipped", { hasAppData: false });
-      return;
+      return null;
     }
     const slug = createInviteSlug(convo, appData, inboxId, includeInfo);
     const url = getInviteUrl(slug);
     log.info("invite link generated", { convoId: convo.id, includeInfo });
-    setInviteUrl(url);
+    return url;
   }, [convo, appData, inboxId, includeInfo]);
 
   return (
@@ -59,7 +57,7 @@ export const InviteModal: React.FC<InviteModalProps> = ({ onClose }) => {
       <Stack gap="md" align="center">
         {inviteUrl ? (
           <>
-            <QRCodeSVG value={inviteUrl} size={280} />
+            <QRCode value={inviteUrl} />
             <Text size="sm" fw={500} ta="center">
               Scan the QR code or share the link below.
             </Text>
