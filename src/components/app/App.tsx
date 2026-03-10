@@ -10,6 +10,7 @@ import { NavProvider } from "@/contexts/NavContext";
 import { XmtpProvider } from "@/contexts/XmtpContext";
 import { useConvos } from "@/hooks/useConvos";
 import { useExplodeWatcher } from "@/hooks/useExplodeWatcher";
+import { useLogConfig } from "@/hooks/useLogConfig";
 import { useIsMobile } from "@/hooks/useMobile";
 import { useServiceWorker } from "@/hooks/useServiceWorker";
 import { useServiceWorkerSync } from "@/hooks/useServiceWorkerSync";
@@ -83,6 +84,7 @@ const AppGate = () => {
 
 export const App = () => {
   log.trace("render");
+  useLogConfig();
   useServiceWorker();
 
   return (

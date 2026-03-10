@@ -35,50 +35,38 @@ Private messaging web client built on the XMTP protocol.
 
 ## Logging
 
-Domain-based logging system in `src/utils/log.ts`. Every file gets a domain-specific logger:
+Domain-based logging system in `src/utils/log.ts`. All domains are predefined in the `LOG_DOMAINS` array and `createLogger` is typed to only accept valid domains. To add a new domain, add it to the `LOG_DOMAINS` array in `src/utils/log.ts`.
 
 ```ts
 import { createLogger } from "@/utils/log";
-const log = createLogger("domain-name");
+const log = createLogger("domain-name"); // must be a valid LogDomain
 ```
 
 Log messages should NOT repeat the domain name (the `[domain]` prefix handles that).
 
-Levels: `trace`, `debug`, `info`, `warn`, `error`
+Levels: `trace`, `debug`, `info`, `warn`, `error`, `off`
 
-Configuration priority: `localStorage("convos-log-config")` > `VITE_LOG_DOMAINS` (e.g. `xmtp:trace,sync:debug`) > `VITE_LOG_LEVEL` > fallback `"trace"`
+### Configuration priority (highest first)
 
-### Active domains
+1. **localStorage** (`convos-log-config`) — real-time, overrides everything
+2. **Env var per-domain** — browser: `VITE_LOG_DOMAINS`, server: `LOG_DOMAINS` (e.g. `xmtp:trace,sync:debug`)
+3. **Env var global** — browser: `VITE_LOG_LEVEL`, server: `LOG_LEVEL`
+4. **Fallback** — `"trace"` for dev/local, `"off"` for production (based on `XMTP_ENV`)
 
-| Domain          | Scope                                            |
-| --------------- | ------------------------------------------------ |
-| `xmtp`          | XMTP client, conversations, streaming            |
-| `invite`        | Invite creation, slug resolution, joining        |
-| `explode`       | Self-destructing convos, timers, worker          |
-| `db`            | Dexie operations, convos CRUD, avatars, profiles |
-| `sync`          | appData sync between XMTP and local DB           |
-| `messaging`     | Composer, message list, attachments, reactions   |
-| `encryption`    | AES-GCM encrypt/decrypt for images               |
-| `app-lock`      | App lock, per-convo lock/unlock, permissions     |
-| `router`        | TanStack Router events, navigation, watchdog     |
-| `root`          | Root route layout                                |
-| `app`           | App component (gate, content, mount)             |
-| `app-header`    | Header bar                                       |
-| `layout`        | MainLayout                                       |
-| `settings`      | AboutModal / settings                            |
-| `convo`         | Single convo view                                |
-| `convo-header`  | Convo header bar                                 |
-| `convo-menu`    | Convo action menu                                |
-| `convos-list`   | Sidebar convo list                               |
-| `convo-details` | Convo details modal                              |
-| `edit-convo`    | Edit convo modal                                 |
-| `delete-convo`  | Delete convo modal                               |
-| `delete-all`    | Delete all data modal                            |
-| `new-convo`     | New convo route                                  |
-| `quickname`     | Quickname generator                              |
-| `welcome`       | Welcome screen                                   |
-| `update`        | Update notification                              |
-| `not-found`     | 404 page                                         |
+### Runtime control
+
+```ts
+import { setLogLevel, resetLogConfig } from "@/utils/log";
+setLogLevel("xmtp", "error"); // mute xmtp except errors
+setLogLevel("sync", "off"); // silence sync entirely
+resetLogConfig(); // clear all overrides
+```
+
+Changes take effect immediately — no reload needed.
+
+### Adding a domain
+
+All domains are predefined in the `LOG_DOMAINS` array in `src/utils/log.ts`. `createLogger` only accepts valid domains (typed union). To add a new domain, add it to the `LOG_DOMAINS` array.
 
 ## Project Structure
 

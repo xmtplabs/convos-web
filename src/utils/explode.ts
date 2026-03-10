@@ -15,7 +15,7 @@ import { createLogger } from "@/utils/log";
 import { unregisterConvo } from "@/utils/notifications";
 
 const log = createLogger("explode");
-const contentTypeLog = createLogger("explode content type");
+const contentTypeLog = createLogger("explode-content-type");
 
 export type ExplodeSettingsContent = {
   expiresAt: Date;

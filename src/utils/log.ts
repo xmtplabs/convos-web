@@ -1,9 +1,60 @@
-const OUTPUT_LEVELS = ["trace", "debug", "info", "warn", "error"] as const;
-type OutputLevel = (typeof OUTPUT_LEVELS)[number];
+export const LOG_DOMAINS = [
+  "app",
+  "app-header",
+  "app-lock",
+  "appData",
+  "attachment",
+  "avatars",
+  "convo",
+  "convo-details",
+  "convo-header",
+  "convo-menu",
+  "convos-list",
+  "db",
+  "delete-all-data",
+  "edit-convo",
+  "encryption",
+  "explode",
+  "explode-content-type",
+  "explode-menu",
+  "explode-worker",
+  "invite",
+  "invite-modal",
+  "layout",
+  "members-list",
+  "messaging",
+  "new-convo",
+  "not-found",
+  "notifications",
+  "notifications-api-health",
+  "notifications-api-subscribe",
+  "notifications-api-unsubscribe",
+  "notifications-api-vapid-key",
+  "notifications-server",
+  "quickname",
+  "root",
+  "router",
+  "service-worker",
+  "service-worker-sync",
+  "settings",
+  "sync",
+  "upload-url-api",
+  "welcome",
+  "xmtp",
+] as const;
 
-const LEVELS = [...OUTPUT_LEVELS, "off"] as const;
-export type LogLevel = (typeof LEVELS)[number];
-export type LogDomain = string;
+export type LogDomain = (typeof LOG_DOMAINS)[number];
+
+export const LOG_LEVELS = [
+  "trace",
+  "debug",
+  "info",
+  "warn",
+  "error",
+  "off",
+] as const;
+export type LogLevel = (typeof LOG_LEVELS)[number];
+type OutputLevel = Exclude<LogLevel, "off">;
 
 const LEVEL_INDEX: Record<LogLevel, number> = {
   trace: 0,
@@ -14,19 +65,16 @@ const LEVEL_INDEX: Record<LogLevel, number> = {
   off: 5,
 };
 
-const STORAGE_KEY = "convos-log-config";
+const isValidDomain = (value: string): value is LogDomain =>
+  (LOG_DOMAINS as readonly string[]).includes(value);
 
-type LogConfig = Partial<Record<LogDomain, LogLevel>>;
+const isValidLevel = (value: string): value is LogLevel =>
+  (LOG_LEVELS as readonly string[]).includes(value);
 
-const getStoredConfig = (): LogConfig => {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) return JSON.parse(raw) as LogConfig;
-  } catch {
-    // localStorage unavailable (worker) or corrupt
-  }
-  return {};
-};
+export const LOG_LEVEL_KEY = "convos-log-level";
+export const LOG_DOMAINS_KEY = "convos-log-domains";
+
+type DomainConfig = Partial<Record<LogDomain, LogLevel>>;
 
 const isServer = typeof window === "undefined";
 
@@ -45,39 +93,58 @@ const getEnv = (name: string): string | undefined => {
   }
 };
 
-const parseEnvDomains = (): LogConfig => {
+const parseEnvDomains = (): DomainConfig => {
   const raw = getEnv("LOG_DOMAINS");
   if (!raw) return {};
-  const config: LogConfig = {};
+  const config: DomainConfig = {};
   for (const entry of raw.split(",")) {
     const [domain, level] = entry.split(":").map((s) => s.trim()) as [
       string,
       string,
     ];
-    if (domain && LEVELS.includes(level as LogLevel)) {
-      config[domain] = level as LogLevel;
+    if (isValidDomain(domain) && isValidLevel(level)) {
+      config[domain] = level;
     }
   }
   return config;
 };
 
-const getGlobalDefault = (): LogLevel => {
-  const raw = getEnv("LOG_LEVEL");
-  if (raw && LEVELS.includes(raw.trim() as LogLevel)) {
-    return raw.trim() as LogLevel;
+const getDefaultLogLevel = (): LogLevel => {
+  const raw = getEnv("LOG_LEVEL")?.trim();
+  if (raw && isValidLevel(raw)) {
+    return raw;
+  }
+  const xmtpEnv = getEnv("XMTP_ENV");
+  if (xmtpEnv === "production") {
+    return "off";
   }
   return "trace";
 };
 
+let globalLogLevel: LogLevel | null = null;
+let domainLogLevels: DomainConfig = {};
+
+export const setGlobalLogLevel = (level: LogLevel | null): void => {
+  globalLogLevel = level;
+};
+
+export const setDomainLogLevels = (levels: DomainConfig): void => {
+  domainLogLevels = levels;
+};
+
 const resolveLevel = (domain: LogDomain): LogLevel => {
-  // 1. localStorage (highest priority)
-  const stored = getStoredConfig()[domain];
-  if (stored) return stored;
-  // 2. VITE_LOG_DOMAINS
+  const domainLogLevel = domainLogLevels[domain];
+  if (domainLogLevel) {
+    return domainLogLevel;
+  }
+  if (globalLogLevel) {
+    return globalLogLevel;
+  }
   const envDomain = parseEnvDomains()[domain];
-  if (envDomain) return envDomain;
-  // 3. VITE_LOG_LEVEL
-  return getGlobalDefault();
+  if (envDomain) {
+    return envDomain;
+  }
+  return getDefaultLogLevel();
 };
 
 export type Logger = Record<OutputLevel, (...args: unknown[]) => void>;
