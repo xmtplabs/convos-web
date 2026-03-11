@@ -1,0 +1,15 @@
+.view {
+  position: absolute;
+  inset: 0;
+  overflow-y: auto;
+  padding: var(--mantine-spacing-lg);
+  transition: transform 0.2s ease-in-out;
+}
+
+.view[data-offscreen="left"] {
+  transform: translateX(-100%);
+}
+
+.view[data-offscreen="right"] {
+  transform: translateX(100%);
+}

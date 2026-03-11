@@ -56,26 +56,6 @@
   border-top: 1px solid var(--mantine-color-default-border);
 }
 
-.page {
-  position: absolute;
-  inset: 0;
-  overflow-y: auto;
-  padding: var(--mantine-spacing-lg);
-  transition: transform 0.2s ease-in-out;
-}
-
-.page[data-page="details"] {
-  transform: translateX(0);
-}
-
-.page[data-page="details"][data-offscreen] {
-  transform: translateX(-100%);
-}
-
-.page[data-offscreen] {
-  transform: translateX(100%);
-}
-
 @media (max-width: 768px) {
   .panel {
     top: 0;
