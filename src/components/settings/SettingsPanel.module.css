@@ -3,8 +3,6 @@
   inset: 0;
   background-color: rgba(0, 0, 0, 0.5);
   z-index: 150;
-  opacity: 1;
-  transition: opacity 0.25s ease-in-out;
 }
 
 .backdrop[data-state="closed"] {
@@ -23,11 +21,10 @@
   flex-direction: column;
   border-right: 1px solid var(--mantine-color-default-border);
   z-index: 151;
-  transition: transform 0.25s ease-in-out;
 }
 
 .panel[data-state="closed"] {
-  transform: translateX(-100%);
+  left: calc(var(--convos-nav-width) * -1);
 }
 
 .header {
@@ -70,4 +67,15 @@
 
 .page[data-offscreen="right"] {
   transform: translateX(100%);
+}
+
+@media (max-width: 768px) {
+  .panel {
+    transition: transform 0.2s ease-in-out;
+  }
+
+  .panel[data-state="closed"] {
+    left: 0;
+    transform: translateX(-100%);
+  }
 }

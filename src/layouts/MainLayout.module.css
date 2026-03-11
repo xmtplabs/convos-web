@@ -58,7 +58,7 @@
     top: 0;
     z-index: 100;
     border-right: none;
-    transition: transform 0.25s ease-in-out;
+    transition: transform 0.2s ease-in-out;
   }
 
   .root[data-state="closed"] .aside {
