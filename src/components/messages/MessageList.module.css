@@ -3,7 +3,7 @@
 }
 
 .item {
-  padding: var(--mantine-spacing-xxxs) var(--mantine-spacing-md);
+  padding: 2px var(--mantine-spacing-md);
 }
 
 .timeLabel {
