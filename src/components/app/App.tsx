@@ -3,8 +3,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { AppHeader } from "@/components/app/AppHeader";
 import { AppLockScreen } from "@/components/app/AppLockScreen";
 import { ConvosList } from "@/components/convos/ConvosList";
-import { AboutModal } from "@/components/modals/AboutModal";
 import { DeleteAllDataModal } from "@/components/modals/DeleteAllDataModal";
+import { SettingsPanel } from "@/components/settings/SettingsPanel";
 import { AppLockProvider, useAppLockContext } from "@/contexts/AppLockContext";
 import { NavProvider } from "@/contexts/NavContext";
 import { XmtpProvider } from "@/contexts/XmtpContext";
@@ -59,9 +59,9 @@ const AppContent = () => {
           ) : null
         }>
         <Outlet />
-        {modal === "about" && <AboutModal />}
         {modal === "delete-all" && <DeleteAllDataModal />}
       </MainLayout>
+      <SettingsPanel />
     </NavProvider>
   );
 };

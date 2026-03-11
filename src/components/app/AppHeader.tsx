@@ -41,7 +41,7 @@ export const AppHeader = () => {
           radius="xl"
           size="lg"
           to="."
-          search={{ modal: "about" }}>
+          search={{ panel: "settings" }}>
           <SettingsIcon size={24} />
         </LinkActionIcon>
         <ActionSheet withArrow position="bottom">

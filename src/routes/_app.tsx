@@ -10,7 +10,11 @@ export const Route = createFileRoute("/_app")({
   beforeLoad: ({ location }) => {
     log.trace("beforeLoad", { pathname: location.pathname });
   },
-  validateSearch: (search: Record<string, unknown>): { modal?: string } => ({
+  validateSearch: (
+    search: Record<string, unknown>,
+  ): { modal?: string; panel?: string; view?: string } => ({
     modal: typeof search.modal === "string" ? search.modal : undefined,
+    panel: typeof search.panel === "string" ? search.panel : undefined,
+    view: typeof search.view === "string" ? search.view : undefined,
   }),
 });
