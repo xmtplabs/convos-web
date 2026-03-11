@@ -3,6 +3,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { AppHeader } from "@/components/app/AppHeader";
 import { AppLockScreen } from "@/components/app/AppLockScreen";
 import { ConvosList } from "@/components/convos/ConvosList";
+import { ConvoInfoModal } from "@/components/modals/ConvoInfoModal";
 import { DeleteAllDataModal } from "@/components/modals/DeleteAllDataModal";
 import { SettingsPanel } from "@/components/settings/SettingsPanel";
 import { AppLockProvider, useAppLockContext } from "@/contexts/AppLockContext";
@@ -60,6 +61,7 @@ const AppContent = () => {
         }>
         <Outlet />
         {modal === "delete-all" && <DeleteAllDataModal />}
+        {modal === "convo-info" && <ConvoInfoModal />}
       </MainLayout>
       <SettingsPanel />
     </NavProvider>

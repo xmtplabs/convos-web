@@ -1,4 +1,4 @@
-import { Avatar, Box, Group, Text } from "@mantine/core";
+import { Avatar, Box, Group, Stack, Text } from "@mantine/core";
 import {
   isGroupUpdated,
   isReaction,
@@ -10,9 +10,10 @@ import {
   type GroupUpdated,
   type Reaction,
 } from "@xmtp/browser-sdk";
-import { LockIcon, ReplyIcon } from "lucide-react";
+import { InfoIcon, ReplyIcon } from "lucide-react";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { ConvoCard } from "@/components/convos/ConvoCard";
+import { UnstyledLink } from "@/components/shared/UnstyledLink";
 import VirtualList, {
   type VirtualListHandle,
 } from "@/components/shared/VirtualList";
@@ -357,12 +358,20 @@ const RowRenderer = ({
     return (
       <Box px="lg" pt="lg">
         <ConvoCard convo={convo} />
-        <Group gap="xxxs" justify="center" mt="md">
-          <LockIcon size={12} />
+
+        <Stack gap="xxxs" align="center" p="md">
+          <UnstyledLink
+            to="."
+            search={(prev) => ({ ...prev, modal: "convo-info" })}>
+            <Group gap="xxxs" align="center">
+              <Text size="xs">New convo, new everything</Text>
+              <InfoIcon size={16} />
+            </Group>
+          </UnstyledLink>
           <Text size="xs" c="dimmed">
-            Earlier messages are hidden for privacy
+            For privacy, new members can't see earlier messages.
           </Text>
-        </Group>
+        </Stack>
       </Box>
     );
   }
