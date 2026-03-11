@@ -79,6 +79,20 @@ export const AppHeader = () => {
               }}>
               Unread
             </ActionSheet.Item>
+            <ActionSheet.Item
+              leftSection={
+                filter === "muted" ? (
+                  <CheckIcon size={ICON_SIZE} />
+                ) : (
+                  <Box w={ICON_SIZE} />
+                )
+              }
+              onClick={() => {
+                log.info("filter changed", { filter: "muted" });
+                setFilter("muted");
+              }}>
+              Muted
+            </ActionSheet.Item>
           </ActionSheet.Dropdown>
         </ActionSheet>
         <LinkActionIcon radius="xl" size="lg" to="/new" variant="transparent">

@@ -12,7 +12,7 @@ import classes from "./ConvosList.module.css";
 
 const log = createLogger("convos-list");
 
-export type Filter = "all" | "unread";
+export type Filter = "all" | "unread" | "muted";
 
 export type ConvosListProps = {
   convos: Convo[];
@@ -31,10 +31,15 @@ export const ConvosList: React.FC<ConvosListProps> = ({ convos }) => {
   const isMobile = useIsMobile();
   const [filter] = useConvosFilter();
 
-  const filtered = useMemo(
-    () => (filter === "unread" ? convos.filter((c) => c.unread) : convos),
-    [convos, filter],
-  );
+  const filtered = useMemo(() => {
+    if (filter === "unread") {
+      return convos.filter((c) => c.unread);
+    }
+    if (filter === "muted") {
+      return convos.filter((c) => c.muted);
+    }
+    return convos;
+  }, [convos, filter]);
 
   const selectedConversationIndex = useMemo(
     () => filtered.findIndex((convo) => convo.id === convoId),
