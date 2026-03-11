@@ -14,8 +14,8 @@ import {
   StarOffIcon,
   Trash2Icon,
 } from "lucide-react";
-import { AddMenuItems } from "@/components/convos/AddMenu";
 import { ExplodeItems } from "@/components/convos/ExplodeSubMenu";
+import { InviteMenuItems } from "@/components/convos/InviteMenu";
 import { ActionSheet } from "@/components/shared/ActionSheet";
 import { useConvo } from "@/hooks/useConvo";
 import { updateConvo } from "@/utils/convos";
@@ -147,7 +147,7 @@ export const ConvoDetailsActions: React.FC = () => {
             {!convo.locked && permissions?.canAddMembers && (
               <>
                 <ActionSheet.ItemDivider />
-                <AddMenuItems />
+                <InviteMenuItems />
               </>
             )}
             {canLock && (

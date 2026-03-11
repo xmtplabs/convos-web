@@ -1,4 +1,4 @@
-import { ActionIcon } from "@mantine/core";
+import { ActionIcon, Stack, Text } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
 import { useNavigate } from "@tanstack/react-router";
 import { LinkIcon, PlusIcon, QrCodeIcon } from "lucide-react";
@@ -10,7 +10,7 @@ import { createLogger } from "@/utils/log";
 
 const log = createLogger("convo-header");
 
-export const AddMenuItems: React.FC = () => {
+export const InviteMenuItems: React.FC = () => {
   const { appData, convo } = useConvo();
   const inboxId = useInboxId();
   const navigate = useNavigate();
@@ -18,7 +18,7 @@ export const AddMenuItems: React.FC = () => {
   return (
     <>
       <ActionSheet.Item
-        leftSection={<LinkIcon size={14} />}
+        leftSection={<LinkIcon size={16} />}
         onClick={() => {
           if (!appData) return;
           const slug = createInviteSlug(convo, appData, inboxId);
@@ -30,27 +30,37 @@ export const AddMenuItems: React.FC = () => {
             color: "green",
           });
         }}>
-        Copy invite link
+        <Stack gap="0">
+          <Text size="sm">Invite link</Text>
+          <Text size="xs" c="dimmed">
+            Copy to clipboard
+          </Text>
+        </Stack>
       </ActionSheet.Item>
       <ActionSheet.Item
-        leftSection={<QrCodeIcon size={14} />}
+        leftSection={<QrCodeIcon size={16} />}
         onClick={() =>
           void navigate({
             to: ".",
             search: { action: "invite" },
           })
         }>
-        Show convo QR code
+        <Stack gap="0">
+          <Text size="sm">Convo code</Text>
+          <Text size="xs" c="dimmed">
+            Show QR code
+          </Text>
+        </Stack>
       </ActionSheet.Item>
     </>
   );
 };
 
-export type AddMenuProps = {
+export type InviteMenuProps = {
   visibleFrom?: string;
 };
 
-export const AddMenu: React.FC<AddMenuProps> = ({ visibleFrom }) => {
+export const InviteMenu: React.FC<InviteMenuProps> = ({ visibleFrom }) => {
   return (
     <ActionSheet withArrow position="bottom-end">
       <ActionSheet.Target>
@@ -59,7 +69,7 @@ export const AddMenu: React.FC<AddMenuProps> = ({ visibleFrom }) => {
         </ActionIcon>
       </ActionSheet.Target>
       <ActionSheet.Dropdown>
-        <AddMenuItems />
+        <InviteMenuItems />
       </ActionSheet.Dropdown>
     </ActionSheet>
   );

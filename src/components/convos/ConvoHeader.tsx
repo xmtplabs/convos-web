@@ -15,7 +15,7 @@ import {
   MenuIcon,
   StarIcon,
 } from "lucide-react";
-import { AddMenu } from "@/components/convos/AddMenu";
+import { InviteMenu } from "@/components/convos/InviteMenu";
 import { LinkActionIcon } from "@/components/shared/Button";
 import { useNav } from "@/contexts/NavContext";
 import { useAvatar } from "@/hooks/useAvatar";
@@ -118,7 +118,7 @@ export const ConvoHeader: React.FC = () => {
               </ActionIcon>
             </Tooltip>
           )}
-          {!convo.locked && permissions?.canAddMembers && <AddMenu />}
+          {!convo.locked && permissions?.canAddMembers && <InviteMenu />}
           <ActionIcon variant="transparent" onClick={toggleDetails}>
             <InfoIcon size={24} />
           </ActionIcon>
