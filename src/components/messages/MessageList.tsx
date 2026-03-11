@@ -551,7 +551,6 @@ export const MessageList: React.FC<{
       getItemKey={(row) => getRowKey(row)}
       estimateSize={44}
       followOutput="auto"
-      alignToBottom
       overscan={20}
       outerClassName={classes.root}
       renderItem={(row) => (
