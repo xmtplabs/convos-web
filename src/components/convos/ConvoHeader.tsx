@@ -9,7 +9,6 @@ import {
 } from "@mantine/core";
 import {
   BellOffIcon,
-  EllipsisIcon,
   ImageIcon,
   InfoIcon,
   LockIcon,
@@ -17,7 +16,6 @@ import {
   StarIcon,
 } from "lucide-react";
 import { AddMenu } from "@/components/convos/AddMenu";
-import { ConvoMenu } from "@/components/convos/ConvoMenu";
 import { LinkActionIcon } from "@/components/shared/Button";
 import { useNav } from "@/contexts/NavContext";
 import { useAvatar } from "@/hooks/useAvatar";
@@ -30,8 +28,7 @@ import { createLogger } from "@/utils/log";
 const log = createLogger("convo-header");
 
 export const ConvoHeader: React.FC = () => {
-  const { appData, convo, explode, members, permissions, toggleDetails } =
-    useConvo();
+  const { convo, members, permissions, toggleDetails } = useConvo();
   const { openNav } = useNav();
   const isMobile = useIsMobile();
   const isPending = convo.status === "pending";
@@ -98,28 +95,11 @@ export const ConvoHeader: React.FC = () => {
       </Group>
       {!isPending && (
         <Group align="center" gap="md" flex="0 0 auto">
-          {isMobile ? (
-            <ActionIcon variant="transparent" onClick={toggleDetails}>
-              <InfoIcon size={24} />
-            </ActionIcon>
-          ) : (
-            <ConvoMenu
-              convo={convo}
-              appData={appData}
-              canLock={permissions?.canLock}
-              canExplode={permissions?.canRemoveMembers}
-              onExplode={explode}>
-              <ActionIcon variant="transparent">
-                <EllipsisIcon size={24} />
-              </ActionIcon>
-            </ConvoMenu>
-          )}
           {convo.locked && permissions?.canLock && (
             <LinkActionIcon
               variant="transparent"
               to="."
-              search={{ action: "unlock" }}
-              visibleFrom="sm">
+              search={{ action: "unlock" }}>
               <LockIcon size={24} />
             </LinkActionIcon>
           )}
@@ -133,18 +113,13 @@ export const ConvoHeader: React.FC = () => {
                 </Text>
               }
               withArrow>
-              <ActionIcon variant="transparent" c="dimmed" visibleFrom="sm">
+              <ActionIcon variant="transparent" c="dimmed">
                 <LockIcon size={24} />
               </ActionIcon>
             </Tooltip>
           )}
-          {!convo.locked && permissions?.canAddMembers && (
-            <AddMenu visibleFrom="sm" />
-          )}
-          <ActionIcon
-            variant="transparent"
-            onClick={toggleDetails}
-            visibleFrom="sm">
+          {!convo.locked && permissions?.canAddMembers && <AddMenu />}
+          <ActionIcon variant="transparent" onClick={toggleDetails}>
             <InfoIcon size={24} />
           </ActionIcon>
         </Group>

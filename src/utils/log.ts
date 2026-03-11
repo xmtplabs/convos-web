@@ -8,7 +8,6 @@ export const LOG_DOMAINS = [
   "convo",
   "convo-details",
   "convo-header",
-  "convo-menu",
   "convos-list",
   "db",
   "delete-all-data",
