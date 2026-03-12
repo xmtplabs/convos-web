@@ -1,4 +1,5 @@
-import { Paper, Text } from "@mantine/core";
+import { Avatar, Group, Paper, Stack, Text } from "@mantine/core";
+import { ImageIcon } from "lucide-react";
 import { InvitePending } from "@/components/invite/InvitePending";
 import { CenteredLayout } from "@/layouts/CenteredLayout";
 import { ConvoLayout } from "@/layouts/ConvoLayout";
@@ -10,9 +11,21 @@ export const ConvoPending: React.FC = () => {
   return (
     <ConvoLayout
       header={
-        <Text fw={500} size="md" truncate>
-          {convo.name ?? "New Convo"}
-        </Text>
+        <Group gap="sm" wrap="nowrap" style={{ overflow: "hidden" }}>
+          <Avatar radius="xl" size="48" src={convo.imageUrl}>
+            {!convo.imageUrl && <ImageIcon size={24} />}
+          </Avatar>
+          <Stack gap="0" style={{ overflow: "hidden" }}>
+            <Text fw={500} size="md" truncate>
+              {convo.name}
+            </Text>
+            {convo.description && (
+              <Text size="xs" c="dimmed" truncate>
+                {convo.description}
+              </Text>
+            )}
+          </Stack>
+        </Group>
       }
       footer={null}
       withScrollArea={false}>

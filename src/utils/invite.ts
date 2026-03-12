@@ -218,7 +218,7 @@ export const sendJoinRequest = async (parsed: ParsedInvite): Promise<Convo> => {
       id: crypto.randomUUID(),
       privateKey,
       xmtpId: "",
-      name: payload.name || "Conversation",
+      name: payload.name || "New Convo",
       description: payload.description || undefined,
       imageUrl: payload.imageUrl || undefined,
       tag: payload.tag || undefined,
