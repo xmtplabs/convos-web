@@ -8,10 +8,10 @@ import {
 } from "lucide-react";
 import { useCallback, useRef } from "react";
 import { Quickname } from "@/components/app/Quickname";
-import { ConvoDetailsPanelView } from "@/components/convos/ConvoDetailsPanelView";
 import { CustomizeView } from "@/components/settings/CustomizeView";
 import { LinkButton } from "@/components/shared/Button";
 import { GroupedList, GroupedListItem } from "@/components/shared/GroupedList";
+import { PanelView } from "@/components/shared/PanelView";
 import { useConvos } from "@/hooks/useConvos";
 import { createLogger } from "@/utils/log";
 import classes from "./SettingsPanel.module.css";
@@ -71,10 +71,7 @@ export const SettingsPanel: React.FC = () => {
           </ActionIcon>
         </div>
         <div className={classes.pages}>
-          <ConvoDetailsPanelView
-            name="main"
-            active={!showCustomize}
-            offscreen="left">
+          <PanelView name="main" active={!showCustomize} offscreen="left">
             <Stack gap="md">
               <Stack gap="xs">
                 <Title order={3}>My info</Title>
@@ -134,10 +131,10 @@ export const SettingsPanel: React.FC = () => {
                 Delete all data
               </LinkButton>
             </Stack>
-          </ConvoDetailsPanelView>
-          <ConvoDetailsPanelView name="customize" active={showCustomize}>
+          </PanelView>
+          <PanelView name="customize" active={showCustomize}>
             <CustomizeView />
-          </ConvoDetailsPanelView>
+          </PanelView>
         </div>
       </div>
     </>

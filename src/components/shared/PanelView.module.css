@@ -3,7 +3,7 @@
   inset: 0;
   overflow-y: auto;
   padding: var(--mantine-spacing-lg);
-  transition: transform 0.2s ease-in-out;
+  transition: transform 0.2s ease-out;
 }
 
 .view[data-offscreen="left"] {

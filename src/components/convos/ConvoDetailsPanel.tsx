@@ -2,11 +2,11 @@ import { ActionIcon, Stack, Text } from "@mantine/core";
 import { useLocation, useNavigate } from "@tanstack/react-router";
 import { ArrowLeftIcon, XIcon } from "lucide-react";
 import { ConvoDetailsActions } from "@/components/convos/ConvoDetailsActions";
-import { ConvoDetailsPanelView } from "@/components/convos/ConvoDetailsPanelView";
 import { ConvoDetailsProfile } from "@/components/convos/ConvoDetailsProfile";
 import { ConvoPreferences } from "@/components/convos/ConvoPreferences";
 import { EditConvoPanel } from "@/components/convos/EditConvoPanel";
 import { MembersList } from "@/components/shared/MembersList";
+import { PanelView } from "@/components/shared/PanelView";
 import { useConvo } from "@/hooks/useConvo";
 import { createLogger } from "@/utils/log";
 import classes from "./ConvoDetailsPanel.module.css";
@@ -59,23 +59,20 @@ export const ConvoDetailsPanel: React.FC = () => {
         </ActionIcon>
       </div>
       <div className={classes.pages}>
-        <ConvoDetailsPanelView
-          name="details"
-          active={!showSubpage}
-          offscreen="left">
+        <PanelView name="details" active={!showSubpage} offscreen="left">
           <Stack gap="lg">
             <ConvoDetailsProfile />
             <ConvoDetailsActions />
             <MembersList />
             <ConvoPreferences />
           </Stack>
-        </ConvoDetailsPanelView>
-        <ConvoDetailsPanelView name="members" active={showMembers}>
+        </PanelView>
+        <PanelView name="members" active={showMembers}>
           <MembersList maxDisplay={Infinity} />
-        </ConvoDetailsPanelView>
-        <ConvoDetailsPanelView name="edit" active={showEdit}>
+        </PanelView>
+        <PanelView name="edit" active={showEdit}>
           <EditConvoPanel />
-        </ConvoDetailsPanelView>
+        </PanelView>
       </div>
     </div>
   );

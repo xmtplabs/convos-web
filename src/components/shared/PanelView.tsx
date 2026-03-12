@@ -1,6 +1,6 @@
-import classes from "./ConvoDetailsPanelView.module.css";
+import classes from "./PanelView.module.css";
 
-export const ConvoDetailsPanelView: React.FC<
+export const PanelView: React.FC<
   React.PropsWithChildren<{
     name: string;
     active: boolean;
