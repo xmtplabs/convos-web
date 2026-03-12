@@ -1,8 +1,15 @@
 import { ActionIcon, Stack, Text, Title } from "@mantine/core";
 import { useNavigate, useSearch } from "@tanstack/react-router";
-import { ExternalLinkIcon, XIcon } from "lucide-react";
+import {
+  ArrowLeftIcon,
+  ChevronRightIcon,
+  ExternalLinkIcon,
+  XIcon,
+} from "lucide-react";
 import { useCallback, useRef } from "react";
 import { Quickname } from "@/components/app/Quickname";
+import { ConvoDetailsPanelView } from "@/components/convos/ConvoDetailsPanelView";
+import { CustomizeView } from "@/components/settings/CustomizeView";
 import { LinkButton } from "@/components/shared/Button";
 import { GroupedList, GroupedListItem } from "@/components/shared/GroupedList";
 import { useConvos } from "@/hooks/useConvos";
@@ -13,10 +20,11 @@ const log = createLogger("settings");
 
 export const SettingsPanel: React.FC = () => {
   const navigate = useNavigate();
-  const { panel } = useSearch({ from: "/_app" });
+  const { panel, view } = useSearch({ from: "/_app" });
   const convos = useConvos();
   const hasConvos = convos.length > 0;
   const isOpen = panel === "settings";
+  const showCustomize = view === "customize";
 
   const dirtyRef = useRef(false);
   const onDirtyChange = useCallback((dirty: boolean) => {
@@ -43,15 +51,30 @@ export const SettingsPanel: React.FC = () => {
       />
       <div className={classes.panel} data-state={isOpen ? "open" : "closed"}>
         <div className={classes.header}>
+          {showCustomize && (
+            <ActionIcon
+              variant="subtle"
+              onClick={() =>
+                void navigate({
+                  to: ".",
+                  search: (prev) => ({ ...prev, view: undefined }),
+                })
+              }>
+              <ArrowLeftIcon size={20} />
+            </ActionIcon>
+          )}
           <Text fw={600} size="lg" className={classes.headerTitle}>
-            Settings
+            {showCustomize ? "Customize" : "Settings"}
           </Text>
           <ActionIcon variant="subtle" onClick={close}>
             <XIcon size={20} />
           </ActionIcon>
         </div>
         <div className={classes.pages}>
-          <div className={classes.page} data-page="main">
+          <ConvoDetailsPanelView
+            name="main"
+            active={!showCustomize}
+            offscreen="left">
             <Stack gap="md">
               <Stack gap="xs">
                 <Title order={3}>My info</Title>
@@ -63,6 +86,19 @@ export const SettingsPanel: React.FC = () => {
                 </Stack>
                 <Quickname onDirtyChange={onDirtyChange} />
               </Stack>
+              <GroupedList>
+                <GroupedListItem
+                  to="."
+                  search={(prev: Record<string, unknown>) => ({
+                    ...prev,
+                    view: "customize",
+                  })}>
+                  <Text size="sm" flex={1}>
+                    Customize
+                  </Text>
+                  <ChevronRightIcon size={16} />
+                </GroupedListItem>
+              </GroupedList>
               <GroupedList
                 header={
                   <Text size="sm" c="dimmed" fw={500} ml="md">
@@ -98,7 +134,10 @@ export const SettingsPanel: React.FC = () => {
                 Delete all data
               </LinkButton>
             </Stack>
-          </div>
+          </ConvoDetailsPanelView>
+          <ConvoDetailsPanelView name="customize" active={showCustomize}>
+            <CustomizeView />
+          </ConvoDetailsPanelView>
         </div>
       </div>
     </>
