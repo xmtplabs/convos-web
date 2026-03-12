@@ -1,4 +1,4 @@
-import { Group, Stack, Text } from "@mantine/core";
+import { Avatar, Group, Stack, Text } from "@mantine/core";
 import {
   ChevronRightIcon,
   ClipboardIcon,
@@ -7,10 +7,14 @@ import {
 import { LinkButton } from "@/components/shared/Button";
 import { GroupedList, GroupedListItem } from "@/components/shared/GroupedList";
 import { useConvos } from "@/hooks/useConvos";
+import { useProfile } from "@/hooks/useProfile";
+import { useProfileAvatar } from "@/hooks/useProfileAvatar";
 
 export const MainView: React.FC = () => {
   const convos = useConvos();
   const hasConvos = convos.length > 0;
+  const profile = useProfile();
+  const decryptedAvatarSrc = useProfileAvatar(profile);
 
   return (
     <Stack gap="md">
@@ -26,9 +30,15 @@ export const MainView: React.FC = () => {
             ...prev,
             view: "my-info",
           })}>
-          <Group gap="xxxs" flex={1}>
+          <Group gap="xxxs" align="center" wrap="nowrap" flex={1}>
             <ClipboardIcon size={16} />
             <Text size="sm">My info</Text>
+          </Group>
+          <Group gap="xxxs" align="center" wrap="nowrap" flex="0 0 auto">
+            {profile?.name && <Text c="dimmed">{profile.name}</Text>}
+            {decryptedAvatarSrc && (
+              <Avatar radius="xl" size={24} src={decryptedAvatarSrc} />
+            )}
           </Group>
           <ChevronRightIcon size={16} />
         </GroupedListItem>
