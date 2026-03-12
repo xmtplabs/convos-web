@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { InviteMenu } from "@/components/convos/InviteMenu";
 import { LinkActionIcon } from "@/components/shared/Button";
+import { UnstyledLink } from "@/components/shared/UnstyledLink";
 import { useNav } from "@/contexts/NavContext";
 import { useAvatar } from "@/hooks/useAvatar";
 import { useConvo } from "@/hooks/useConvo";
@@ -54,15 +55,24 @@ export const ConvoHeader: React.FC = () => {
             <MenuIcon size={24} />
           </ActionIcon>
         )}
-        <Avatar radius="xl" size="48" flex="0 0 auto" src={groupImage}>
-          {groupImage === null && <ImageIcon size={24} />}
-        </Avatar>
+        <UnstyledLink
+          to="/convo/$convoId/details/edit"
+          params={{ convoId: convo.id }}
+          flex="0 0 auto">
+          <Avatar radius="xl" size="48" src={groupImage}>
+            {groupImage === null && <ImageIcon size={24} />}
+          </Avatar>
+        </UnstyledLink>
         <Stack flex="1 1 auto" gap="0" style={{ overflow: "hidden" }}>
           <Group gap={4} align="center" wrap="nowrap">
             {convo.faved && <StarIcon size={16} style={{ flexShrink: 0 }} />}
-            <Text fw={500} size="md" truncate>
-              {convo.name}
-            </Text>
+            <UnstyledLink
+              to="/convo/$convoId/details/edit"
+              params={{ convoId: convo.id }}>
+              <Text fw={500} size="md" truncate>
+                {convo.name}
+              </Text>
+            </UnstyledLink>
             {explodeCountdown && (
               <Badge
                 color="red"
@@ -81,9 +91,13 @@ export const ConvoHeader: React.FC = () => {
             )}
           </Group>
           <Group gap="xxxs" align="center" wrap="nowrap">
-            <Text size="xs" c="dimmed" truncate>
-              {members.length} member{members.length !== 1 && "s"}
-            </Text>
+            <UnstyledLink
+              to="/convo/$convoId/details/members"
+              params={{ convoId: convo.id }}>
+              <Text size="xs" c="dimmed" truncate>
+                {members.length} member{members.length !== 1 && "s"}
+              </Text>
+            </UnstyledLink>
             {convo.description && (
               <>
                 <Text size="xs" c="dimmed" truncate>
