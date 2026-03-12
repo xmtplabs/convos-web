@@ -11,14 +11,14 @@
 @media (max-width: 1200px) {
   :root {
     --convos-nav-width: 340px;
-    --convos-details-width: 300px;
+    --convos-details-width: 340px;
   }
 }
 
 @media (max-width: 992px) {
   :root {
     --convos-nav-width: 300px;
-    --convos-details-width: 280px;
+    --convos-details-width: 300px;
   }
 }
 
