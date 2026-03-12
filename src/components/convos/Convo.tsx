@@ -47,6 +47,15 @@ export const Convo = () => {
     };
   }, [loaderConvo.id, ctx?.setConvo]);
 
+  if (convo.status === "pending") {
+    return (
+      <>
+        <ConvoPending />
+        <Outlet />
+      </>
+    );
+  }
+
   if (!ctx) {
     return <MessagesSkeleton />;
   }
@@ -59,15 +68,6 @@ export const Convo = () => {
         <ConvoContent />
         <Outlet />
       </ConvoProvider>
-    );
-  }
-
-  if (loaderConvo.status === "pending") {
-    return (
-      <>
-        <ConvoPending />
-        <Outlet />
-      </>
     );
   }
 
