@@ -1,6 +1,5 @@
 export const LOG_DOMAINS = [
   "app",
-  "app-header",
   "app-lock",
   "appData",
   "attachment",
@@ -15,6 +14,7 @@ export const LOG_DOMAINS = [
   "encryption",
   "explode",
   "explode-content-type",
+  "filter-menu",
   "explode-menu",
   "explode-worker",
   "invite",

@@ -1,22 +1,11 @@
-import { ActionIcon, Box, Group, Text } from "@mantine/core";
-import {
-  CheckIcon,
-  ListFilterIcon,
-  SettingsIcon,
-  SquarePenIcon,
-  XIcon,
-} from "lucide-react";
-import { useConvosFilter } from "@/components/convos/ConvosList";
-import { ActionSheet } from "@/components/shared/ActionSheet";
+import { ActionIcon, Group, Text } from "@mantine/core";
+import { SettingsIcon, SquarePenIcon, XIcon } from "lucide-react";
+import { FilterMenu } from "@/components/convos/FilterMenu";
 import { LinkActionIcon } from "@/components/shared/Button";
 import { Logo } from "@/components/shared/Logo";
 import { useNav } from "@/contexts/NavContext";
-import { createLogger } from "@/utils/log";
+import { useConvosFilter } from "@/hooks/useConvosFilter";
 import classes from "./AppHeader.module.css";
-
-const log = createLogger("app-header");
-
-const ICON_SIZE = 14;
 
 export const AppHeader = () => {
   const { closeNav } = useNav();
@@ -44,57 +33,7 @@ export const AppHeader = () => {
           search={{ panel: "settings" }}>
           <SettingsIcon size={24} />
         </LinkActionIcon>
-        <ActionSheet withArrow position="bottom">
-          <ActionSheet.Target>
-            <ActionIcon radius="xl" size="lg" variant="transparent">
-              <ListFilterIcon size={24} />
-            </ActionIcon>
-          </ActionSheet.Target>
-          <ActionSheet.Dropdown>
-            <ActionSheet.Item
-              leftSection={
-                filter === "all" ? (
-                  <CheckIcon size={ICON_SIZE} />
-                ) : (
-                  <Box w={ICON_SIZE} />
-                )
-              }
-              onClick={() => {
-                log.info("filter changed", { filter: "all" });
-                setFilter("all");
-              }}>
-              All
-            </ActionSheet.Item>
-            <ActionSheet.Item
-              leftSection={
-                filter === "unread" ? (
-                  <CheckIcon size={ICON_SIZE} />
-                ) : (
-                  <Box w={ICON_SIZE} />
-                )
-              }
-              onClick={() => {
-                log.info("filter changed", { filter: "unread" });
-                setFilter("unread");
-              }}>
-              Unread
-            </ActionSheet.Item>
-            <ActionSheet.Item
-              leftSection={
-                filter === "muted" ? (
-                  <CheckIcon size={ICON_SIZE} />
-                ) : (
-                  <Box w={ICON_SIZE} />
-                )
-              }
-              onClick={() => {
-                log.info("filter changed", { filter: "muted" });
-                setFilter("muted");
-              }}>
-              Muted
-            </ActionSheet.Item>
-          </ActionSheet.Dropdown>
-        </ActionSheet>
+        <FilterMenu filter={filter} setFilter={setFilter} />
         <LinkActionIcon radius="xl" size="lg" to="/new" variant="transparent">
           <SquarePenIcon size={24} />
         </LinkActionIcon>
