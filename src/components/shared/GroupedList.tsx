@@ -1,4 +1,5 @@
 import { Anchor, Paper, Stack } from "@mantine/core";
+import { Link, type LinkProps } from "@tanstack/react-router";
 import classes from "./GroupedList.module.css";
 
 export const GroupedList: React.FC<
@@ -19,8 +20,13 @@ export const GroupedList: React.FC<
 };
 
 export const GroupedListItem: React.FC<
-  React.PropsWithChildren<{ href?: string }>
-> = ({ href, children }) => {
+  React.PropsWithChildren<{
+    href?: string;
+    onClick?: () => void;
+    to?: LinkProps["to"];
+    search?: LinkProps["search"];
+  }>
+> = ({ href, onClick, to, search, children }) => {
   if (href) {
     return (
       <Anchor
@@ -32,6 +38,20 @@ export const GroupedListItem: React.FC<
         underline="never">
         {children}
       </Anchor>
+    );
+  }
+  if (to) {
+    return (
+      <Link to={to} search={search} className={classes.row}>
+        {children}
+      </Link>
+    );
+  }
+  if (onClick) {
+    return (
+      <div className={classes.row} onClick={onClick} role="button">
+        {children}
+      </div>
     );
   }
   return <div className={classes.row}>{children}</div>;

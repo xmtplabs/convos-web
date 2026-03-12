@@ -9,6 +9,8 @@
   align-items: center;
   gap: var(--mantine-spacing-sm);
   padding: var(--mantine-spacing-md) var(--mantine-spacing-lg);
+  color: inherit;
+  text-decoration: inherit;
 }
 
 .row + .row {
