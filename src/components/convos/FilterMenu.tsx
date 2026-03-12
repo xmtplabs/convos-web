@@ -21,7 +21,11 @@ export const FilterMenu: React.FC<{
 }> = ({ filter, setFilter }) => (
   <ActionSheet withArrow position="bottom">
     <ActionSheet.Target>
-      <ActionIcon radius="xl" size="lg" variant="transparent">
+      <ActionIcon
+        radius="xl"
+        size="lg"
+        variant={filter !== "all" ? "filled" : "transparent"}
+        color={filter !== "all" ? "dark" : undefined}>
         <ListFilterIcon size={24} />
       </ActionIcon>
     </ActionSheet.Target>
