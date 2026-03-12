@@ -1,5 +1,5 @@
 import { ActionIcon, Stack, Text } from "@mantine/core";
-import { useLocation, useNavigate } from "@tanstack/react-router";
+import { useMatch, useNavigate } from "@tanstack/react-router";
 import { ArrowLeftIcon, XIcon } from "lucide-react";
 import { ConvoDetailsActions } from "@/components/convos/ConvoDetailsActions";
 import { ConvoDetailsProfile } from "@/components/convos/ConvoDetailsProfile";
@@ -16,10 +16,14 @@ const log = createLogger("convo-details");
 export const ConvoDetailsPanel: React.FC = () => {
   const { convo, detailsOpen, toggleDetails } = useConvo();
   const navigate = useNavigate();
-  const location = useLocation();
-
-  const showMembers = location.pathname.endsWith("/details/members");
-  const showEdit = location.pathname.endsWith("/details/edit");
+  const showMembers = !!useMatch({
+    from: "/_app/convo/$convoId/details/members",
+    shouldThrow: false,
+  });
+  const showEdit = !!useMatch({
+    from: "/_app/convo/$convoId/details/edit",
+    shouldThrow: false,
+  });
   const showSubpage = showMembers || showEdit;
 
   let headerTitle = "Convo details";

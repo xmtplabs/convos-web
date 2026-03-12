@@ -9,6 +9,7 @@ import {
   Text,
   TextInput,
 } from "@mantine/core";
+import { useSearch } from "@tanstack/react-router";
 import { Group as XmtpGroup } from "@xmtp/browser-sdk";
 import {
   ImageIcon,
@@ -16,7 +17,7 @@ import {
   ImagePlusIcon,
   ImageUpIcon,
 } from "lucide-react";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Modal, ModalCloseButton } from "@/components/shared/Modal";
 import { useAvatar } from "@/hooks/useAvatar";
 import { useConvo } from "@/hooks/useConvo";
@@ -40,6 +41,25 @@ export const EditConvoPanel: React.FC = () => {
   const [imageError, setImageError] = useState<string | null>(null);
   const groupImage = useAvatar(convo.id, GROUP_IMAGE_INBOX_ID);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const nameRef = useRef<HTMLInputElement>(null);
+  const descriptionRef = useRef<HTMLInputElement>(null);
+  const { focus } = useSearch({
+    strict: false,
+  });
+
+  useEffect(() => {
+    if (!focus) return;
+    switch (focus) {
+      case "name":
+        nameRef.current?.focus({ preventScroll: true });
+        nameRef.current?.select();
+        break;
+      case "description":
+        descriptionRef.current?.focus({ preventScroll: true });
+        descriptionRef.current?.select();
+        break;
+    }
+  }, [focus, canEditImage]);
 
   log.trace("render", { convoId: convo.id, saving, imageLoading });
 
@@ -227,6 +247,7 @@ export const EditConvoPanel: React.FC = () => {
         )}
       </Stack>
       <TextInput
+        ref={nameRef}
         label="Name"
         size="md"
         disabled={!canEditName}
@@ -244,6 +265,7 @@ export const EditConvoPanel: React.FC = () => {
         }}
       />
       <TextInput
+        ref={descriptionRef}
         label="Description"
         description="Descriptions are optional"
         size="md"

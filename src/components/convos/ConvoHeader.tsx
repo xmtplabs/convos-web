@@ -68,7 +68,8 @@ export const ConvoHeader: React.FC = () => {
             {convo.faved && <StarIcon size={16} style={{ flexShrink: 0 }} />}
             <UnstyledLink
               to="/convo/$convoId/details/edit"
-              params={{ convoId: convo.id }}>
+              params={{ convoId: convo.id }}
+              search={{ focus: "name" }}>
               <Text fw={500} size="md" truncate>
                 {convo.name}
               </Text>
