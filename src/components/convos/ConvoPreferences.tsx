@@ -1,5 +1,5 @@
 import { Stack, Switch, Text } from "@mantine/core";
-import { BellIcon, EyeIcon } from "lucide-react";
+import { BellIcon, EyeIcon, InfoIcon } from "lucide-react";
 import { GroupedList, GroupedListItem } from "@/components/shared/GroupedList";
 import { useConvo } from "@/hooks/useConvo";
 import { updateConvo } from "@/utils/convos";
@@ -9,6 +9,7 @@ const log = createLogger("convo-details");
 
 export const ConvoPreferences: React.FC = () => {
   const { convo } = useConvo();
+  const inviteIncludesInfo = convo.inviteIncludesInfo ?? false;
 
   return (
     <GroupedList
@@ -17,6 +18,26 @@ export const ConvoPreferences: React.FC = () => {
           Preferences
         </Text>
       }>
+      <GroupedListItem>
+        <InfoIcon size={28} strokeWidth={1.5} />
+        <Stack gap={0} flex={1} style={{ overflow: "hidden" }}>
+          <Text size="sm">Invites include info</Text>
+          <Text size="xs" c="dimmed">
+            Pic, name & desc
+          </Text>
+        </Stack>
+        <Switch
+          withThumbIndicator={false}
+          checked={inviteIncludesInfo}
+          onChange={(e) => {
+            const val = e.currentTarget.checked;
+            log.info("include info toggled", {
+              inviteIncludesInfo: val,
+            });
+            void updateConvo(convo.id, { inviteIncludesInfo: val });
+          }}
+        />
+      </GroupedListItem>
       <GroupedListItem>
         <BellIcon size={28} strokeWidth={1.5} />
         <Stack gap={0} flex={1} style={{ overflow: "hidden" }}>
