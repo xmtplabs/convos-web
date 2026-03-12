@@ -1,8 +1,6 @@
 import { ActionIcon, Group, Text } from "@mantine/core";
 import { useNavigate } from "@tanstack/react-router";
 import {
-  BellIcon,
-  BellOffIcon,
   BombIcon,
   EllipsisIcon,
   LockIcon,
@@ -65,21 +63,6 @@ export const ConvoDetailsActions: React.FC = () => {
           {convo.faved ? <StarOffIcon size={20} /> : <StarIcon size={20} />}
         </ActionIcon>
         <Text size="xs">{convo.faved ? "Unfav" : "Fav"}</Text>
-      </div>
-      <div className={classes.action}>
-        <ActionIcon
-          variant="default"
-          size={48}
-          radius="xl"
-          onClick={() => {
-            log.info(convo.muted ? "unmute" : "mute", {
-              convoId: convo.id,
-            });
-            void updateConvo(convo.id, { muted: !convo.muted });
-          }}>
-          {convo.muted ? <BellOffIcon size={20} /> : <BellIcon size={20} />}
-        </ActionIcon>
-        <Text size="xs">{convo.muted ? "Unmute" : "Mute"}</Text>
       </div>
       {canExplode && (
         <div className={classes.action}>

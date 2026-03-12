@@ -1,5 +1,5 @@
 import { Stack, Switch, Text } from "@mantine/core";
-import { EyeIcon } from "lucide-react";
+import { BellIcon, EyeIcon } from "lucide-react";
 import { GroupedList, GroupedListItem } from "@/components/shared/GroupedList";
 import { useConvo } from "@/hooks/useConvo";
 import { updateConvo } from "@/utils/convos";
@@ -17,6 +17,25 @@ export const ConvoPreferences: React.FC = () => {
           Preferences
         </Text>
       }>
+      <GroupedListItem>
+        <BellIcon size={28} strokeWidth={1.5} />
+        <Stack gap={0} flex={1} style={{ overflow: "hidden" }}>
+          <Text size="sm">Notifications</Text>
+        </Stack>
+        <Switch
+          withThumbIndicator={false}
+          checked={!convo.muted}
+          onChange={() => {
+            log.info(convo.muted ? "unmute" : "mute", {
+              convoId: convo.id,
+              muted: !convo.muted,
+            });
+            void updateConvo(convo.id, {
+              muted: !convo.muted,
+            });
+          }}
+        />
+      </GroupedListItem>
       <GroupedListItem>
         <EyeIcon size={28} strokeWidth={1.5} />
         <Stack gap={0} flex={1} style={{ overflow: "hidden" }}>
