@@ -64,7 +64,7 @@ export const InviteMenu: React.FC<InviteMenuProps> = ({ visibleFrom }) => {
   return (
     <ActionSheet withArrow position="bottom-end">
       <ActionSheet.Target>
-        <ActionIcon variant="transparent" visibleFrom={visibleFrom}>
+        <ActionIcon variant="transparent" visibleFrom={visibleFrom} radius="xl">
           <PlusIcon size={24} />
         </ActionIcon>
       </ActionSheet.Target>

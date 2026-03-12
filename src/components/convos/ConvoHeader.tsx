@@ -46,7 +46,11 @@ export const ConvoHeader: React.FC = () => {
       flex="1 1 auto">
       <Group gap="sm" wrap="nowrap" style={{ overflow: "hidden" }}>
         {isMobile && (
-          <ActionIcon variant="transparent" onClick={openNav} flex="0 0 auto">
+          <ActionIcon
+            variant="transparent"
+            onClick={openNav}
+            flex="0 0 auto"
+            radius="xl">
             <MenuIcon size={24} />
           </ActionIcon>
         )}
@@ -98,6 +102,7 @@ export const ConvoHeader: React.FC = () => {
           {convo.locked && permissions?.canLock && (
             <LinkActionIcon
               variant="transparent"
+              radius="xl"
               to="."
               search={{ action: "unlock" }}>
               <LockIcon size={24} />
@@ -113,13 +118,13 @@ export const ConvoHeader: React.FC = () => {
                 </Text>
               }
               withArrow>
-              <ActionIcon variant="transparent" c="dimmed">
+              <ActionIcon variant="transparent" c="dimmed" radius="xl">
                 <LockIcon size={24} />
               </ActionIcon>
             </Tooltip>
           )}
           {!convo.locked && permissions?.canAddMembers && <InviteMenu />}
-          <ActionIcon variant="transparent" onClick={toggleDetails}>
+          <ActionIcon variant="transparent" onClick={toggleDetails} radius="xl">
             <InfoIcon size={24} />
           </ActionIcon>
         </Group>
