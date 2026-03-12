@@ -21,6 +21,7 @@ export type Convo = {
   expiresAtUnix?: number;
   blurImages?: boolean;
   muted?: boolean;
+  inviteIncludesInfo?: boolean;
   unread?: boolean;
 };
 

@@ -10,12 +10,13 @@ import {
   Tooltip,
 } from "@mantine/core";
 import { CheckIcon, CopyIcon, InfoIcon } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { GroupedList, GroupedListItem } from "@/components/shared/GroupedList";
 import { Modal } from "@/components/shared/Modal";
 import { QRCode } from "@/components/shared/QRCode";
 import { useConvo } from "@/hooks/useConvo";
 import { useInboxId } from "@/hooks/useInboxId";
+import { updateConvo } from "@/utils/convos";
 import { createInviteSlug, getInviteUrl } from "@/utils/invite";
 import { createLogger } from "@/utils/log";
 
@@ -28,11 +29,11 @@ type InviteModalProps = {
 export const InviteModal: React.FC<InviteModalProps> = ({ onClose }) => {
   const { appData, convo } = useConvo();
   const inboxId = useInboxId();
-  const [includeInfo, setIncludeInfo] = useState(false);
+  const inviteIncludesInfo = convo.inviteIncludesInfo ?? false;
 
   log.trace("render", {
     convoId: convo.id,
-    includeInfo,
+    inviteIncludesInfo,
   });
 
   const inviteUrl = useMemo(() => {
@@ -40,11 +41,14 @@ export const InviteModal: React.FC<InviteModalProps> = ({ onClose }) => {
       log.debug("invite link generation skipped", { hasAppData: false });
       return null;
     }
-    const slug = createInviteSlug(convo, appData, inboxId, includeInfo);
+    const slug = createInviteSlug(convo, appData, inboxId, inviteIncludesInfo);
     const url = getInviteUrl(slug);
-    log.info("invite link generated", { convoId: convo.id, includeInfo });
+    log.info("invite link generated", {
+      convoId: convo.id,
+      inviteIncludesInfo,
+    });
     return url;
-  }, [convo, appData, inboxId, includeInfo]);
+  }, [convo, appData, inboxId, inviteIncludesInfo]);
 
   return (
     <Modal
@@ -115,13 +119,13 @@ export const InviteModal: React.FC<InviteModalProps> = ({ onClose }) => {
                 </Stack>
                 <Switch
                   withThumbIndicator={false}
-                  checked={includeInfo}
+                  checked={inviteIncludesInfo}
                   onChange={(e) => {
                     const val = e.currentTarget.checked;
                     log.info("include info toggled", {
-                      includeInfo: val,
+                      inviteIncludesInfo: val,
                     });
-                    setIncludeInfo(val);
+                    void updateConvo(convo.id, { inviteIncludesInfo: val });
                   }}
                 />
               </GroupedListItem>
