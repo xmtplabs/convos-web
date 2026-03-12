@@ -22,6 +22,7 @@ export type Convo = {
   blurImages?: boolean;
   muted?: boolean;
   inviteIncludesInfo?: boolean;
+  quickReactionEmoji?: string;
   unread?: boolean;
 };
 

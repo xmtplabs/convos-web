@@ -1,13 +1,16 @@
-import { Stack, Switch, Text } from "@mantine/core";
-import { BellIcon, EyeIcon, InfoIcon } from "lucide-react";
+import { ActionIcon, Stack, Switch, Text } from "@mantine/core";
+import { BellIcon, EyeIcon, InfoIcon, SmilePlusIcon } from "lucide-react";
+import { useState } from "react";
+import { EmojiPicker } from "@/components/shared/EmojiPicker";
 import { GroupedList, GroupedListItem } from "@/components/shared/GroupedList";
-import { useConvoDefaults } from "@/hooks/useConvoDefaults";
+import { useConvoGlobalSettings } from "@/hooks/useConvoGlobalSettings";
 import { createLogger } from "@/utils/log";
 
 const log = createLogger("settings");
 
 export const CustomizeView: React.FC = () => {
-  const [defaults, setDefaults] = useConvoDefaults();
+  const [defaults, setDefaults] = useConvoGlobalSettings();
+  const [pickerOpen, setPickerOpen] = useState(false);
 
   return (
     <Stack gap="md">
@@ -80,6 +83,33 @@ export const CustomizeView: React.FC = () => {
               });
             }}
           />
+        </GroupedListItem>
+        <GroupedListItem>
+          <SmilePlusIcon size={28} strokeWidth={1.5} />
+          <Stack gap={0} flex={1} style={{ overflow: "hidden" }}>
+            <Text size="sm">Quick reaction</Text>
+            <Text size="xs" c="dimmed">
+              Double-tap to react
+            </Text>
+          </Stack>
+          <EmojiPicker
+            opened={pickerOpen}
+            onClose={() => {
+              setPickerOpen(false);
+            }}
+            onSelect={(emoji) => {
+              log.info("default quickReactionEmoji changed", { emoji });
+              setDefaults({ ...defaults, quickReactionEmoji: emoji });
+            }}>
+            <ActionIcon
+              variant="subtle"
+              size="lg"
+              onClick={() => {
+                setPickerOpen((o) => !o);
+              }}>
+              <Text size="lg">{defaults.quickReactionEmoji}</Text>
+            </ActionIcon>
+          </EmojiPicker>
         </GroupedListItem>
       </GroupedList>
     </Stack>

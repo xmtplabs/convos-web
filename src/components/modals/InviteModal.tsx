@@ -29,11 +29,10 @@ type InviteModalProps = {
 export const InviteModal: React.FC<InviteModalProps> = ({ onClose }) => {
   const { appData, convo } = useConvo();
   const inboxId = useInboxId();
-  const inviteIncludesInfo = convo.inviteIncludesInfo ?? false;
 
   log.trace("render", {
     convoId: convo.id,
-    inviteIncludesInfo,
+    inviteIncludesInfo: convo.inviteIncludesInfo,
   });
 
   const inviteUrl = useMemo(() => {
@@ -41,14 +40,19 @@ export const InviteModal: React.FC<InviteModalProps> = ({ onClose }) => {
       log.debug("invite link generation skipped", { hasAppData: false });
       return null;
     }
-    const slug = createInviteSlug(convo, appData, inboxId, inviteIncludesInfo);
+    const slug = createInviteSlug(
+      convo,
+      appData,
+      inboxId,
+      convo.inviteIncludesInfo,
+    );
     const url = getInviteUrl(slug);
     log.info("invite link generated", {
       convoId: convo.id,
-      inviteIncludesInfo,
+      inviteIncludesInfo: convo.inviteIncludesInfo,
     });
     return url;
-  }, [convo, appData, inboxId, inviteIncludesInfo]);
+  }, [convo, appData, inboxId, convo.inviteIncludesInfo]);
 
   return (
     <Modal
@@ -119,7 +123,7 @@ export const InviteModal: React.FC<InviteModalProps> = ({ onClose }) => {
                 </Stack>
                 <Switch
                   withThumbIndicator={false}
-                  checked={inviteIncludesInfo}
+                  checked={convo.inviteIncludesInfo}
                   onChange={(e) => {
                     const val = e.currentTarget.checked;
                     log.info("include info toggled", {

@@ -9,10 +9,18 @@ import {
   type DecodedMessage,
   type GroupMember,
 } from "@xmtp/browser-sdk";
-import { createContext, useCallback, useEffect, useRef, useState } from "react";
+import {
+  createContext,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { db, type Convo } from "@/db";
 import { useAppData } from "@/hooks/useAppData";
 import { useClient } from "@/hooks/useClient";
+import { useConvoGlobalSettings } from "@/hooks/useConvoGlobalSettings";
 import { useInboxId } from "@/hooks/useInboxId";
 import { usePermissions, type ConvoPermissions } from "@/hooks/usePermissions";
 import type { AppData, MemberProfile } from "@/utils/appData";
@@ -29,8 +37,16 @@ export type ReplyState = {
   content: string;
 };
 
+export type ResolvedConvo = Convo &
+  Required<
+    Pick<
+      Convo,
+      "inviteIncludesInfo" | "muted" | "blurImages" | "quickReactionEmoji"
+    >
+  >;
+
 export type ConvoContextValue = {
-  convo: Convo;
+  convo: ResolvedConvo;
   conversation: Conversation<BuiltInContentTypes>;
   appData: AppData | null;
   memberProfiles: Map<string, MemberProfile>;
@@ -64,6 +80,7 @@ export const ConvoProvider: React.FC<{
   conversation: Conversation<BuiltInContentTypes>;
   children: React.ReactNode;
 }> = ({ convo, conversation, children }) => {
+  const [defaults] = useConvoGlobalSettings();
   const { client } = useClient();
   const inboxId = useInboxId();
   const { appData, memberProfiles, refreshAppData } = useAppData(
@@ -290,10 +307,23 @@ export const ConvoProvider: React.FC<{
     };
   }, [conversation, refresh]);
 
+  const resolvedConvo = useMemo<ResolvedConvo>(
+    () => ({
+      ...convo,
+      inviteIncludesInfo:
+        convo.inviteIncludesInfo ?? defaults.inviteIncludesInfo,
+      muted: convo.muted ?? defaults.muted,
+      blurImages: convo.blurImages ?? defaults.blurImages,
+      quickReactionEmoji:
+        convo.quickReactionEmoji ?? defaults.quickReactionEmoji,
+    }),
+    [convo, defaults],
+  );
+
   return (
     <ConvoContext.Provider
       value={{
-        convo,
+        convo: resolvedConvo,
         conversation,
         appData,
         memberProfiles,

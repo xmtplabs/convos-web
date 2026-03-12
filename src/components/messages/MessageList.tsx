@@ -5,6 +5,7 @@ import {
   isRemoteAttachment,
   isTextReply,
   ReactionAction,
+  ReactionSchema,
   type BuiltInContentTypes,
   type DecodedMessage,
   type GroupUpdated,
@@ -17,10 +18,11 @@ import { UnstyledLink } from "@/components/shared/UnstyledLink";
 import VirtualList, {
   type VirtualListHandle,
 } from "@/components/shared/VirtualList";
-import type { Convo } from "@/db";
+import type { ResolvedConvo } from "@/contexts/ConvoContext";
 import { useAvatar } from "@/hooks/useAvatar";
 import { useConvo } from "@/hooks/useConvo";
 import { useInboxId } from "@/hooks/useInboxId";
+import { useSendMessage } from "@/hooks/useSendMessage";
 import { isExplodeSettings } from "@/utils/explode";
 import { createLogger } from "@/utils/log";
 import { getContentString, getGroupUpdatedStrings } from "@/utils/xmtp";
@@ -341,9 +343,30 @@ const RowRenderer = ({
   reactionMap: ReactionMap;
   onScrollToMessage: (messageId: string) => void;
   highlightedMessageId: string | null;
-  convo: Convo;
+  convo: ResolvedConvo;
 }) => {
   const { memberProfiles } = useConvo();
+  const { sendReaction } = useSendMessage();
+
+  const handleDoubleClick = useCallback(
+    (messageId: string, senderInboxId: string) => {
+      const emoji = convo.quickReactionEmoji;
+      const existing = reactionMap.get(messageId)?.get(emoji);
+      const action = existing?.reacted
+        ? ReactionAction.Removed
+        : ReactionAction.Added;
+      log.info("quick reaction", { emoji, messageId, action });
+      void sendReaction({
+        reference: messageId,
+        referenceInboxId: senderInboxId,
+        action,
+        content: emoji,
+        schema: ReactionSchema.Unicode,
+      });
+    },
+    [convo.quickReactionEmoji, reactionMap, sendReaction],
+  );
+
   if (row.type === "time") {
     return (
       <div className={`${classes.item} ${classes.timeLabel}`}>
@@ -479,7 +502,17 @@ const RowRenderer = ({
   }
 
   return (
-    <div className={wrapperClass}>
+    <div
+      className={wrapperClass}
+      onMouseDown={(e) => {
+        // prevent text-selection on double-click
+        if (e.detail >= 2) {
+          e.preventDefault();
+        }
+      }}
+      onDoubleClick={() => {
+        handleDoubleClick(row.message.id, row.message.senderInboxId);
+      }}>
       <MessageActions
         messageId={row.message.id}
         senderInboxId={row.message.senderInboxId}
