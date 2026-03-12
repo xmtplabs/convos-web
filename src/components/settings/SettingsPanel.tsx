@@ -1,7 +1,7 @@
 import { ActionIcon, Text } from "@mantine/core";
 import { useNavigate, useSearch } from "@tanstack/react-router";
 import { ArrowLeftIcon, XIcon } from "lucide-react";
-import { useCallback, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { CustomizeView } from "@/components/settings/CustomizeView";
 import { MainView } from "@/components/settings/MainView";
 import { MyInfoView } from "@/components/settings/MyInfoView";
@@ -35,6 +35,19 @@ export const SettingsPanel: React.FC = () => {
 
   log.trace("render", { isOpen });
 
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        close();
+      }
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  });
+
   const close = () => {
     if (dirtyRef.current) {
       log.debug("close blocked, form is dirty");
@@ -49,6 +62,7 @@ export const SettingsPanel: React.FC = () => {
       <div
         className={classes.backdrop}
         data-state={isOpen ? "open" : "closed"}
+        onClick={close}
       />
       <div className={classes.panel} data-state={isOpen ? "open" : "closed"}>
         <div className={classes.header}>
