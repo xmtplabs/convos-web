@@ -18,6 +18,7 @@ export const LOG_DOMAINS = [
   "explode-menu",
   "explode-worker",
   "invite",
+  "invite-process",
   "invite-modal",
   "layout",
   "members-list",
