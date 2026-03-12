@@ -4,6 +4,7 @@ import { ArrowLeftIcon, XIcon } from "lucide-react";
 import { useCallback, useRef } from "react";
 import { CustomizeView } from "@/components/settings/CustomizeView";
 import { MainView } from "@/components/settings/MainView";
+import { MyInfoView } from "@/components/settings/MyInfoView";
 import { PanelView } from "@/components/shared/PanelView";
 import { createLogger } from "@/utils/log";
 import classes from "./SettingsPanel.module.css";
@@ -14,7 +15,17 @@ export const SettingsPanel: React.FC = () => {
   const navigate = useNavigate();
   const { panel, view } = useSearch({ from: "/_app" });
   const isOpen = panel === "settings";
+  const showMyInfo = view === "my-info";
   const showCustomize = view === "customize";
+  const showSubpage = showMyInfo || showCustomize;
+
+  let headerTitle = "Settings";
+  if (showMyInfo) {
+    headerTitle = "My info";
+  }
+  if (showCustomize) {
+    headerTitle = "Customize";
+  }
 
   const dirtyRef = useRef(false);
   const onDirtyChange = useCallback((dirty: boolean) => {
@@ -41,28 +52,35 @@ export const SettingsPanel: React.FC = () => {
       />
       <div className={classes.panel} data-state={isOpen ? "open" : "closed"}>
         <div className={classes.header}>
-          {showCustomize && (
+          {showSubpage && (
             <ActionIcon
               variant="subtle"
-              onClick={() =>
+              onClick={() => {
+                if (dirtyRef.current) {
+                  log.debug("back blocked, form is dirty");
+                  return;
+                }
                 void navigate({
                   to: ".",
                   search: (prev) => ({ ...prev, view: undefined }),
-                })
-              }>
+                });
+              }}>
               <ArrowLeftIcon size={20} />
             </ActionIcon>
           )}
           <Text fw={600} size="lg" className={classes.headerTitle}>
-            {showCustomize ? "Customize" : "Settings"}
+            {headerTitle}
           </Text>
           <ActionIcon variant="subtle" onClick={close}>
             <XIcon size={20} />
           </ActionIcon>
         </div>
         <div className={classes.pages}>
-          <PanelView name="main" active={!showCustomize} offscreen="left">
-            <MainView onDirtyChange={onDirtyChange} />
+          <PanelView name="main" active={!showSubpage} offscreen="left">
+            <MainView />
+          </PanelView>
+          <PanelView name="my-info" active={showMyInfo}>
+            <MyInfoView onDirtyChange={onDirtyChange} />
           </PanelView>
           <PanelView name="customize" active={showCustomize}>
             <CustomizeView />

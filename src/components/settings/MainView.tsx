@@ -1,28 +1,38 @@
-import { Stack, Text, Title } from "@mantine/core";
-import { ChevronRightIcon, ExternalLinkIcon } from "lucide-react";
-import { Quickname } from "@/components/app/Quickname";
+import { Group, Stack, Text } from "@mantine/core";
+import {
+  ChevronRightIcon,
+  ClipboardIcon,
+  ExternalLinkIcon,
+} from "lucide-react";
 import { LinkButton } from "@/components/shared/Button";
 import { GroupedList, GroupedListItem } from "@/components/shared/GroupedList";
 import { useConvos } from "@/hooks/useConvos";
 
-export const MainView: React.FC<{
-  onDirtyChange: (dirty: boolean) => void;
-}> = ({ onDirtyChange }) => {
+export const MainView: React.FC = () => {
   const convos = useConvos();
   const hasConvos = convos.length > 0;
 
   return (
     <Stack gap="md">
-      <Stack gap="xs">
-        <Title order={3}>My info</Title>
-        <Stack gap="xxxs">
-          <Text size="sm">Private unless you choose to share it</Text>
-          <Text size="xs" c="dimmed">
-            Your info is stored on your device only
+      <GroupedList
+        footer={
+          <Text size="xs" c="dimmed" ml="lg">
+            Private unless you choose to share
           </Text>
-        </Stack>
-        <Quickname onDirtyChange={onDirtyChange} />
-      </Stack>
+        }>
+        <GroupedListItem
+          to="."
+          search={(prev: Record<string, unknown>) => ({
+            ...prev,
+            view: "my-info",
+          })}>
+          <Group gap="xxxs" flex={1}>
+            <ClipboardIcon size={16} />
+            <Text size="sm">My info</Text>
+          </Group>
+          <ChevronRightIcon size={16} />
+        </GroupedListItem>
+      </GroupedList>
       <GroupedList>
         <GroupedListItem
           to="."
@@ -38,12 +48,12 @@ export const MainView: React.FC<{
       </GroupedList>
       <GroupedList
         header={
-          <Text size="sm" c="dimmed" fw={500} ml="md">
+          <Text size="sm" c="dimmed" fw={500} ml="lg">
             About
           </Text>
         }
         footer={
-          <Text size="xs" c="dimmed" ml="md">
+          <Text size="xs" c="dimmed" ml="lg">
             Made in the open by XMTP Labs
           </Text>
         }>
