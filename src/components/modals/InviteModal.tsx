@@ -40,19 +40,14 @@ export const InviteModal: React.FC<InviteModalProps> = ({ onClose }) => {
       log.debug("invite link generation skipped", { hasAppData: false });
       return null;
     }
-    const slug = createInviteSlug(
-      convo,
-      appData,
-      inboxId,
-      convo.inviteIncludesInfo,
-    );
+    const slug = createInviteSlug(convo, appData, inboxId);
     const url = getInviteUrl(slug);
     log.info("invite link generated", {
       convoId: convo.id,
       inviteIncludesInfo: convo.inviteIncludesInfo,
     });
     return url;
-  }, [convo, appData, inboxId, convo.inviteIncludesInfo]);
+  }, [convo, appData, inboxId]);
 
   return (
     <Modal

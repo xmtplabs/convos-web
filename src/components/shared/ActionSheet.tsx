@@ -15,6 +15,7 @@ import {
   isValidElement,
   useCallback,
   useContext,
+  useMemo,
   type ReactNode,
 } from "react";
 import { useIsMobile } from "@/hooks/useMobile";
@@ -27,12 +28,14 @@ type ActionSheetContextValue = {
   opened: boolean;
 };
 
-const ActionSheetContext = createContext<ActionSheetContextValue>({
+const DESKTOP_VALUE: ActionSheetContextValue = {
   mobile: false,
   open: null,
   close: null,
   opened: false,
-});
+};
+
+const ActionSheetContext = createContext<ActionSheetContextValue>(DESKTOP_VALUE);
 
 const useActionSheet = () => useContext(ActionSheetContext);
 
@@ -51,10 +54,15 @@ export const ActionSheet: React.FC<ActionSheetProps> & {
   const isMobile = useIsMobile();
   const [opened, { open, close }] = useDisclosure(false);
 
+  const ctxValue = useMemo(
+    () =>
+      isMobile ? { mobile: true as const, open, close, opened } : DESKTOP_VALUE,
+    [isMobile, open, close, opened],
+  );
+
   if (!isMobile) {
     return (
-      <ActionSheetContext.Provider
-        value={{ mobile: false, open: null, close: null, opened: false }}>
+      <ActionSheetContext.Provider value={ctxValue}>
         <Menu
           withArrow={withArrow}
           arrowPosition={arrowPosition}
@@ -67,7 +75,7 @@ export const ActionSheet: React.FC<ActionSheetProps> & {
   }
 
   return (
-    <ActionSheetContext.Provider value={{ mobile: true, open, close, opened }}>
+    <ActionSheetContext.Provider value={ctxValue}>
       {children}
     </ActionSheetContext.Provider>
   );

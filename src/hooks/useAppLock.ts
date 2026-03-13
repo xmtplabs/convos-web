@@ -154,7 +154,7 @@ export const useAppLock = (onLockLost?: () => void) => {
     return () => {
       window.removeEventListener("pagehide", handlePageHide);
     };
-  }, [lockState, lockId, setLastActive]);
+  }, [lockState, lockId, releaseLock]);
 
   return { lockState, acquireLock, releaseLock };
 };

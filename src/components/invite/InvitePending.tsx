@@ -12,7 +12,7 @@ export const InvitePending: React.FC = () => {
         Waiting for someone in the chat to approve your request.
       </Text>
       <Text ta="center">
-        Keep this window open, you'll join automatically when approved.
+        Keep this window open, you&apos;ll join automatically when approved.
       </Text>
     </Stack>
   );

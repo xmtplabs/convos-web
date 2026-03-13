@@ -19,10 +19,10 @@ import {
 } from "react";
 import { db, type Convo } from "@/db";
 import { useAppData } from "@/hooks/useAppData";
-import { useClient } from "@/hooks/useClient";
 import { useConvoGlobalSettings } from "@/hooks/useConvoGlobalSettings";
 import { useInboxId } from "@/hooks/useInboxId";
 import { usePermissions, type ConvoPermissions } from "@/hooks/usePermissions";
+import { useXmtp } from "@/hooks/useXmtp";
 import type { AppData, MemberProfile } from "@/utils/appData";
 import { updateConvo } from "@/utils/convos";
 import { isExplodeSettings, setExplodeTimer } from "@/utils/explode";
@@ -81,7 +81,7 @@ export const ConvoProvider: React.FC<{
   children: React.ReactNode;
 }> = ({ convo, conversation, children }) => {
   const [defaults] = useConvoGlobalSettings();
-  const { client } = useClient();
+  const { client } = useXmtp();
   const inboxId = useInboxId();
   const { appData, memberProfiles, refreshAppData } = useAppData(
     conversation,
@@ -320,36 +320,64 @@ export const ConvoProvider: React.FC<{
     [convo, defaults],
   );
 
+  const ctxValue = useMemo(
+    () => ({
+      convo: resolvedConvo,
+      conversation,
+      appData,
+      memberProfiles,
+      members,
+      messages,
+      messagesLoading,
+      permissions,
+      isLocked,
+      exploding,
+      explodeError,
+      clearExplodeError,
+      pendingExplode,
+      explode,
+      confirmExplode,
+      cancelExplode,
+      sending,
+      setSending,
+      syncing,
+      setSyncing,
+      reply,
+      setReply,
+      refresh,
+      detailsOpen,
+      toggleDetails,
+    }),
+    [
+      resolvedConvo,
+      conversation,
+      appData,
+      memberProfiles,
+      members,
+      messages,
+      messagesLoading,
+      permissions,
+      isLocked,
+      exploding,
+      explodeError,
+      clearExplodeError,
+      pendingExplode,
+      explode,
+      confirmExplode,
+      cancelExplode,
+      sending,
+      setSending,
+      syncing,
+      setSyncing,
+      reply,
+      setReply,
+      refresh,
+      detailsOpen,
+      toggleDetails,
+    ],
+  );
+
   return (
-    <ConvoContext.Provider
-      value={{
-        convo: resolvedConvo,
-        conversation,
-        appData,
-        memberProfiles,
-        members,
-        messages,
-        messagesLoading,
-        permissions,
-        isLocked,
-        exploding,
-        explodeError,
-        clearExplodeError,
-        pendingExplode,
-        explode,
-        confirmExplode,
-        cancelExplode,
-        sending,
-        setSending,
-        syncing,
-        setSyncing,
-        reply,
-        setReply,
-        refresh,
-        detailsOpen,
-        toggleDetails,
-      }}>
-      {children}
-    </ConvoContext.Provider>
+    <ConvoContext.Provider value={ctxValue}>{children}</ConvoContext.Provider>
   );
 };

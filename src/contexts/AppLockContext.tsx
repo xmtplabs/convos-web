@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useRef } from "react";
+import { createContext, useContext, useEffect, useMemo, useRef } from "react";
 import { useAppLock, type AppLockState } from "@/hooks/useAppLock";
 import { createLogger } from "@/utils/log";
 
@@ -32,8 +32,13 @@ export const AppLockProvider: React.FC<{
     }
   }, [acquireLock, lockState]);
 
+  const ctxValue = useMemo(
+    () => ({ lockState, acquireLock }),
+    [lockState, acquireLock],
+  );
+
   return (
-    <AppLockContext.Provider value={{ lockState, acquireLock }}>
+    <AppLockContext.Provider value={ctxValue}>
       {children}
     </AppLockContext.Provider>
   );

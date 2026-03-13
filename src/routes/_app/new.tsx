@@ -1,14 +1,14 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef } from "react";
 import { LoadingMessage } from "@/components/shared/LoadingMessage";
-import { useClient } from "@/hooks/useClient";
+import { useXmtp } from "@/hooks/useXmtp";
 import { createLogger } from "@/utils/log";
 
 const log = createLogger("new-convo");
 
 const NewConvo = () => {
   log.trace("render");
-  const { createConvo } = useClient();
+  const { createConvo } = useXmtp();
   const navigate = useNavigate();
   const startedRef = useRef(false);
 
@@ -26,6 +26,7 @@ const NewConvo = () => {
         params: { convoId: convo.id },
       });
     });
+    // oxlint-disable-next-line eslint-plugin-react-hooks/exhaustive-deps
   }, []);
 
   return <LoadingMessage message="Creating new convo..." />;

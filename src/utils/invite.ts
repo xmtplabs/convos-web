@@ -119,8 +119,8 @@ export const createInviteSlug = (
   convo: Convo,
   appData: AppData,
   inboxId: string,
-  includeInfo = false,
 ): string => {
+  const includeInfo = convo.inviteIncludesInfo ?? false;
   log.trace("createInviteSlug", { convoId: convo.id, includeInfo });
   // strip 0x prefix from private key hex and decode to bytes
   const pkHex = convo.privateKey.startsWith("0x")

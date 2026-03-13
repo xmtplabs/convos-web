@@ -12,7 +12,7 @@ export const NotFound = () => {
     <CenteredLayout>
       <Stack>
         <Title order={1}>404 - Page Not Found</Title>
-        <Text>The page you're looking for doesn't exist.</Text>
+        <Text>The page you&apos;re looking for doesn&apos;t exist.</Text>
         <Link to="/">Go Home</Link>
       </Stack>
     </CenteredLayout>

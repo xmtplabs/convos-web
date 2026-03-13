@@ -3,7 +3,7 @@ import { useNavigate, useRouter } from "@tanstack/react-router";
 import { Opfs } from "@xmtp/browser-sdk";
 import { useState } from "react";
 import { Modal, ModalCloseButton } from "@/components/shared/Modal";
-import { useClient } from "@/hooks/useClient";
+import { useXmtp } from "@/hooks/useXmtp";
 import { clearAllAvatars } from "@/utils/avatars";
 import { clearConvos } from "@/utils/convos";
 import { createLogger } from "@/utils/log";
@@ -12,7 +12,7 @@ import { clearProfiles } from "@/utils/profile";
 const log = createLogger("delete-all-data");
 
 export const DeleteAllDataModal: React.FC = () => {
-  const ctx = useClient();
+  const ctx = useXmtp();
   const navigate = useNavigate();
   const [deleting, setDeleting] = useState(false);
 

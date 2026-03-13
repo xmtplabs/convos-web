@@ -1,6 +1,6 @@
-import { useClient } from "@/hooks/useClient";
+import { useXmtp } from "@/hooks/useXmtp";
 
 export const useInboxId = (): string => {
-  const { client } = useClient();
+  const { client } = useXmtp();
   return client?.inboxId ?? "";
 };

@@ -9,7 +9,14 @@ import {
   type Conversation,
   type DecodedMessage,
 } from "@xmtp/browser-sdk";
-import { createContext, useCallback, useEffect, useRef, useState } from "react";
+import {
+  createContext,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { generatePrivateKey } from "viem/accounts";
 import { db, type Convo } from "@/db";
 import { decodeAppData, initGroupAppData } from "@/utils/appData";
@@ -570,9 +577,12 @@ export const XmtpProvider: React.FC<{
     };
   }, [setConvo]);
 
+  const ctxValue = useMemo(
+    () => ({ ...state, setConvo, createConvo }),
+    [state, setConvo, createConvo],
+  );
+
   return (
-    <XmtpContext.Provider value={{ ...state, setConvo, createConvo }}>
-      {children}
-    </XmtpContext.Provider>
+    <XmtpContext.Provider value={ctxValue}>{children}</XmtpContext.Provider>
   );
 };

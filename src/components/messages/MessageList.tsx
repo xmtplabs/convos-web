@@ -392,7 +392,7 @@ const RowRenderer = ({
             </Group>
           </UnstyledLink>
           <Text size="xs" c="dimmed">
-            For privacy, new members can't see earlier messages.
+            For privacy, new members can&apos;t see earlier messages.
           </Text>
         </Stack>
       </Box>

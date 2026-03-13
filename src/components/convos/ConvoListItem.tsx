@@ -9,8 +9,7 @@ import { useExplodeCountdown } from "@/hooks/useExplodeCountdown";
 import { GROUP_IMAGE_INBOX_ID } from "@/utils/avatars";
 import classes from "./ConvoListItem.module.css";
 
-const formatTime = (convo: Convo): string | undefined => {
-  const ns = convo.lastUpdatedAtNs;
+const formatTime = (ns: bigint | undefined): string | undefined => {
   if (ns == null) {
     return undefined;
   }
@@ -35,17 +34,17 @@ export type ConvoListItemProps = {
   selected?: boolean;
 };
 
-const useRelativeTime = (convo: Convo) => {
-  const [time, setTime] = useState(() => formatTime(convo));
+const useRelativeTime = (lastUpdatedAtNs: bigint | undefined) => {
+  const [time, setTime] = useState(() => formatTime(lastUpdatedAtNs));
   const interval = useInterval(() => {
-    setTime(formatTime(convo));
+    setTime(formatTime(lastUpdatedAtNs));
   }, 60_000);
 
   useEffect(() => {
-    setTime(formatTime(convo));
+    setTime(formatTime(lastUpdatedAtNs));
     interval.start();
     return interval.stop;
-  }, [convo.lastUpdatedAtNs]);
+  }, [lastUpdatedAtNs, interval]);
 
   return time;
 };
@@ -54,14 +53,14 @@ export const ConvoListItem: React.FC<ConvoListItemProps> = ({
   convo,
   selected,
 }) => {
-  const time = useRelativeTime(convo);
+  const time = useRelativeTime(convo.lastUpdatedAtNs);
   const explodeCountdown = useExplodeCountdown(convo.expiresAtUnix);
   const groupImage = useAvatar(convo.id, GROUP_IMAGE_INBOX_ID);
 
   return (
     <Link
       className={classes.link}
-      to={`/convo/$convoId`}
+      to="/convo/$convoId"
       params={{ convoId: convo.id }}>
       <Group
         data-selected={selected || undefined}

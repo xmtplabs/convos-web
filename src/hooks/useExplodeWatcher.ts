@@ -1,6 +1,6 @@
 import type { Client } from "@xmtp/browser-sdk";
 import { useEffect } from "react";
-import { useClient } from "@/hooks/useClient";
+import { useXmtp } from "@/hooks/useXmtp";
 import { cleanUpExplodedConvo } from "@/utils/explode";
 import { createLogger } from "@/utils/log";
 
@@ -30,7 +30,7 @@ const deleteExpiredConvo = async (
 };
 
 export const useExplodeWatcher = () => {
-  const { client } = useClient();
+  const { client } = useXmtp();
 
   useEffect(() => {
     log.trace("mounting explode worker");

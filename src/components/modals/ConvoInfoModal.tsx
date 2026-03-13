@@ -34,7 +34,7 @@ export const ConvoInfoModal: React.FC = () => {
             link your conversations together.
           </Text>
           <Text size="sm">
-            New members can't see earlier messages, and leaving a convo destroys
+            New members can&apos;t see earlier messages, and leaving a convo destroys
             your identity in it.
           </Text>
         </Stack>

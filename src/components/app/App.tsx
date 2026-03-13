@@ -45,7 +45,7 @@ const AppContent = () => {
       setNavOpened(!isMobile);
       navInitialized.current = true;
     }
-  }, [convos]);
+  }, [convos, isMobile]);
 
   return (
     <NavProvider value={{ navOpened, openNav, closeNav }}>

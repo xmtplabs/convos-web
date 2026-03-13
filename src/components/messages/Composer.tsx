@@ -193,13 +193,13 @@ export const Composer = () => {
   }, [
     message,
     attachment,
-    sending,
-    uploadingAttachment,
     reply,
     sendText,
     sendTextReply,
     sendRemoteAttachment,
     setReply,
+    hasContent,
+    isSending,
   ]);
 
   return (

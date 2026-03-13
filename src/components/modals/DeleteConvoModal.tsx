@@ -3,7 +3,7 @@ import { useNavigate } from "@tanstack/react-router";
 import { Opfs } from "@xmtp/browser-sdk";
 import { useState } from "react";
 import { Modal, ModalCloseButton } from "@/components/shared/Modal";
-import { useClient } from "@/hooks/useClient";
+import { useXmtp } from "@/hooks/useXmtp";
 import { useInboxId } from "@/hooks/useInboxId";
 import { Route } from "@/routes/_app/convo/$convoId";
 import { clearAvatars } from "@/utils/avatars";
@@ -21,7 +21,7 @@ export const DeleteConvoModal: React.FC<DeleteConvoModalProps> = ({
   onClose,
 }) => {
   const convo = Route.useLoaderData();
-  const ctx = useClient();
+  const ctx = useXmtp();
   const inboxId = useInboxId();
   const navigate = useNavigate();
   const [deleting, setDeleting] = useState(false);
