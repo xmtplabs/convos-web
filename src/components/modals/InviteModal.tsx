@@ -16,7 +16,6 @@ import { Modal } from "@/components/shared/Modal";
 import { QRCode } from "@/components/shared/QRCode";
 import { useConvo } from "@/hooks/useConvo";
 import { useInboxId } from "@/hooks/useInboxId";
-import { updateConvo } from "@/utils/convos";
 import { createInviteSlug, getInviteUrl } from "@/utils/invite";
 import { createLogger } from "@/utils/log";
 
@@ -27,7 +26,7 @@ type InviteModalProps = {
 };
 
 export const InviteModal: React.FC<InviteModalProps> = ({ onClose }) => {
-  const { appData, convo } = useConvo();
+  const { appData, convo, setInviteIncludesInfo } = useConvo();
   const inboxId = useInboxId();
 
   log.trace("render", {
@@ -124,7 +123,7 @@ export const InviteModal: React.FC<InviteModalProps> = ({ onClose }) => {
                     log.info("include info toggled", {
                       inviteIncludesInfo: val,
                     });
-                    void updateConvo(convo.id, { inviteIncludesInfo: val });
+                    setInviteIncludesInfo(val);
                   }}
                 />
               </GroupedListItem>

@@ -10,7 +10,6 @@ import {
   TextInput,
 } from "@mantine/core";
 import { useSearch } from "@tanstack/react-router";
-import { Group as XmtpGroup } from "@xmtp/browser-sdk";
 import {
   ImageIcon,
   ImageMinusIcon,
@@ -21,16 +20,22 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Modal, ModalCloseButton } from "@/components/shared/Modal";
 import { useAvatar } from "@/hooks/useAvatar";
 import { useConvo } from "@/hooks/useConvo";
-import { removeGroupImage, updateGroupImage } from "@/utils/appData";
 import { validateFile } from "@/utils/attachment";
 import { GROUP_IMAGE_INBOX_ID } from "@/utils/avatars";
-import { updateConvo } from "@/utils/convos";
 import { createLogger } from "@/utils/log";
 
 const log = createLogger("edit-convo");
 
 export const EditConvoPanel: React.FC = () => {
-  const { convo, conversation, permissions, sync } = useConvo();
+  const {
+    convo,
+    permissions,
+    sync,
+    updateImage,
+    removeImage,
+    updateName,
+    updateDescription,
+  } = useConvo();
   const canEditName = permissions?.canEditName ?? false;
   const canEditDescription = permissions?.canEditDescription ?? false;
   const canEditImage = permissions?.canEditImage ?? false;
@@ -86,16 +91,11 @@ export const EditConvoPanel: React.FC = () => {
         return;
       }
 
-      if (!(conversation instanceof XmtpGroup)) {
-        log.debug("not a group conversation");
-        return;
-      }
-
       setImageLoading(true);
       try {
         log.info("uploading group image", { convoId: convo.id });
         const imageData = new Uint8Array(await file.arrayBuffer());
-        await updateGroupImage(conversation, imageData);
+        await updateImage(imageData);
         await sync();
         log.info("upload complete", { convoId: convo.id });
       } catch (err) {
@@ -105,18 +105,14 @@ export const EditConvoPanel: React.FC = () => {
         setImageLoading(false);
       }
     },
-    [conversation, sync, convo.id],
+    [updateImage, sync, convo.id],
   );
 
   const handleRemoveImage = useCallback(async () => {
     log.info("removing group image", { convoId: convo.id });
-    if (!(conversation instanceof XmtpGroup)) {
-      log.debug("not a group conversation");
-      return;
-    }
     setImageLoading(true);
     try {
-      await removeGroupImage(conversation);
+      await removeImage();
       await sync();
       log.info("image removed", { convoId: convo.id });
     } catch (err) {
@@ -125,16 +121,12 @@ export const EditConvoPanel: React.FC = () => {
     } finally {
       setImageLoading(false);
     }
-  }, [conversation, sync, convo.id]);
+  }, [removeImage, sync, convo.id]);
 
   const hasChanges =
     name !== (convo.name ?? "") || description !== (convo.description ?? "");
 
   const handleSave = async () => {
-    if (!(conversation instanceof XmtpGroup)) {
-      log.debug("save skipped, not a group", { convoId: convo.id });
-      return;
-    }
     log.info("save started", {
       convoId: convo.id,
       canEditName,
@@ -143,15 +135,11 @@ export const EditConvoPanel: React.FC = () => {
     setSaving(true);
     try {
       if (canEditName && name !== (convo.name ?? "")) {
-        await conversation.updateName(name);
+        await updateName(name);
       }
       if (canEditDescription && description !== (convo.description ?? "")) {
-        await conversation.updateDescription(description);
+        await updateDescription(description);
       }
-      void updateConvo(convo.id, {
-        name: name || undefined,
-        description: description || undefined,
-      });
       log.info("save succeeded", { convoId: convo.id });
     } catch (err) {
       log.error("save failed", err);

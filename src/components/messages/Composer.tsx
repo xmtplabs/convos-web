@@ -10,7 +10,7 @@ import {
   Text,
   TextInput,
 } from "@mantine/core";
-import { Group as XmtpGroup, type RemoteAttachment } from "@xmtp/browser-sdk";
+import type { RemoteAttachment } from "@xmtp/browser-sdk";
 import { ArrowUpIcon, ImageIcon, UserIcon } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useAvatar } from "@/hooks/useAvatar";
@@ -18,7 +18,6 @@ import { useConvo } from "@/hooks/useConvo";
 import { useInboxId } from "@/hooks/useInboxId";
 import { useProfile } from "@/hooks/useProfile";
 import { useSendMessage } from "@/hooks/useSendMessage";
-import { shareProfileToGroup } from "@/utils/appData";
 import { uploadAttachment, validateFile } from "@/utils/attachment";
 import { createLogger } from "@/utils/log";
 import { AttachmentPreview } from "./AttachmentPreview";
@@ -27,7 +26,7 @@ import { ReplyPreview } from "./ReplyPreview";
 const log = createLogger("messaging");
 
 export const Composer = () => {
-  const { convo, conversation, memberProfiles, permissions } = useConvo();
+  const { convo, memberProfiles, permissions, shareProfile } = useConvo();
   const {
     reply,
     sendText,
@@ -78,17 +77,16 @@ export const Composer = () => {
 
   const handleShareProfile = useCallback(async () => {
     log.info("handleShareProfile start", { inboxId });
-    if (!inboxId || !(conversation instanceof XmtpGroup) || !profile) {
+    if (!inboxId || !profile) {
       log.debug("handleShareProfile skipped: missing prerequisites", {
         hasInboxId: !!inboxId,
-        isGroup: conversation instanceof XmtpGroup,
         hasProfile: !!profile,
       });
       return;
     }
     setSharingProfile(true);
     try {
-      await shareProfileToGroup(conversation, profile, inboxId);
+      await shareProfile(profile, inboxId);
       log.info("handleShareProfile success", { inboxId });
     } catch (err) {
       log.error("handleShareProfile failed", err);
@@ -96,7 +94,7 @@ export const Composer = () => {
     } finally {
       setSharingProfile(false);
     }
-  }, [inboxId, conversation, profile]);
+  }, [inboxId, shareProfile, profile]);
 
   const handleFileSelect = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -264,9 +262,7 @@ export const Composer = () => {
                     <Menu.Dropdown>
                       <Menu.Item
                         leftSection={<UserIcon size={18} />}
-                        disabled={
-                          !(conversation instanceof XmtpGroup) || sharingProfile
-                        }
+                        disabled={sharingProfile}
                         onClick={() => void handleShareProfile()}>
                         Chat as {profile.name}
                       </Menu.Item>

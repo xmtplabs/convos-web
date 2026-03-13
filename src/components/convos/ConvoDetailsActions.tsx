@@ -16,7 +16,6 @@ import { ExplodeItems } from "@/components/convos/ExplodeSubMenu";
 import { InviteMenuItems } from "@/components/convos/InviteMenu";
 import { ActionSheet } from "@/components/shared/ActionSheet";
 import { useConvo } from "@/hooks/useConvo";
-import { updateConvo } from "@/utils/convos";
 import { createLogger } from "@/utils/log";
 import classes from "./ConvoDetailsPanel.module.css";
 
@@ -25,7 +24,8 @@ const log = createLogger("convo-details");
 const MENU_ICON_SIZE = 16;
 
 export const ConvoDetailsActions: React.FC = () => {
-  const { appData, convo, explode, permissions } = useConvo();
+  const { appData, convo, explode, permissions, toggleFaved, toggleUnread } =
+    useConvo();
   const navigate = useNavigate();
 
   const canExplode = permissions?.canRemoveMembers ?? false;
@@ -58,7 +58,7 @@ export const ConvoDetailsActions: React.FC = () => {
             log.info(convo.faved ? "unfav" : "fav", {
               convoId: convo.id,
             });
-            void updateConvo(convo.id, { faved: !convo.faved });
+            toggleFaved();
           }}>
           {convo.faved ? <StarOffIcon size={20} /> : <StarIcon size={20} />}
         </ActionIcon>
@@ -123,7 +123,7 @@ export const ConvoDetailsActions: React.FC = () => {
                   convo.unread ? "mark read clicked" : "mark unread clicked",
                   { convoId: convo.id },
                 );
-                void updateConvo(convo.id, { unread: !convo.unread });
+                toggleUnread();
               }}>
               {convo.unread ? "Mark as read" : "Mark as unread"}
             </ActionSheet.Item>

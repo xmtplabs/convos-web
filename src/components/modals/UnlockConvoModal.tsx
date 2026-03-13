@@ -1,13 +1,7 @@
 import { Button, Stack, Text } from "@mantine/core";
-import {
-  PermissionPolicy,
-  PermissionUpdateType,
-  Group as XmtpGroup,
-} from "@xmtp/browser-sdk";
 import { useState } from "react";
 import { Modal, ModalCloseButton } from "@/components/shared/Modal";
 import { useConvo } from "@/hooks/useConvo";
-import { updateConvo } from "@/utils/convos";
 import { createLogger } from "@/utils/log";
 
 const log = createLogger("app-lock");
@@ -19,7 +13,7 @@ type UnlockConvoModalProps = {
 export const UnlockConvoModal: React.FC<UnlockConvoModalProps> = ({
   onClose,
 }) => {
-  const { convo, conversation } = useConvo();
+  const { convo, unlock } = useConvo();
   const [loading, setLoading] = useState(false);
 
   log.trace("render", { convoId: convo.id, loading });
@@ -28,17 +22,9 @@ export const UnlockConvoModal: React.FC<UnlockConvoModalProps> = ({
     log.info("unlock action started", { convoId: convo.id });
     setLoading(true);
     try {
-      if (conversation instanceof XmtpGroup) {
-        await conversation.updatePermission(
-          PermissionUpdateType.AddMember,
-          PermissionPolicy.Allow,
-        );
-        await updateConvo(convo.id, { locked: false });
-        log.info("unlock action succeeded", { convoId: convo.id });
-        onClose();
-      } else {
-        log.debug("unlock skipped, not a group", { convoId: convo.id });
-      }
+      await unlock();
+      log.info("unlock action succeeded", { convoId: convo.id });
+      onClose();
     } catch (err) {
       log.error("unlock action failed", err);
       throw err;

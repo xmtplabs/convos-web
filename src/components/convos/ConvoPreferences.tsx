@@ -4,13 +4,18 @@ import { useState } from "react";
 import { EmojiPicker } from "@/components/shared/EmojiPicker";
 import { GroupedList, GroupedListItem } from "@/components/shared/GroupedList";
 import { useConvo } from "@/hooks/useConvo";
-import { updateConvo } from "@/utils/convos";
 import { createLogger } from "@/utils/log";
 
 const log = createLogger("convo-details");
 
 export const ConvoPreferences: React.FC = () => {
-  const { convo } = useConvo();
+  const {
+    convo,
+    setInviteIncludesInfo,
+    toggleMuted,
+    toggleBlurImages,
+    setQuickReactionEmoji,
+  } = useConvo();
   const [pickerOpen, setPickerOpen] = useState(false);
 
   return (
@@ -36,7 +41,7 @@ export const ConvoPreferences: React.FC = () => {
             log.info("include info toggled", {
               inviteIncludesInfo: val,
             });
-            void updateConvo(convo.id, { inviteIncludesInfo: val });
+            setInviteIncludesInfo(val);
           }}
         />
       </GroupedListItem>
@@ -53,9 +58,7 @@ export const ConvoPreferences: React.FC = () => {
               convoId: convo.id,
               muted: !convo.muted,
             });
-            void updateConvo(convo.id, {
-              muted: !convo.muted,
-            });
+            toggleMuted();
           }}
         />
       </GroupedListItem>
@@ -75,9 +78,7 @@ export const ConvoPreferences: React.FC = () => {
               convoId: convo.id,
               blurImages: !convo.blurImages,
             });
-            void updateConvo(convo.id, {
-              blurImages: !convo.blurImages,
-            });
+            toggleBlurImages();
           }}
         />
       </GroupedListItem>
@@ -99,7 +100,7 @@ export const ConvoPreferences: React.FC = () => {
               convoId: convo.id,
               emoji,
             });
-            void updateConvo(convo.id, { quickReactionEmoji: emoji });
+            setQuickReactionEmoji(emoji);
           }}>
           <ActionIcon
             variant="subtle"

@@ -3,6 +3,7 @@ import {
   Group,
   isGroupUpdated,
   PermissionPolicy,
+  PermissionUpdateType,
   type AsyncStreamProxy,
   type BuiltInContentTypes,
   type Conversation,
@@ -17,13 +18,19 @@ import {
   useRef,
   useState,
 } from "react";
-import { db, type Convo } from "@/db";
+import { db, type Convo, type Profile } from "@/db";
 import { useAppData } from "@/hooks/useAppData";
 import { useConvoGlobalSettings } from "@/hooks/useConvoGlobalSettings";
 import { useInboxId } from "@/hooks/useInboxId";
 import { usePermissions, type ConvoPermissions } from "@/hooks/usePermissions";
 import { useXmtp } from "@/hooks/useXmtp";
-import type { AppData, MemberProfile } from "@/utils/appData";
+import {
+  removeGroupImage,
+  shareProfileToGroup,
+  updateGroupImage,
+  type AppData,
+  type MemberProfile,
+} from "@/utils/appData";
 import { updateConvo } from "@/utils/convos";
 import { isExplodeSettings, setExplodeTimer } from "@/utils/explode";
 import { createLogger } from "@/utils/log";
@@ -47,12 +54,13 @@ export type ResolvedConvo = Convo &
 
 export type ConvoContextValue = {
   convo: ResolvedConvo;
+  // internal — use action functions instead of accessing directly
   conversation: Conversation<BuiltInContentTypes>;
   appData: AppData | null;
   memberProfiles: Map<string, MemberProfile>;
   members: GroupMember[];
   messages: DecodedMessage<BuiltInContentTypes>[];
-  messagesLoading: boolean;
+
   sending: boolean;
   setSending: React.Dispatch<React.SetStateAction<boolean>>;
   syncing: boolean;
@@ -71,6 +79,22 @@ export type ConvoContextValue = {
   refresh: () => Promise<void>;
   detailsOpen: boolean;
   toggleDetails: () => void;
+
+  // actions
+  removeMember: (memberInboxId: string) => Promise<void>;
+  updateImage: (imageData: Uint8Array<ArrayBuffer>) => Promise<void>;
+  removeImage: () => Promise<void>;
+  updateName: (name: string) => Promise<void>;
+  updateDescription: (description: string) => Promise<void>;
+  lock: () => Promise<void>;
+  unlock: () => Promise<void>;
+  shareProfile: (profile: Profile, inboxId: string) => Promise<void>;
+  toggleFaved: () => void;
+  toggleUnread: () => void;
+  setInviteIncludesInfo: (val: boolean) => void;
+  toggleMuted: () => void;
+  toggleBlurImages: () => void;
+  setQuickReactionEmoji: (emoji: string) => void;
 };
 
 export const ConvoContext = createContext<ConvoContextValue | null>(null);
@@ -91,7 +115,6 @@ export const ConvoProvider: React.FC<{
     DecodedMessage<BuiltInContentTypes>[]
   >([]);
   const [members, setMembers] = useState<GroupMember[]>([]);
-  const [messagesLoading, setMessagesLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const [syncing, setSyncing] = useState(false);
   const [reply, setReply] = useState<ReplyState | null>(null);
@@ -172,6 +195,101 @@ export const ConvoProvider: React.FC<{
     setPendingExplode(null);
   }, []);
 
+  const removeMember = useCallback(
+    async (memberInboxId: string) => {
+      if (!(conversation instanceof Group)) return;
+      await conversation.removeMembers([memberInboxId]);
+    },
+    [conversation],
+  );
+
+  const updateImage = useCallback(
+    async (imageData: Uint8Array<ArrayBuffer>) => {
+      if (!(conversation instanceof Group)) return;
+      await updateGroupImage(conversation, imageData);
+    },
+    [conversation],
+  );
+
+  const removeImage = useCallback(async () => {
+    if (!(conversation instanceof Group)) return;
+    await removeGroupImage(conversation);
+  }, [conversation]);
+
+  const updateName = useCallback(
+    async (name: string) => {
+      if (!(conversation instanceof Group)) return;
+      await conversation.updateName(name);
+      await updateConvo(convoRef.current.id, { name: name || undefined });
+    },
+    [conversation],
+  );
+
+  const updateDescription = useCallback(
+    async (description: string) => {
+      if (!(conversation instanceof Group)) return;
+      await conversation.updateDescription(description);
+      await updateConvo(convoRef.current.id, {
+        description: description || undefined,
+      });
+    },
+    [conversation],
+  );
+
+  const lock = useCallback(async () => {
+    if (!(conversation instanceof Group)) return;
+    await conversation.updatePermission(
+      PermissionUpdateType.AddMember,
+      PermissionPolicy.Deny,
+    );
+    await updateConvo(convoRef.current.id, { locked: true });
+  }, [conversation]);
+
+  const unlock = useCallback(async () => {
+    if (!(conversation instanceof Group)) return;
+    await conversation.updatePermission(
+      PermissionUpdateType.AddMember,
+      PermissionPolicy.Allow,
+    );
+    await updateConvo(convoRef.current.id, { locked: false });
+  }, [conversation]);
+
+  const shareProfile = useCallback(
+    async (profile: Profile, profileInboxId: string) => {
+      if (!(conversation instanceof Group)) return;
+      await shareProfileToGroup(conversation, profile, profileInboxId);
+    },
+    [conversation],
+  );
+
+  const toggleFaved = useCallback(() => {
+    const current = convoRef.current;
+    void updateConvo(current.id, { faved: !current.faved });
+  }, []);
+
+  const toggleUnread = useCallback(() => {
+    const current = convoRef.current;
+    void updateConvo(current.id, { unread: !current.unread });
+  }, []);
+
+  const setInviteIncludesInfo = useCallback((val: boolean) => {
+    void updateConvo(convoRef.current.id, { inviteIncludesInfo: val });
+  }, []);
+
+  const toggleMuted = useCallback(() => {
+    const current = convoRef.current;
+    void updateConvo(current.id, { muted: !current.muted });
+  }, []);
+
+  const toggleBlurImages = useCallback(() => {
+    const current = convoRef.current;
+    void updateConvo(current.id, { blurImages: !current.blurImages });
+  }, []);
+
+  const setQuickReactionEmoji = useCallback((emoji: string) => {
+    void updateConvo(convoRef.current.id, { quickReactionEmoji: emoji });
+  }, []);
+
   const refresh = useCallback(async () => {
     log.trace("refresh", { convoId: convoRef.current.id });
     // capture reference to convo so it stays in sync with conversation
@@ -183,11 +301,15 @@ export const ConvoProvider: React.FC<{
       return;
     }
 
+    // load cached messages immediately, then sync for new ones
+    const cached = await conversation.messages();
+    setMessages(cached);
+    setMembers(await conversation.members());
+
     await conversation.sync();
 
     const msgs = await conversation.messages();
     setMessages(msgs);
-    setMessagesLoading(false);
     setMembers(await conversation.members());
 
     // sync conversation metadata and last message to local DB
@@ -257,6 +379,8 @@ export const ConvoProvider: React.FC<{
 
   useEffect(() => {
     let cancelled = false;
+    setMessages([]);
+    setMembers([]);
 
     const init = async () => {
       log.trace("starting message stream");
@@ -328,7 +452,6 @@ export const ConvoProvider: React.FC<{
       memberProfiles,
       members,
       messages,
-      messagesLoading,
       permissions,
       isLocked,
       exploding,
@@ -347,6 +470,20 @@ export const ConvoProvider: React.FC<{
       refresh,
       detailsOpen,
       toggleDetails,
+      removeMember,
+      updateImage,
+      removeImage,
+      updateName,
+      updateDescription,
+      lock,
+      unlock,
+      shareProfile,
+      toggleFaved,
+      toggleUnread,
+      setInviteIncludesInfo,
+      toggleMuted,
+      toggleBlurImages,
+      setQuickReactionEmoji,
     }),
     [
       resolvedConvo,
@@ -355,7 +492,6 @@ export const ConvoProvider: React.FC<{
       memberProfiles,
       members,
       messages,
-      messagesLoading,
       permissions,
       isLocked,
       exploding,
@@ -374,6 +510,20 @@ export const ConvoProvider: React.FC<{
       refresh,
       detailsOpen,
       toggleDetails,
+      removeMember,
+      updateImage,
+      removeImage,
+      updateName,
+      updateDescription,
+      lock,
+      unlock,
+      shareProfile,
+      toggleFaved,
+      toggleUnread,
+      setInviteIncludesInfo,
+      toggleMuted,
+      toggleBlurImages,
+      setQuickReactionEmoji,
     ],
   );
 

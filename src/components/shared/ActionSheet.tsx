@@ -35,7 +35,8 @@ const DESKTOP_VALUE: ActionSheetContextValue = {
   opened: false,
 };
 
-const ActionSheetContext = createContext<ActionSheetContextValue>(DESKTOP_VALUE);
+const ActionSheetContext =
+  createContext<ActionSheetContextValue>(DESKTOP_VALUE);
 
 const useActionSheet = () => useContext(ActionSheetContext);
 

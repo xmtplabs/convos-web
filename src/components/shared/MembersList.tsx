@@ -8,7 +8,6 @@ import {
   Text,
 } from "@mantine/core";
 import { useNavigate } from "@tanstack/react-router";
-import { Group as XmtpGroup } from "@xmtp/browser-sdk";
 import {
   ChevronRightIcon,
   EllipsisIcon,
@@ -74,7 +73,7 @@ const MemberListItem: React.FC<{
 export const MembersList: React.FC<{
   maxDisplay?: number;
 }> = ({ maxDisplay = 3 }) => {
-  const { convo, conversation, members, memberProfiles, permissions } =
+  const { convo, members, memberProfiles, permissions, removeMember } =
     useConvo();
   log.trace("render", {
     maxDisplay,
@@ -152,16 +151,13 @@ export const MembersList: React.FC<{
             isYou={isYou}
             canRemove={canRemoveMembers && !isYou}
             onRemove={() => {
-              if (!(conversation instanceof XmtpGroup)) return;
               log.info("removing member", {
                 convoId: convo.id,
                 memberInboxId: member.inboxId,
               });
-              void conversation
-                .removeMembers([member.inboxId])
-                .catch((err: unknown) => {
-                  log.error("failed to remove member", err);
-                });
+              void removeMember(member.inboxId).catch((err: unknown) => {
+                log.error("failed to remove member", err);
+              });
             }}
           />
         );

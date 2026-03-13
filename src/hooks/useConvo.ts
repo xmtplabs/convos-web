@@ -12,7 +12,6 @@ export const useConvo = () => {
 
   const {
     appData,
-    conversation,
     convo,
     members,
     memberProfiles,
@@ -28,6 +27,20 @@ export const useConvo = () => {
     refresh,
     detailsOpen,
     toggleDetails,
+    removeMember,
+    updateImage,
+    removeImage,
+    updateName,
+    updateDescription,
+    lock,
+    unlock,
+    shareProfile,
+    toggleFaved,
+    toggleUnread,
+    setInviteIncludesInfo,
+    toggleMuted,
+    toggleBlurImages,
+    setQuickReactionEmoji,
   } = context;
 
   const sync = useCallback(async () => {
@@ -43,7 +56,6 @@ export const useConvo = () => {
 
   return {
     appData,
-    conversation,
     convo,
     members,
     memberProfiles,
@@ -58,5 +70,19 @@ export const useConvo = () => {
     detailsOpen,
     toggleDetails,
     sync,
+    removeMember,
+    updateImage,
+    removeImage,
+    updateName,
+    updateDescription,
+    lock,
+    unlock,
+    shareProfile,
+    toggleFaved,
+    toggleUnread,
+    setInviteIncludesInfo,
+    toggleMuted,
+    toggleBlurImages,
+    setQuickReactionEmoji,
   };
 };
