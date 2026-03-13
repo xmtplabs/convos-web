@@ -9,6 +9,5 @@ export const useMessages = () => {
 
   return {
     messages: context.messages,
-    messagesLoading: context.messagesLoading,
   };
 };

@@ -11,14 +11,13 @@ import { ExplodeErrorModal } from "@/components/modals/ExplodeErrorModal";
 import { InviteModal } from "@/components/modals/InviteModal";
 import { LockConvoModal } from "@/components/modals/LockConvoModal";
 import { UnlockConvoModal } from "@/components/modals/UnlockConvoModal";
-import { MessagesSkeleton } from "@/components/shared/MessagesSkeleton";
 import { useConvo } from "@/hooks/useConvo";
 import { useMessages } from "@/hooks/useMessages";
 import { ConvoLayout } from "@/layouts/ConvoLayout";
 import { Route } from "@/routes/_app/convo/$convoId";
 
 export const ConvoContent = () => {
-  const { messages, messagesLoading } = useMessages();
+  const { messages } = useMessages();
   const ctx = useConvo();
   const { action } = Route.useSearch();
   const navigate = useNavigate();
@@ -38,11 +37,7 @@ export const ConvoContent = () => {
         loading={ctx.exploding}
         detailsOpen={ctx.detailsOpen}
         withScrollArea={false}>
-        {messagesLoading ? (
-          <MessagesSkeleton convo={ctx.convo} />
-        ) : (
-          <MessageList messages={messages} />
-        )}
+        <MessageList messages={messages} />
       </ConvoLayout>
       <ConvoDetailsPanel />
       {ctx.pendingExplode != null && (
