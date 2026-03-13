@@ -12,7 +12,10 @@ const log = createLogger("sync");
 
 type AppDataEntry = { convoId: string; data: AppData };
 
-export const useAppData = (conversation: Conversation, convoId: string) => {
+export const useAppData = (
+  conversation: Conversation | null,
+  convoId: string,
+) => {
   const [entry, setEntry] = useState<AppDataEntry | null>(null);
 
   // only expose appData when it belongs to the current convo to ensure

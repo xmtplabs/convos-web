@@ -19,6 +19,7 @@ export const useSendMessage = () => {
 
   const sendText = useCallback(
     async (text: string) => {
+      if (!conversation) return;
       log.trace("sendText");
       setSending(true);
       try {
@@ -33,6 +34,7 @@ export const useSendMessage = () => {
 
   const sendTextReply = useCallback(
     async (messageId: string, text: string) => {
+      if (!conversation) return;
       setSending(true);
       try {
         await conversation.sendReply({
@@ -49,6 +51,7 @@ export const useSendMessage = () => {
 
   const sendRemoteAttachment = useCallback(
     async (remoteAttachment: RemoteAttachment) => {
+      if (!conversation) return;
       log.trace("sendRemoteAttachment", { url: remoteAttachment.url });
       setSending(true);
       try {
@@ -63,6 +66,7 @@ export const useSendMessage = () => {
 
   const sendReaction = useCallback(
     async (reaction: Reaction) => {
+      if (!conversation) return;
       setSending(true);
       try {
         await conversation.sendReaction(reaction);

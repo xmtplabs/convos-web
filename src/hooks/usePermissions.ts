@@ -60,7 +60,7 @@ const resolvePermissions = (
   };
 };
 
-export const usePermissions = (conversation: Conversation) => {
+export const usePermissions = (conversation: Conversation | null) => {
   const inboxId = useInboxId();
   const [permissions, setPermissions] = useState<ConvoPermissions | null>(null);
 

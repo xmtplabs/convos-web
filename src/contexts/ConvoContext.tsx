@@ -55,7 +55,7 @@ export type ResolvedConvo = Convo &
 export type ConvoContextValue = {
   convo: ResolvedConvo;
   // internal — use action functions instead of accessing directly
-  conversation: Conversation<BuiltInContentTypes>;
+  conversation: Conversation<BuiltInContentTypes> | null;
   appData: AppData | null;
   memberProfiles: Map<string, MemberProfile>;
   members: GroupMember[];
@@ -101,7 +101,7 @@ export const ConvoContext = createContext<ConvoContextValue | null>(null);
 
 export const ConvoProvider: React.FC<{
   convo: Convo;
-  conversation: Conversation<BuiltInContentTypes>;
+  conversation: Conversation<BuiltInContentTypes> | null;
   children: React.ReactNode;
 }> = ({ convo, conversation, children }) => {
   const [defaults] = useConvoGlobalSettings();
@@ -164,7 +164,7 @@ export const ConvoProvider: React.FC<{
   );
 
   const confirmExplode = useCallback(() => {
-    if (!pendingExplode) return;
+    if (!pendingExplode || !conversation) return;
     const expiresAt = pendingExplode.getDate();
     log.info("confirmExplode", {
       convoId: convo.id,
@@ -291,6 +291,8 @@ export const ConvoProvider: React.FC<{
   }, []);
 
   const refresh = useCallback(async () => {
+    if (!conversation) return;
+    if (conversation.id !== convoRef.current.xmtpId) return;
     log.trace("refresh", { convoId: convoRef.current.id });
     // capture reference to convo so it stays in sync with conversation
     const current = convoRef.current;
@@ -378,9 +380,14 @@ export const ConvoProvider: React.FC<{
   }, [appData?.expiresAtUnix]);
 
   useEffect(() => {
-    let cancelled = false;
     setMessages([]);
     setMembers([]);
+
+    if (!conversation) return;
+    // skip stale conversation from previous convo
+    if (conversation.id !== convoRef.current.xmtpId) return;
+
+    let cancelled = false;
 
     const init = async () => {
       log.trace("starting message stream");
