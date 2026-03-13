@@ -45,20 +45,17 @@ The app runs at `http://localhost:3000`.
 
 ## Scripts
 
-| Command             | Description                                   |
-| ------------------- | --------------------------------------------- |
-| `yarn dev`          | Start the dev server                          |
-| `yarn build`        | Production build                              |
-| `yarn preview`      | Preview the production build                  |
-| `yarn typecheck`    | Run TypeScript type checking                  |
-| `yarn lint`         | Run ESLint and buf lint                       |
-| `yarn lint:fix`     | Run ESLint with auto-fix                      |
-| `yarn format`       | Format code with Prettier                     |
-| `yarn format:check` | Check formatting                              |
-| `yarn test`         | Run tests with Vitest                         |
-| `yarn generate`     | Generate TypeScript from protobuf definitions |
-| `yarn clean`        | Remove `dist` and `node_modules`              |
-| `yarn reset`        | Clean and reinstall dependencies              |
+| Command             | Description                                    |
+| ------------------- | ---------------------------------------------- |
+| `yarn dev`          | Start the dev server                           |
+| `yarn build`        | Production build                               |
+| `yarn preview`      | Preview the production build                   |
+| `yarn fix`          | oxlint auto-fix + oxfmt format                 |
+| `yarn lint`         | Run oxlint (includes type-checking) + buf lint |
+| `yarn format:check` | Check formatting with oxfmt                    |
+| `yarn generate`     | Generate TypeScript from protobuf definitions  |
+| `yarn clean`        | Remove `dist` and `node_modules`               |
+| `yarn reset`        | Clean and reinstall dependencies               |
 
 ## Project Structure
 

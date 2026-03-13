@@ -17,10 +17,9 @@ Private messaging web client built on the XMTP protocol.
 
 - `yarn dev` — dev server on port 3000
 - `yarn build` — production build
-- `yarn fix` — ESLint auto-fix + Prettier format (run after editing)
-- `yarn lint` — ESLint + buf lint
-- `yarn format:check` — Prettier check (CI)
-- `yarn typecheck` — TypeScript type checking
+- `yarn fix` — oxlint auto-fix + oxfmt format (run after editing)
+- `yarn lint` — oxlint (includes type-checking) + buf lint
+- `yarn format:check` — oxfmt check (CI)
 - `yarn generate` — regenerate protobuf types from `proto/`
 
 ## Code Conventions
@@ -29,8 +28,8 @@ Private messaging web client built on the XMTP protocol.
 - Imports: sorted by builtin, external, `@/`, relative (enforced by prettier plugin)
 - Consistent type imports: `import type { Foo }` or `import { type Foo }`
 - No unused variables (prefix with `_` if intentionally unused)
-- Prettier: double quotes, trailing commas, 80 char width, no tabs
-- ESLint: strict type-checked rules from typescript-eslint
+- oxfmt: double quotes, trailing commas, 80 char width, no tabs
+- oxlint: strict rules (all set to `"error"`, no `"warn"`), config in `.oxlintrc.json`
 - Comments: single-line `//` comments start with lowercase (e.g. `// sync data to local DB`)
 
 ## Logging
@@ -95,6 +94,8 @@ public/                 # Static assets, service worker (sw.js)
 
 - **XMTP conversations are "groups"** — even 1:1 chats use XMTP groups
 - **Convo metadata** lives in both XMTP `appData` and local Dexie DB, synced via `src/utils/appData.ts`
+- **ConvoContext** exposes action functions (`lock`, `unlock`, `removeMember`, `updateName`, `updateImage`, etc.) — consumers use `useConvo()` and never access the XMTP `conversation` object directly. The `conversation` is internal to the context and can be null while loading.
+- **XmtpContext** manages the XMTP client lifecycle. Use `useXmtp()` hook to access it.
 - **Encryption**: AES-GCM with HKDF key derivation for avatar images (`src/utils/encryption.ts`)
 - **Attachments**: uploaded to Pinata (IPFS), sent as XMTP `RemoteAttachment` content type
 - **Exploding convos**: timer stored in XMTP appData, watched by web worker, deletes locally on expiry
