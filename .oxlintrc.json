@@ -197,7 +197,7 @@
     "react/no-unsafe": "error",
     "react/require-render-return": "error",
     "react/checked-requires-onchange-or-readonly": "error",
-    "react/iframe-missing-sandbox": "error",
+    "react/iframe-missing-sandbox": "error"
   },
   "overrides": [
     {
