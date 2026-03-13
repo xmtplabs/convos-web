@@ -26,7 +26,8 @@ import { ReplyPreview } from "./ReplyPreview";
 const log = createLogger("messaging");
 
 export const Composer = () => {
-  const { convo, memberProfiles, permissions, shareProfile } = useConvo();
+  const { convo, ready, memberProfiles, permissions, shareProfile } =
+    useConvo();
   const {
     reply,
     sendText,
@@ -55,7 +56,7 @@ export const Composer = () => {
   const inputRef = useRef<HTMLInputElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const remoteAttachmentRef = useRef<RemoteAttachment | null>(null);
-  const isSending = sending || uploadingAttachment;
+  const isSending = !ready || sending || uploadingAttachment;
   const hasContent = message.trim() !== "" || attachment;
 
   log.trace("render", {

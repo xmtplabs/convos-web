@@ -56,6 +56,7 @@ export type ConvoContextValue = {
   convo: ResolvedConvo;
   // internal — use action functions instead of accessing directly
   conversation: Conversation<BuiltInContentTypes> | null;
+  ready: boolean;
   appData: AppData | null;
   memberProfiles: Map<string, MemberProfile>;
   members: GroupMember[];
@@ -455,6 +456,7 @@ export const ConvoProvider: React.FC<{
     () => ({
       convo: resolvedConvo,
       conversation,
+      ready: conversation != null,
       appData,
       memberProfiles,
       members,

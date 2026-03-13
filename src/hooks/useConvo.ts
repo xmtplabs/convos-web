@@ -12,6 +12,7 @@ export const useConvo = () => {
 
   const {
     appData,
+    ready,
     convo,
     members,
     memberProfiles,
@@ -56,6 +57,7 @@ export const useConvo = () => {
 
   return {
     appData,
+    ready,
     convo,
     members,
     memberProfiles,
