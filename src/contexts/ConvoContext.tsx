@@ -287,7 +287,7 @@ export const ConvoProvider: React.FC<{
         },
       });
 
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      // oxlint-disable-next-line @typescript-eslint/no-unnecessary-condition
       if (cancelled) {
         await stream.end();
         return;

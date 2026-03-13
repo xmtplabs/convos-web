@@ -1,4 +1,3 @@
-/* global self, caches */
 const CACHE = "convos-cache";
 
 self.addEventListener("install", () => self.skipWaiting());

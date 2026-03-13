@@ -131,20 +131,20 @@ export const XmtpProvider: React.FC<{
         clientRef.current = null;
       }
 
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      // oxlint-disable-next-line @typescript-eslint/no-unnecessary-condition
       if (cancelled) {
         return;
       }
 
       log.trace("setup: building client", { convoId: convo.id });
       const newClient = await createClient(convo.privateKey);
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      // oxlint-disable-next-line @typescript-eslint/no-unnecessary-condition
       if (cancelled) {
         newClient.close();
         return;
       }
       await newClient.conversations.sync();
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      // oxlint-disable-next-line @typescript-eslint/no-unnecessary-condition
       if (cancelled) {
         newClient.close();
         return;
@@ -209,7 +209,7 @@ export const XmtpProvider: React.FC<{
             });
           },
         });
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+        // oxlint-disable-next-line @typescript-eslint/no-unnecessary-condition
         if (cancelled) {
           void stream.end();
           return;
@@ -241,7 +241,7 @@ export const XmtpProvider: React.FC<{
       const conversation = await newClient.conversations.getConversationById(
         convo.xmtpId,
       );
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      // oxlint-disable-next-line @typescript-eslint/no-unnecessary-condition
       if (cancelled) {
         newClient.close();
         return;
@@ -275,7 +275,7 @@ export const XmtpProvider: React.FC<{
                 void processDmInvite(value, tag, group);
               },
             });
-            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+            // oxlint-disable-next-line @typescript-eslint/no-unnecessary-condition
             if (cancelled) {
               void stream.end();
             } else {
