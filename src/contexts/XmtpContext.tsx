@@ -26,7 +26,7 @@ import { createLogger } from "@/utils/log";
 import { registerConvo } from "@/utils/notifications";
 import { createClient, getContentString } from "@/utils/xmtp";
 
-const log = createLogger("xmtp");
+const log = createLogger("xmtp-context");
 
 function postActiveConvo(xmtpId: string | null) {
   navigator.serviceWorker.controller?.postMessage({
@@ -150,17 +150,17 @@ export const XmtpProvider: React.FC<{
         newClient.close();
         return;
       }
-      await newClient.conversations.sync();
-      // oxlint-disable-next-line @typescript-eslint/no-unnecessary-condition
-      if (cancelled) {
-        newClient.close();
-        return;
-      }
       clientRef.current = newClient;
-      log.info("setup: client ready", { convoId: convo.id });
 
-      // pending convos: watch for being added to a matching group
+      // pending convos need a full sync to discover groups
       if (convo.status === "pending") {
+        await newClient.conversations.sync();
+        // oxlint-disable-next-line @typescript-eslint/no-unnecessary-condition
+        if (cancelled) {
+          newClient.close();
+          return;
+        }
+        log.info("setup: client ready (pending)", { convoId: convo.id });
         log.trace("setup: pending convo, watching for group match");
         const resolveIfMatch = async (group: Group): Promise<boolean> => {
           await group.sync();
@@ -245,7 +245,8 @@ export const XmtpProvider: React.FC<{
         return;
       }
 
-      const conversation = await newClient.conversations.getConversationById(
+      // try cached conversation first (skip network sync)
+      let conversation = await newClient.conversations.getConversationById(
         convo.xmtpId,
       );
       // oxlint-disable-next-line @typescript-eslint/no-unnecessary-condition
@@ -253,6 +254,28 @@ export const XmtpProvider: React.FC<{
         newClient.close();
         return;
       }
+
+      // if not found locally, sync and retry
+      if (!conversation) {
+        log.trace("setup: conversation not cached, syncing", {
+          convoId: convo.id,
+        });
+        await newClient.conversations.sync();
+        // oxlint-disable-next-line @typescript-eslint/no-unnecessary-condition
+        if (cancelled) {
+          newClient.close();
+          return;
+        }
+        conversation = await newClient.conversations.getConversationById(
+          convo.xmtpId,
+        );
+        // oxlint-disable-next-line @typescript-eslint/no-unnecessary-condition
+        if (cancelled) {
+          newClient.close();
+          return;
+        }
+      }
+
       if (conversation) {
         log.info("setup: ready", { convoId: convo.id, xmtpId: convo.xmtpId });
         setState({ status: "ready", client: newClient, conversation });

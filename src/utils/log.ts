@@ -42,6 +42,7 @@ export const LOG_DOMAINS = [
   "upload-url-api",
   "welcome",
   "xmtp",
+  "xmtp-context",
 ] as const;
 
 export type LogDomain = (typeof LOG_DOMAINS)[number];
