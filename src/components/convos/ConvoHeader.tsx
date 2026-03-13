@@ -104,9 +104,14 @@ export const ConvoHeader: React.FC = () => {
                 <Text size="xs" c="dimmed" truncate>
                   &bull;
                 </Text>
-                <Text size="xs" c="dimmed" truncate>
-                  {convo.description}
-                </Text>
+                <UnstyledLink
+                  to="/convo/$convoId/details/edit"
+                  params={{ convoId: convo.id }}
+                  search={{ focus: "description" }}>
+                  <Text size="xs" c="dimmed" truncate>
+                    {convo.description}
+                  </Text>
+                </UnstyledLink>
               </>
             )}
           </Group>
