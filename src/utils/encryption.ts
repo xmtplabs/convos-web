@@ -4,39 +4,46 @@ const log = createLogger("encryption");
 
 const INFO = new TextEncoder().encode("ConvosImageV1");
 
-export const hexToBytes = (hex: string): Uint8Array<ArrayBuffer> => {
+export const hexToBytes = (hex: string) => {
+  log.trace("hexToBytes", { hex });
   const bytes = new Uint8Array(hex.length / 2);
   for (let i = 0; i < hex.length; i += 2) {
     bytes[i / 2] = parseInt(hex.substring(i, i + 2), 16);
   }
+  log.debug("hexToBytes complete", { bytes });
   return bytes;
 };
 
-export const bytesToHex = (bytes: Uint8Array): string =>
-  Array.from(bytes)
+export const bytesToHex = (bytes: Uint8Array) => {
+  log.trace("bytesToHex", { bytes: bytes.length });
+  const hex = Array.from(bytes)
     .map((b) => b.toString(16).padStart(2, "0"))
     .join("");
+  log.debug("bytesToHex complete", { hex });
+  return hex;
+};
 
-export const generateKey = (): string => {
+export const generateKey = () => {
+  log.trace("generateKey");
   const key = new Uint8Array(32);
   crypto.getRandomValues(key);
   return bytesToHex(key);
 };
 
 export const generateSalt = () => {
+  log.trace("generateSalt");
   const salt = new Uint8Array(32);
   return crypto.getRandomValues(salt);
 };
 
 export const generateNonce = () => {
+  log.trace("generateNonce");
   const nonce = new Uint8Array(12);
   return crypto.getRandomValues(nonce);
 };
 
-const deriveKey = async (
-  key: string,
-  saltBytes: Uint8Array<ArrayBuffer>,
-): Promise<CryptoKey> => {
+const deriveKey = async (key: string, saltBytes: Uint8Array<ArrayBuffer>) => {
+  log.trace("deriveKey", { key, saltBytes });
   const keyBytes = hexToBytes(key);
   const baseKey = await crypto.subtle.importKey(
     "raw",
@@ -58,11 +65,7 @@ const deriveKey = async (
 export const encrypt = async (
   imageData: Uint8Array<ArrayBuffer>,
   key: string,
-): Promise<{
-  ciphertext: Uint8Array<ArrayBuffer>;
-  salt: string;
-  nonce: string;
-}> => {
+) => {
   log.trace("encrypt", { inputSize: imageData.byteLength });
   const salt = generateSalt();
   const nonce = generateNonce();
@@ -86,8 +89,8 @@ export const decrypt = async (
   key: string,
   salt: string,
   nonce: string,
-): Promise<Uint8Array<ArrayBuffer>> => {
-  log.debug("decrypt", { inputSize: ciphertext.byteLength });
+) => {
+  log.trace("decrypt", { inputSize: ciphertext.byteLength });
   const saltBytes = hexToBytes(salt);
   const nonceBytes = hexToBytes(nonce);
   const derivedKey = await deriveKey(key, saltBytes);

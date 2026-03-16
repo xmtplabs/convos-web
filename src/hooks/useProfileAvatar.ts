@@ -3,7 +3,7 @@ import type { Profile } from "@/db";
 import { decrypt } from "@/utils/encryption";
 import { createLogger } from "@/utils/log";
 
-const log = createLogger("db");
+const log = createLogger("use-profile-avatar");
 
 export const useProfileAvatar = (profile: Profile | null) => {
   const [src, setSrc] = useState<string | null>(null);

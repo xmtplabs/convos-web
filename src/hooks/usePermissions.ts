@@ -8,7 +8,7 @@ import {
 import { useCallback, useState } from "react";
 import { createLogger } from "@/utils/log";
 
-const log = createLogger("app-lock");
+const log = createLogger("use-permissions");
 
 export type ConvoPermissions = {
   isAdmin: boolean;
@@ -26,6 +26,7 @@ const canPerform = (
   isAdmin: boolean,
   isSuperAdmin: boolean,
 ): boolean => {
+  log.trace("canPerform", { policy, isAdmin, isSuperAdmin });
   switch (policy) {
     case PermissionPolicy.Allow:
       return true;
@@ -45,6 +46,7 @@ const resolvePermissions = (
   isAdmin: boolean,
   isSuperAdmin: boolean,
 ): ConvoPermissions => {
+  log.trace("resolvePermissions", { policySet, isAdmin, isSuperAdmin });
   const can = (p: PermissionPolicy) => canPerform(p, isAdmin, isSuperAdmin);
   const canUpdateAppData = can(policySet.updateAppDataPolicy);
   return {
@@ -67,7 +69,7 @@ export const usePermissions = (
   const [permissions, setPermissions] = useState<ConvoPermissions | null>(null);
 
   const refreshPermissions = useCallback(async () => {
-    log.trace("refreshing");
+    log.trace("refreshPermissions");
     if (!(conversation instanceof Group)) return;
     const inboxId = client?.inboxId ?? "";
     if (!inboxId) return;

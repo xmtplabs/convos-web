@@ -32,7 +32,7 @@ export const DeleteConvoModal: React.FC<DeleteConvoModalProps> = ({
     try {
       if (client?.installationId) {
         await unregisterConvo(client.installationId).catch((err: unknown) => {
-          log.warn("push unregister failed", err);
+          log.error("push unregister failed", err);
         });
       }
       await deleteConvo(convo.id);

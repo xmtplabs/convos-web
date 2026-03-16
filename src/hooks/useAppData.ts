@@ -8,7 +8,7 @@ import {
 import { syncAvatars } from "@/utils/avatars";
 import { createLogger } from "@/utils/log";
 
-const log = createLogger("sync");
+const log = createLogger("use-app-data");
 
 type AppDataEntry = { convoId: string; data: AppData };
 

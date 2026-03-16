@@ -3,7 +3,7 @@ import { Convo } from "@/components/convos/Convo";
 import { getConvo } from "@/utils/db";
 import { createLogger } from "@/utils/log";
 
-const log = createLogger("sync");
+const log = createLogger("convo-id-route");
 
 const VALID_ACTIONS = [
   "invite",

@@ -1,5 +1,4 @@
 import {
-  Group,
   PermissionPolicy,
   PermissionUpdateType,
   type BuiltInContentTypes,
@@ -13,6 +12,10 @@ import {
   updateGroupImage,
 } from "@/utils/appData";
 import { updateConvo } from "@/utils/db";
+import { createLogger } from "@/utils/log";
+import { isGroup } from "@/utils/xmtp";
+
+const log = createLogger("use-convo-actions");
 
 export const useConvoActions = (
   convoId: string,
@@ -22,7 +25,10 @@ export const useConvoActions = (
 
   const removeMember = useCallback(
     async (memberInboxId: string) => {
-      if (!(conversation instanceof Group)) return;
+      log.trace("removeMember", { memberInboxId });
+      if (!isGroup(conversation)) {
+        return;
+      }
       await conversation.removeMembers([memberInboxId]);
     },
     [conversation],
@@ -30,7 +36,10 @@ export const useConvoActions = (
 
   const updateName = useCallback(
     async (name: string) => {
-      if (!(conversation instanceof Group)) return;
+      log.trace("updateName", { name });
+      if (!isGroup(conversation)) {
+        return;
+      }
       await conversation.updateName(name);
       void updateConvo(convoId, { name });
     },
@@ -39,7 +48,10 @@ export const useConvoActions = (
 
   const updateDescription = useCallback(
     async (description: string) => {
-      if (!(conversation instanceof Group)) return;
+      log.trace("updateDescription", { description });
+      if (!isGroup(conversation)) {
+        return;
+      }
       await conversation.updateDescription(description);
       void updateConvo(convoId, { description });
     },
@@ -48,7 +60,10 @@ export const useConvoActions = (
 
   const updateImage = useCallback(
     async (imageData: Uint8Array) => {
-      if (!(conversation instanceof Group)) return;
+      log.trace("updateImage", { imageData });
+      if (!isGroup(conversation)) {
+        return;
+      }
       await updateGroupImage(
         conversation,
         imageData as Uint8Array<ArrayBuffer>,
@@ -58,33 +73,55 @@ export const useConvoActions = (
   );
 
   const removeImage = useCallback(async () => {
-    if (!(conversation instanceof Group)) return;
+    log.trace("removeImage");
+    if (!isGroup(conversation)) {
+      return;
+    }
     await removeGroupImage(conversation);
   }, [conversation]);
 
   const lock = useCallback(async () => {
-    if (!(conversation instanceof Group)) return;
-    await conversation.updatePermission(
-      PermissionUpdateType.AddMember,
-      PermissionPolicy.Deny,
-    );
+    log.trace("lock");
+    if (!isGroup(conversation)) {
+      return;
+    }
+    try {
+      await conversation.updatePermission(
+        PermissionUpdateType.AddMember,
+        PermissionPolicy.Deny,
+      );
+    } catch (error) {
+      log.error("lock error", error);
+      throw error;
+    }
     void updateConvo(convoId, { locked: true });
     setLocked(true);
   }, [conversation, convoId]);
 
   const unlock = useCallback(async () => {
-    if (!(conversation instanceof Group)) return;
-    await conversation.updatePermission(
-      PermissionUpdateType.AddMember,
-      PermissionPolicy.Allow,
-    );
+    log.trace("unlock");
+    if (!isGroup(conversation)) {
+      return;
+    }
+    try {
+      await conversation.updatePermission(
+        PermissionUpdateType.AddMember,
+        PermissionPolicy.Allow,
+      );
+    } catch (error) {
+      log.error("unlock error", error);
+      throw error;
+    }
     void updateConvo(convoId, { locked: false });
     setLocked(false);
   }, [conversation, convoId]);
 
   const shareProfile = useCallback(
     async (profile: Profile, inboxId: string) => {
-      if (!(conversation instanceof Group)) return;
+      log.trace("shareProfile", { profile, inboxId });
+      if (!isGroup(conversation)) {
+        return;
+      }
       await shareProfileToGroup(conversation, profile, inboxId);
     },
     [conversation],

@@ -31,6 +31,7 @@ const encoder = new TextEncoder();
  * Type tag 0x02 (UTF-8 string) + length prefix + UTF-8 bytes.
  */
 const packConversationId = (conversationId: string): Uint8Array => {
+  log.trace("packConversationId", { conversationId });
   const utf8 = encoder.encode(conversationId);
   const len = utf8.length;
 
@@ -55,7 +56,8 @@ const encryptConversationToken = (
   conversationId: string,
   privateKeyBytes: Uint8Array,
   inboxId: string,
-): Uint8Array => {
+) => {
+  log.trace("encryptConversationToken", { conversationId, inboxId });
   const info = encoder.encode("inbox:" + inboxId);
   const key = hkdf(sha256, privateKeyBytes, SALT, info, 32);
 
@@ -81,10 +83,8 @@ const encryptConversationToken = (
  * Sign serialized payload bytes with secp256k1 ECDSA (recoverable).
  * Returns 65 bytes: r(32) | s(32) | recoveryId(1)
  */
-const signPayload = (
-  payloadBytes: Uint8Array,
-  privateKeyBytes: Uint8Array,
-): Uint8Array => {
+const signPayload = (payloadBytes: Uint8Array, privateKeyBytes: Uint8Array) => {
+  log.trace("signPayload", { payloadBytes: payloadBytes.length });
   const hash = sha256(payloadBytes);
   // recovered format: recovery(1) | r(32) | s(32)
   const sig = secp256k1.sign(hash, privateKeyBytes, { format: "recovered" });
@@ -100,6 +100,7 @@ const signPayload = (
  * Base64url encode without padding, inserting '*' every 300 chars.
  */
 const toUrlSafeSlug = (data: Uint8Array): string => {
+  log.trace("toUrlSafeSlug", { data: data.length });
   // convert to base64, then to base64url
   let b64 = btoa(String.fromCharCode(...data));
   b64 = b64.replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
@@ -120,11 +121,14 @@ export const createInviteSlug = (
   appData: AppData,
   inboxId: string,
 ): string => {
-  if (!convo.xmtpId) {
-    throw new Error("cannot create invite for convo without xmtpId");
-  }
   const includeInfo = convo.inviteIncludesInfo ?? false;
   log.trace("createInviteSlug", { convoId: convo.id, includeInfo });
+  if (!convo.xmtpId) {
+    log.error("cannot create invite for convo without xmtpId", {
+      convoId: convo.id,
+    });
+    throw new Error("cannot create invite for convo without xmtpId");
+  }
   // strip 0x prefix from private key hex and decode to bytes
   const pkHex = convo.privateKey.startsWith("0x")
     ? convo.privateKey.slice(2)
@@ -168,14 +172,14 @@ export const getInviteUrl = (slug: string): string => {
   return `${window.location.origin}/i/${slug}`;
 };
 
-export interface ParsedInvite {
+export type ParsedInvite = {
   payload: InvitePayload;
   creatorInboxId: string;
   slug: string;
-}
+};
 
 export const parseInviteSlug = (slug: string): ParsedInvite => {
-  log.trace("parseInviteSlug");
+  log.trace("parseInviteSlug", { slug });
   // strip '*' separators
   const b64 = slug.replace(/\*/g, "");
 
@@ -206,7 +210,7 @@ export const parseInviteSlug = (slug: string): ParsedInvite => {
   return { payload, creatorInboxId, slug };
 };
 
-export const sendJoinRequest = async (parsed: ParsedInvite): Promise<Convo> => {
+export const sendJoinRequest = async (parsed: ParsedInvite) => {
   log.trace("sendJoinRequest", { creatorInboxId: parsed.creatorInboxId });
   const { creatorInboxId, slug, payload } = parsed;
   const privateKey = generatePrivateKey();
@@ -241,7 +245,7 @@ export const processDmInvite = async (
   message: DecodedMessage,
   tag: string,
   group: Group,
-): Promise<boolean> => {
+) => {
   log.trace("processDmInvite", { senderInboxId: message.senderInboxId });
   if (!isText(message) || !message.content) {
     return false;
@@ -267,7 +271,7 @@ export const processExistingDms = async (
   client: Client,
   tag: string,
   group: Group,
-): Promise<void> => {
+) => {
   log.trace("processExistingDms");
   await client.conversations.sync();
   const dms = await client.conversations.listDms();

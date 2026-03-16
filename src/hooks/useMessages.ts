@@ -21,6 +21,7 @@ export const useMessages = (
   >([]);
 
   const sync = useCallback(async () => {
+    log.trace("sync");
     if (!conversation) return [];
     const msgs = await conversation.messages();
     log.trace("synced", { count: msgs.length });
@@ -30,8 +31,8 @@ export const useMessages = (
 
   const startStream = useCallback(
     async (callback: (msg: DecodedMessage<BuiltInContentTypes>) => void) => {
+      log.trace("startStream");
       if (!conversation) return;
-      log.trace("starting stream");
       const stream = await conversation.stream({
         onValue(value) {
           setMessages((prev) => [...prev, value]);
@@ -44,8 +45,8 @@ export const useMessages = (
   );
 
   const stopStream = useCallback(async () => {
+    log.trace("stopStream");
     if (!streamRef.current) return;
-    log.trace("stopping stream");
     await streamRef.current.end();
     streamRef.current = null;
   }, []);
@@ -55,6 +56,7 @@ export const useMessages = (
     const changed = conversationRef.current?.id !== conversation?.id;
     conversationRef.current = conversation;
     if (!conversation || changed) {
+      log.trace("conversation changed, clearing messages and stopping stream");
       setMessages([]);
       void stopStream();
     }

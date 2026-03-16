@@ -4,6 +4,7 @@ import { createLogger } from "@/utils/log";
 const log = createLogger("explode");
 
 const format = (ms: number): string => {
+  log.trace("format", { ms });
   if (ms <= 0) return "00:00";
 
   const totalSeconds = Math.floor(ms / 1000);
@@ -23,6 +24,7 @@ export const useExplodeCountdown = (expiresAtUnix?: number): string | null => {
 
   useEffect(() => {
     if (expiresAtUnix == null) {
+      log.trace("countdown stopped");
       setCountdown(null);
       return;
     }
@@ -38,6 +40,7 @@ export const useExplodeCountdown = (expiresAtUnix?: number): string | null => {
 
     return () => {
       if (intervalRef.current != null) {
+        log.trace("clearing interval");
         clearInterval(intervalRef.current);
       }
     };

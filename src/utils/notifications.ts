@@ -3,6 +3,7 @@ import { createLogger } from "@/utils/log";
 const log = createLogger("notifications");
 
 function urlBase64ToUint8Array(base64String: string) {
+  log.trace("urlBase64ToUint8Array");
   const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
   const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
   const raw = atob(base64);
@@ -14,6 +15,7 @@ function urlBase64ToUint8Array(base64String: string) {
 }
 
 function keysEqual(a: Uint8Array, b: Uint8Array): boolean {
+  log.trace("keysEqual");
   if (a.length !== b.length) {
     return false;
   }
@@ -28,6 +30,7 @@ function keysEqual(a: Uint8Array, b: Uint8Array): boolean {
 let cachedVapidKey: string | null = null;
 
 async function getVapidKey(): Promise<string | null> {
+  log.trace("getVapidKey");
   if (cachedVapidKey) {
     return cachedVapidKey;
   }
@@ -50,6 +53,7 @@ async function getVapidKey(): Promise<string | null> {
 let cachedSubscription: PushSubscription | null = null;
 
 async function ensurePushSubscription(): Promise<PushSubscription | null> {
+  log.trace("ensurePushSubscription");
   if (cachedSubscription) {
     return cachedSubscription;
   }
@@ -102,6 +106,7 @@ export async function registerConvo(
   installationId: string,
   topic: string,
 ): Promise<boolean> {
+  log.trace("registerConvo", { installationId, topic });
   const subscription = await ensurePushSubscription();
   if (!subscription) {
     log.error("failed to ensure push subscription");
@@ -141,7 +146,7 @@ export async function registerConvo(
 
 // unregister an installation from push notifications
 export async function unregisterConvo(installationId: string): Promise<void> {
-  log.info("unsubscribing", { installationId });
+  log.trace("unregisterConvo", { installationId });
   try {
     const res = await fetch("/api/v1/notifications/unsubscribe", {
       method: "POST",

@@ -1,4 +1,7 @@
 import QRCode from "qrcode";
+import { createLogger } from "@/utils/log";
+
+const log = createLogger("qrcode");
 
 export type QrOptions = {
   size?: number;
@@ -14,6 +17,7 @@ export type QrOptions = {
 type ResolvedOptions = Required<QrOptions>;
 
 const resolveOptions = (options: QrOptions): ResolvedOptions => {
+  log.trace("resolveOptions", { options });
   const fgColor = options.fgColor ?? "#000000";
   return {
     size: options.size ?? 280,

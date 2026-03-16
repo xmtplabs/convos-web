@@ -10,6 +10,7 @@ const log = createLogger("avatars");
 export const GROUP_IMAGE_INBOX_ID = "__group__";
 
 const uint8ToDataUrl = (bytes: Uint8Array): string => {
+  log.trace("uint8ToDataUrl", { bytes: bytes.length });
   let binary = "";
   for (let i = 0; i < bytes.length; i++) {
     binary += String.fromCharCode(bytes[i]);
@@ -153,7 +154,7 @@ export const syncAvatars = async (
         await addAvatar(convoId, GROUP_IMAGE_INBOX_ID, dataUrl, groupImg.url);
       }
     } catch (err) {
-      log.warn("group image sync failed (non-fatal)", err);
+      log.error("group image sync failed (non-fatal)", err);
     }
   }
 };
@@ -162,6 +163,7 @@ export const uploadAvatar = async (
   data: Uint8Array<ArrayBuffer>,
   groupKeyHex: string,
 ): Promise<{ url: string; salt: string; nonce: string }> => {
+  log.trace("uploadAvatar", { groupKeyHex });
   const { ciphertext, salt, nonce } = await encrypt(data, groupKeyHex);
 
   const blob = new Blob([ciphertext], { type: "application/octet-stream" });

@@ -4,7 +4,7 @@ import { useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef } from "react";
 import { createLogger } from "@/utils/log";
 
-const log = createLogger("service-worker");
+const log = createLogger("use-service-worker");
 
 const UPDATE_POLL_INTERVAL = 60 * 1000;
 
@@ -75,6 +75,7 @@ export function useServiceWorker() {
       .catch(() => {});
 
     return () => {
+      log.trace("unmounting");
       navigator.serviceWorker.removeEventListener(
         "controllerchange",
         onControllerChange,

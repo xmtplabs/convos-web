@@ -142,7 +142,7 @@ export const cleanUpExplodedConvo = async (
 
   if (installationId) {
     await unregisterConvo(installationId).catch((err: unknown) => {
-      log.warn("push unregister failed", { convoId }, err);
+      log.error("push unregister failed", { convoId }, err);
     });
   }
 
@@ -151,7 +151,8 @@ export const cleanUpExplodedConvo = async (
   log.info("exploded convo deleted", { convoId });
 };
 
-export const getNextSunday = (): Date => {
+export const getNextSunday = () => {
+  log.trace("getNextSunday");
   const now = new Date();
   const day = now.getDay();
   const daysUntilSunday = day === 0 ? 7 : 7 - day;

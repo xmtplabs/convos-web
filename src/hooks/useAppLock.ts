@@ -71,7 +71,7 @@ export const useAppLock = (onLockLost?: () => void) => {
    */
   const acquireLock = useCallback(
     (force?: boolean) => {
-      log.info("acquireLock attempt", { force, currentLockId: lockId });
+      log.trace("acquireLock attempt", { force, currentLockId: lockId });
       // if the lock is not stale and acquired by another session, don't acquire it
       // unless force is true
       if (
@@ -95,7 +95,7 @@ export const useAppLock = (onLockLost?: () => void) => {
   );
 
   const releaseLock = useCallback((): void => {
-    log.info("releaseLock");
+    log.trace("releaseLock");
     hadLockRef.current = false;
     setLockId(null);
     setLastActive(null);

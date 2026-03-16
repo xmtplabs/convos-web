@@ -5,26 +5,31 @@ const log = createLogger("active-convo");
 
 let activeXmtpId: string | null = null;
 
-export function postActiveConvo(xmtpId: string | null) {
+export const postActiveConvo = (xmtpId: string | null) => {
+  log.trace("postActiveConvo", { xmtpId });
   navigator.serviceWorker.controller?.postMessage({
     type: "active-convo",
     xmtpId,
   });
-}
+};
 
-export function setActiveConvoId(xmtpId: string | null) {
+export const setActiveConvoId = (xmtpId: string | null) => {
+  log.trace("setActiveConvoId", { xmtpId });
   activeXmtpId = xmtpId;
   postActiveConvo(xmtpId);
-  log.trace("set", { xmtpId });
-}
+};
 
-export function getActiveConvoId(): string | null {
+export const getActiveConvoId = () => {
+  log.trace("getActiveConvoId");
   return activeXmtpId;
-}
+};
 
 export const useActiveConvo = () => {
   useEffect(() => {
     const onVisibilityChange = () => {
+      log.trace("onVisibilityChange", {
+        visibilityState: document.visibilityState,
+      });
       if (document.visibilityState === "hidden") {
         postActiveConvo(null);
       } else if (activeXmtpId) {

@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { type Convo } from "@/db";
 import { createLogger } from "@/utils/log";
 
-const log = createLogger("service-worker-sync");
+const log = createLogger("use-service-worker-sync");
 
 export function useServiceWorkerSync(convos: Convo[]) {
   useEffect(() => {

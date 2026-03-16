@@ -54,13 +54,14 @@ export const createClient = async (privateKey: Hex) => {
   return client;
 };
 
-function attachmentLabel(mimeType?: string): string {
+const attachmentLabel = (mimeType?: string): string => {
+  log.trace("attachmentLabel", { mimeType });
   if (!mimeType) return "An attachment was sent";
   if (mimeType.startsWith("image/")) return "An image was sent";
   if (mimeType.startsWith("video/")) return "A video was sent";
   if (mimeType.startsWith("audio/")) return "An audio file was sent";
   return "An attachment was sent";
-}
+};
 
 export const getContentString = (message: DecodedMessage) => {
   log.trace("getContentString", { message });
@@ -138,5 +139,6 @@ export const getGroupUpdatedStrings = (
 export const isGroup = <T extends BuiltInContentTypes>(
   conversation?: Conversation<T> | null,
 ): conversation is Group<T> => {
+  log.trace("isGroup");
   return conversation instanceof Group;
 };

@@ -2,7 +2,7 @@ import { useCallback, useContext } from "react";
 import { ConvoContext } from "@/contexts/ConvoContext";
 import { createLogger } from "@/utils/log";
 
-const log = createLogger("sync");
+const log = createLogger("use-convo");
 
 export const useConvo = () => {
   const context = useContext(ConvoContext);

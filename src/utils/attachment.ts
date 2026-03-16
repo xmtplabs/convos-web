@@ -27,6 +27,7 @@ export type FileValidation =
     };
 
 export const validateFile = (file: File): FileValidation => {
+  log.trace("validateFile", { file: file.name, type: file.type });
   if (!ALLOWED_FILE_TYPES.includes(file.type)) {
     return {
       valid: false,
@@ -38,6 +39,7 @@ export const validateFile = (file: File): FileValidation => {
 };
 
 export const getPresignedUrl = async (): Promise<string> => {
+  log.trace("getPresignedUrl");
   const response = await fetch("/api/v1/upload-url");
   const data = (await response.json()) as { url: string };
   return data.url;
@@ -104,6 +106,7 @@ export const downloadAttachment = async (content: RemoteAttachment) => {
 };
 
 export const getFileType = (filename: string) => {
+  log.trace("getFileType", { filename });
   const extension = filename.split(".").pop()?.toLowerCase();
   switch (extension) {
     case "jpg":
@@ -126,6 +129,7 @@ export const getFileType = (filename: string) => {
 };
 
 export const formatFileSize = (fileSize: number) => {
+  log.trace("formatFileSize", { fileSize });
   if (!fileSize) {
     return "";
   }

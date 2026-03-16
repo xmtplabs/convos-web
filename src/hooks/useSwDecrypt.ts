@@ -6,7 +6,7 @@ import { updateConvo } from "@/utils/db";
 import { createLogger } from "@/utils/log";
 import { createClient, getContentString } from "@/utils/xmtp";
 
-const log = createLogger("sw-decrypt");
+const log = createLogger("use-service-worker-decrypt");
 
 export const useSwDecrypt = () => {
   const { acquireClient } = useXmtpLock();

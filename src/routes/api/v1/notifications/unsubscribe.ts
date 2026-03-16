@@ -35,7 +35,7 @@ export const Route = createFileRoute("/api/v1/notifications/unsubscribe")({
         try {
           body = await request.json();
         } catch {
-          log.warn("invalid JSON body");
+          log.error("invalid JSON body");
           return new Response("Invalid JSON", { status: 400 });
         }
 

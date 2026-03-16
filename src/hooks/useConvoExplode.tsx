@@ -7,7 +7,7 @@ import { useCallback, useMemo, useState } from "react";
 import { setExplodeTimer } from "@/utils/explode";
 import { createLogger } from "@/utils/log";
 
-const log = createLogger("convo-provider");
+const log = createLogger("use-convo-explode");
 
 export const useConvoExplode = (
   convoId: string,
@@ -23,11 +23,13 @@ export const useConvoExplode = (
   } | null>(null);
 
   const clearExplodeError = useCallback(() => {
+    log.trace("clearExplodeError");
     setExplodeError(null);
   }, []);
 
   const explode = useCallback(
     (getExpiresAt: () => Date, immediate?: boolean) => {
+      log.trace("explode");
       setPendingExplode({
         getDate: getExpiresAt,
         immediate: immediate ?? false,
@@ -37,6 +39,7 @@ export const useConvoExplode = (
   );
 
   const confirmExplode = useCallback(() => {
+    log.trace("confirmExplode");
     if (!pendingExplode || !conversation) return;
     const expiresAt = pendingExplode.getDate();
     log.info("confirmExplode", {
@@ -65,6 +68,7 @@ export const useConvoExplode = (
   }, [pendingExplode, conversation, convoId, client?.installationId, inboxId]);
 
   const cancelExplode = useCallback(() => {
+    log.trace("cancelExplode");
     setPendingExplode(null);
   }, []);
 

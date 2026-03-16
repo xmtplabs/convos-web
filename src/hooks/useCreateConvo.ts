@@ -4,7 +4,7 @@ import { generatePrivateKey } from "viem/accounts";
 import { addConvo, findConvoBy } from "@/utils/db";
 import { createLogger } from "@/utils/log";
 
-const log = createLogger("new-convo");
+const log = createLogger("use-create-convo");
 
 export const useCreateConvo = () => {
   const navigate = useNavigate();
@@ -33,6 +33,7 @@ export const useCreateConvo = () => {
 
     const id = window.crypto.randomUUID();
     try {
+      log.trace("creating convo record", { id });
       await addConvo({
         id,
         privateKey: generatePrivateKey(),

@@ -134,6 +134,7 @@ export const decodeAppData = async (data: string): Promise<AppData> => {
 };
 
 export const generateTag = () => {
+  log.trace("generateTag");
   const bytes = new Uint8Array(16);
   crypto.getRandomValues(bytes);
   return bytesToHex(bytes);
@@ -161,7 +162,7 @@ export const shareProfileToGroup = async (
     try {
       existing = await decode(currentAppData);
     } catch (err) {
-      log.warn("corrupt appData during shareProfile, starting fresh", err);
+      log.error("corrupt appData during shareProfile, starting fresh", err);
     }
   }
 
@@ -247,7 +248,7 @@ export const updateGroupImage = async (
     try {
       existing = await decode(currentAppData);
     } catch (err) {
-      log.warn("corrupt appData during updateGroupImage, starting fresh", err);
+      log.error("corrupt appData during updateGroupImage, starting fresh", err);
     }
   }
 
@@ -290,7 +291,7 @@ export const removeGroupImage = async (group: Group) => {
     metadata = await decode(currentAppData);
     log.info("decoded metadata", { metadata });
   } catch (err) {
-    log.warn("corrupt appData during removeGroupImage", err);
+    log.error("corrupt appData during removeGroupImage", err);
     return;
   }
 
@@ -316,7 +317,7 @@ export const updateExpiresAt = async (group: Group, expiresAtUnix: bigint) => {
       existing = await decode(currentAppData);
       log.info("decoded metadata", { metadata: existing });
     } catch (err) {
-      log.warn("corrupt appData during updateExpiresAt, starting fresh", err);
+      log.error("corrupt appData during updateExpiresAt, starting fresh", err);
     }
   }
 

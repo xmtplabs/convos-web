@@ -139,7 +139,7 @@ async function setupCreatingConvo(
   if (client.installationId) {
     registerConvo(client.installationId, conversation.topic).catch(
       (err: unknown) => {
-        log.warn("push registration failed", err);
+        log.error("push registration failed", err);
       },
     );
   }
@@ -186,7 +186,7 @@ async function setupPendingConvo(
     if (client.installationId) {
       registerConvo(client.installationId, conversation.topic).catch(
         (err: unknown) => {
-          log.warn("push registration failed", err);
+          log.error("push registration failed", err);
         },
       );
     }

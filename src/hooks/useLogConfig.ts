@@ -8,8 +8,11 @@ import {
   type LogDomain,
   type LogLevel,
 } from "@/utils/log";
+import { createLogger } from "@/utils/log";
 
 type DomainConfig = Partial<Record<LogDomain, LogLevel>>;
+
+const log = createLogger("use-log-config");
 
 export function useLogConfig() {
   const [globalLevel] = useLocalStorage<LogLevel | null>({
@@ -25,10 +28,12 @@ export function useLogConfig() {
   });
 
   useEffect(() => {
+    log.trace("setting global log level", { globalLevel });
     setGlobalLogLevel(globalLevel);
   }, [globalLevel]);
 
   useEffect(() => {
+    log.trace("setting domain log levels", { domainLevels });
     setDomainLogLevels(domainLevels);
   }, [domainLevels]);
 }

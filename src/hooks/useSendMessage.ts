@@ -7,7 +7,7 @@ import { useCallback, useContext } from "react";
 import { ConvoContext } from "@/contexts/ConvoContext";
 import { createLogger } from "@/utils/log";
 
-const log = createLogger("messaging");
+const log = createLogger("use-send-message");
 
 export const useSendMessage = () => {
   const context = useContext(ConvoContext);
