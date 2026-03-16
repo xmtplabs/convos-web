@@ -1,6 +1,7 @@
-import { useXmtp } from "@/hooks/useXmtp";
+import { useContext } from "react";
+import { ConvoContext } from "@/contexts/ConvoContext";
 
 export const useInboxId = (): string => {
-  const { client } = useXmtp();
-  return client?.inboxId ?? "";
+  const context = useContext(ConvoContext);
+  return context?.client?.inboxId ?? "";
 };

@@ -3,8 +3,8 @@ import { useNavigate } from "@tanstack/react-router";
 import { Opfs } from "@xmtp/browser-sdk";
 import { useState } from "react";
 import { Modal, ModalCloseButton } from "@/components/shared/Modal";
+import { useConvo } from "@/hooks/useConvo";
 import { useInboxId } from "@/hooks/useInboxId";
-import { useXmtp } from "@/hooks/useXmtp";
 import { Route } from "@/routes/_app/convo/$convoId";
 import { clearAvatars } from "@/utils/avatars";
 import { deleteConvo } from "@/utils/convos";
@@ -21,7 +21,7 @@ export const DeleteConvoModal: React.FC<DeleteConvoModalProps> = ({
   onClose,
 }) => {
   const convo = Route.useLoaderData();
-  const ctx = useXmtp();
+  const { client } = useConvo();
   const inboxId = useInboxId();
   const navigate = useNavigate();
   const [deleting, setDeleting] = useState(false);
@@ -30,14 +30,11 @@ export const DeleteConvoModal: React.FC<DeleteConvoModalProps> = ({
     log.trace("deleteConvoData", { convoId: convo.id });
     setDeleting(true);
     try {
-      if (ctx.client?.installationId) {
-        await unregisterConvo(ctx.client.installationId).catch(
-          (err: unknown) => {
-            log.warn("push unregister failed", err);
-          },
-        );
+      if (client?.installationId) {
+        await unregisterConvo(client.installationId).catch((err: unknown) => {
+          log.warn("push unregister failed", err);
+        });
       }
-      ctx.setConvo(null);
       await deleteConvo(convo.id);
       await clearAvatars(convo.id);
       if (inboxId) {

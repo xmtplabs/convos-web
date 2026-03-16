@@ -4,18 +4,19 @@ import { useState } from "react";
 import { EmojiPicker } from "@/components/shared/EmojiPicker";
 import { GroupedList, GroupedListItem } from "@/components/shared/GroupedList";
 import { useConvo } from "@/hooks/useConvo";
+import { useConvoDb } from "@/hooks/useConvoDb";
 import { createLogger } from "@/utils/log";
 
 const log = createLogger("convo-details");
 
 export const ConvoPreferences: React.FC = () => {
+  const { convo } = useConvo();
   const {
-    convo,
     setInviteIncludesInfo,
     toggleMuted,
     toggleBlurImages,
     setQuickReactionEmoji,
-  } = useConvo();
+  } = useConvoDb(convo.id);
   const [pickerOpen, setPickerOpen] = useState(false);
 
   return (

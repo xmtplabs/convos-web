@@ -8,13 +8,15 @@ import { DeleteAllDataModal } from "@/components/modals/DeleteAllDataModal";
 import { SettingsPanel } from "@/components/settings/SettingsPanel";
 import { AppLockProvider, useAppLockContext } from "@/contexts/AppLockContext";
 import { NavProvider } from "@/contexts/NavContext";
-import { XmtpProvider } from "@/contexts/XmtpContext";
+import { XmtpLockProvider } from "@/contexts/XmtpLockContext";
+import { useActiveConvo } from "@/hooks/useActiveConvo";
 import { useConvos } from "@/hooks/useConvos";
 import { useExplodeWatcher } from "@/hooks/useExplodeWatcher";
 import { useLogConfig } from "@/hooks/useLogConfig";
 import { useIsMobile } from "@/hooks/useMobile";
 import { useServiceWorker } from "@/hooks/useServiceWorker";
 import { useServiceWorkerSync } from "@/hooks/useServiceWorkerSync";
+import { useSwDecrypt } from "@/hooks/useSwDecrypt";
 import { MainLayout } from "@/layouts/MainLayout";
 import { createLogger } from "@/utils/log";
 
@@ -34,6 +36,8 @@ const AppContent = () => {
     setNavOpened(false);
   }, []);
   const navInitialized = useRef(false);
+  useActiveConvo();
+  useSwDecrypt();
   useExplodeWatcher();
   useServiceWorkerSync(convos);
 
@@ -78,9 +82,9 @@ const AppGate = () => {
   }
 
   return (
-    <XmtpProvider>
+    <XmtpLockProvider>
       <AppContent />
-    </XmtpProvider>
+    </XmtpLockProvider>
   );
 };
 

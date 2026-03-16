@@ -8,13 +8,15 @@ import { EditConvoPanel } from "@/components/convos/EditConvoPanel";
 import { MembersList } from "@/components/shared/MembersList";
 import { PanelView } from "@/components/shared/PanelView";
 import { useConvo } from "@/hooks/useConvo";
+import { useConvoDetails } from "@/hooks/useConvoDetails";
 import { createLogger } from "@/utils/log";
 import classes from "./ConvoDetailsPanel.module.css";
 
 const log = createLogger("convo-details");
 
 export const ConvoDetailsPanel: React.FC = () => {
-  const { convo, detailsOpen, toggleDetails } = useConvo();
+  const { convo } = useConvo();
+  const { detailsOpen, toggleDetails } = useConvoDetails(convo.id);
   const navigate = useNavigate();
   const showMembers = !!useMatch({
     from: "/_app/convo/$convoId/details/members",

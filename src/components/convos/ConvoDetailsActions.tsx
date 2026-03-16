@@ -16,6 +16,7 @@ import { ExplodeItems } from "@/components/convos/ExplodeSubMenu";
 import { InviteMenuItems } from "@/components/convos/InviteMenu";
 import { ActionSheet } from "@/components/shared/ActionSheet";
 import { useConvo } from "@/hooks/useConvo";
+import { useConvoDb } from "@/hooks/useConvoDb";
 import { createLogger } from "@/utils/log";
 import classes from "./ConvoDetailsPanel.module.css";
 
@@ -24,8 +25,8 @@ const log = createLogger("convo-details");
 const MENU_ICON_SIZE = 16;
 
 export const ConvoDetailsActions: React.FC = () => {
-  const { appData, convo, explode, permissions, toggleFaved, toggleUnread } =
-    useConvo();
+  const { appData, convo, explode, permissions } = useConvo();
+  const { toggleFaved, toggleUnread } = useConvoDb(convo.id);
   const navigate = useNavigate();
 
   const canExplode = permissions?.canRemoveMembers ?? false;

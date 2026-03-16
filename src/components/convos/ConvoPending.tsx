@@ -27,8 +27,7 @@ export const ConvoPending: React.FC = () => {
           </Stack>
         </Group>
       }
-      footer={null}
-      withScrollArea={false}>
+      footer={null}>
       <CenteredLayout>
         <Paper p="xl" radius="md" bg="gray.1">
           <InvitePending />

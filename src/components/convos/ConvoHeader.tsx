@@ -21,6 +21,7 @@ import { UnstyledLink } from "@/components/shared/UnstyledLink";
 import { useNav } from "@/contexts/NavContext";
 import { useAvatar } from "@/hooks/useAvatar";
 import { useConvo } from "@/hooks/useConvo";
+import { useConvoDetails } from "@/hooks/useConvoDetails";
 import { useExplodeCountdown } from "@/hooks/useExplodeCountdown";
 import { useIsMobile } from "@/hooks/useMobile";
 import { GROUP_IMAGE_INBOX_ID } from "@/utils/avatars";
@@ -29,10 +30,13 @@ import { createLogger } from "@/utils/log";
 const log = createLogger("convo-header");
 
 export const ConvoHeader: React.FC = () => {
-  const { convo, members, permissions, toggleDetails } = useConvo();
+  const { convo, members, permissions } = useConvo();
+  const { toggleDetails } = useConvoDetails(convo.id);
   const { openNav } = useNav();
   const isMobile = useIsMobile();
   const isPending = convo.status === "pending";
+  const isCreating = convo.status === "creating";
+  const memberCount = members.length || (isCreating ? 1 : null);
   const explodeCountdown = useExplodeCountdown(convo.expiresAtUnix);
   const groupImage = useAvatar(convo.id, GROUP_IMAGE_INBOX_ID);
 
@@ -92,13 +96,19 @@ export const ConvoHeader: React.FC = () => {
             )}
           </Group>
           <Group gap="xxxs" align="center" wrap="nowrap">
-            <UnstyledLink
-              to="/convo/$convoId/details/members"
-              params={{ convoId: convo.id }}>
-              <Text size="xs" c="dimmed" truncate>
-                {members.length} member{members.length !== 1 && "s"}
+            {memberCount != null ? (
+              <UnstyledLink
+                to="/convo/$convoId/details/members"
+                params={{ convoId: convo.id }}>
+                <Text size="xs" c="dimmed" truncate>
+                  {memberCount} member{memberCount !== 1 && "s"}
+                </Text>
+              </UnstyledLink>
+            ) : (
+              <Text size="xs" c="dimmed">
+                &nbsp;
               </Text>
-            </UnstyledLink>
+            )}
             {convo.description && (
               <>
                 <Text size="xs" c="dimmed" truncate>

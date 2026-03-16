@@ -120,6 +120,9 @@ export const createInviteSlug = (
   appData: AppData,
   inboxId: string,
 ): string => {
+  if (!convo.xmtpId) {
+    throw new Error("cannot create invite for convo without xmtpId");
+  }
   const includeInfo = convo.inviteIncludesInfo ?? false;
   log.trace("createInviteSlug", { convoId: convo.id, includeInfo });
   // strip 0x prefix from private key hex and decode to bytes

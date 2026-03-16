@@ -12,13 +12,14 @@ import { InviteModal } from "@/components/modals/InviteModal";
 import { LockConvoModal } from "@/components/modals/LockConvoModal";
 import { UnlockConvoModal } from "@/components/modals/UnlockConvoModal";
 import { useConvo } from "@/hooks/useConvo";
-import { useMessages } from "@/hooks/useMessages";
+import { useConvoDetails } from "@/hooks/useConvoDetails";
 import { ConvoLayout } from "@/layouts/ConvoLayout";
 import { Route } from "@/routes/_app/convo/$convoId";
 
 export const ConvoContent = () => {
-  const { messages } = useMessages();
   const ctx = useConvo();
+  const { messages } = ctx;
+  const { detailsOpen } = useConvoDetails(ctx.convo.id);
   const { action } = Route.useSearch();
   const navigate = useNavigate();
 
@@ -35,8 +36,7 @@ export const ConvoContent = () => {
         header={<ConvoHeader />}
         footer={<Composer />}
         loading={ctx.exploding}
-        detailsOpen={ctx.detailsOpen}
-        withScrollArea={false}>
+        detailsOpen={detailsOpen}>
         <MessageList messages={messages} />
       </ConvoLayout>
       <ConvoDetailsPanel />

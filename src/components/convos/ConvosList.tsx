@@ -1,10 +1,12 @@
 import { Box, Button, Paper, Stack, Text } from "@mantine/core";
-import { Link, useParams } from "@tanstack/react-router";
+import { useParams } from "@tanstack/react-router";
 import { useMemo } from "react";
+import { LinkButton } from "@/components/shared/Button";
 import VirtualList from "@/components/shared/VirtualList";
 import { useNav } from "@/contexts/NavContext";
 import type { Convo } from "@/db";
 import { useConvosFilter, useFilteredConvos } from "@/hooks/useConvosFilter";
+import { useCreateConvo } from "@/hooks/useCreateConvo";
 import { useIsMobile } from "@/hooks/useMobile";
 import { CenteredLayout } from "@/layouts/CenteredLayout";
 import { createLogger } from "@/utils/log";
@@ -29,6 +31,7 @@ export const ConvosList: React.FC<ConvosListProps> = ({ convos }) => {
   const { closeNav } = useNav();
   const isMobile = useIsMobile();
   const [filter, setFilter] = useConvosFilter();
+  const createConvo = useCreateConvo();
   const filtered = useFilteredConvos(convos);
 
   const selectedConversationIndex = useMemo(
@@ -58,9 +61,16 @@ export const ConvosList: React.FC<ConvosListProps> = ({ convos }) => {
                 Show all
               </Button>
             ) : (
-              <Button component={Link} to="/new" variant="filled" radius="xl">
+              <LinkButton
+                to="/new"
+                variant="filled"
+                radius="xl"
+                onClick={(e: React.MouseEvent) => {
+                  e.preventDefault();
+                  void createConvo();
+                }}>
                 Start a convo
-              </Button>
+              </LinkButton>
             )}
           </Stack>
         </Paper>

@@ -1,11 +1,11 @@
-import { useLocation, useNavigate } from "@tanstack/react-router";
 import {
+  ConsentState,
   Group,
-  isGroupUpdated,
   PermissionPolicy,
-  PermissionUpdateType,
+  isGroupUpdated,
   type AsyncStreamProxy,
   type BuiltInContentTypes,
+  type Client,
   type Conversation,
   type DecodedMessage,
   type GroupMember,
@@ -18,25 +18,30 @@ import {
   useRef,
   useState,
 } from "react";
+import type { XmtpLockHandle } from "@/contexts/XmtpLockContext";
 import { db, type Convo, type Profile } from "@/db";
+import { setActiveConvoId } from "@/hooks/useActiveConvo";
 import { useAppData } from "@/hooks/useAppData";
+import { useConvoActions } from "@/hooks/useConvoActions";
+import { useConvoExplode } from "@/hooks/useConvoExplode";
 import { useConvoGlobalSettings } from "@/hooks/useConvoGlobalSettings";
-import { useInboxId } from "@/hooks/useInboxId";
+import { useMessages } from "@/hooks/useMessages";
 import { usePermissions, type ConvoPermissions } from "@/hooks/usePermissions";
-import { useXmtp } from "@/hooks/useXmtp";
+import { useXmtpLock } from "@/hooks/useXmtpLock";
 import {
-  removeGroupImage,
-  shareProfileToGroup,
-  updateGroupImage,
+  decodeAppData,
+  initGroupAppData,
   type AppData,
   type MemberProfile,
 } from "@/utils/appData";
 import { updateConvo } from "@/utils/convos";
-import { isExplodeSettings, setExplodeTimer } from "@/utils/explode";
+import { isExplodeSettings } from "@/utils/explode";
+import { processDmInvite, processExistingDms } from "@/utils/invite";
 import { createLogger } from "@/utils/log";
+import { registerConvo } from "@/utils/notifications";
 import { getContentString } from "@/utils/xmtp";
 
-const log = createLogger("sync");
+const log = createLogger("convo-provider");
 
 export type ReplyState = {
   messageId: string;
@@ -54,8 +59,8 @@ export type ResolvedConvo = Convo &
 
 export type ConvoContextValue = {
   convo: ResolvedConvo;
-  // internal — use action functions instead of accessing directly
   conversation: Conversation<BuiltInContentTypes> | null;
+  client: Client | null;
   ready: boolean;
   appData: AppData | null;
   memberProfiles: Map<string, MemberProfile>;
@@ -73,13 +78,15 @@ export type ConvoContextValue = {
   exploding: boolean;
   explodeError: string | null;
   clearExplodeError: () => void;
-  pendingExplode: { getDate: () => Date; immediate: boolean } | null;
+  pendingExplode: {
+    getDate: () => Date;
+    immediate: boolean;
+  } | null;
   explode: (getExpiresAt: () => Date, immediate?: boolean) => void;
   confirmExplode: () => void;
   cancelExplode: () => void;
   refresh: () => Promise<void>;
-  detailsOpen: boolean;
-  toggleDetails: () => void;
+  retry: () => void;
 
   // actions
   removeMember: (memberInboxId: string) => Promise<void>;
@@ -90,212 +97,375 @@ export type ConvoContextValue = {
   lock: () => Promise<void>;
   unlock: () => Promise<void>;
   shareProfile: (profile: Profile, inboxId: string) => Promise<void>;
-  toggleFaved: () => void;
-  toggleUnread: () => void;
-  setInviteIncludesInfo: (val: boolean) => void;
-  toggleMuted: () => void;
-  toggleBlurImages: () => void;
-  setQuickReactionEmoji: (emoji: string) => void;
 };
 
 export const ConvoContext = createContext<ConvoContextValue | null>(null);
 
+// -- setup helpers (pure async, not hooks) --
+
+async function setupCreatingConvo(
+  client: Client,
+  convo: Convo,
+  cancelled: { current: boolean },
+): Promise<Conversation<BuiltInContentTypes> | null> {
+  log.info("setup: creating group", { convoId: convo.id });
+  const group = await client.conversations.createGroup([], {
+    groupName: convo.name || "New Convo",
+  });
+  if (cancelled.current) return null;
+
+  const tag = await initGroupAppData(group);
+  // oxlint-disable-next-line @typescript-eslint/no-unnecessary-condition
+  if (cancelled.current) return null;
+
+  await db.convos.update(convo.id, {
+    xmtpId: group.id,
+    tag,
+    status: "ready",
+    lastUpdatedAtNs: group.createdAtNs,
+  });
+
+  await client.conversations.sync();
+  // oxlint-disable-next-line @typescript-eslint/no-unnecessary-condition
+  if (cancelled.current) return null;
+
+  const conversation = await client.conversations.getConversationById(group.id);
+  if (!conversation) {
+    log.warn("setup: conversation not found after create");
+    return null;
+  }
+
+  // register push notifications (fire-and-forget)
+  if (client.installationId) {
+    registerConvo(client.installationId, conversation.topic).catch(
+      (err: unknown) => {
+        log.warn("push registration failed", err);
+      },
+    );
+  }
+
+  // start DM invite stream for join requests
+  void processExistingDms(client, tag, group);
+
+  return conversation;
+}
+
+async function setupPendingConvo(
+  client: Client,
+  convo: Convo,
+  cancelled: { current: boolean },
+  onConversation: (conv: Conversation<BuiltInContentTypes>) => void,
+  groupStreamRef: React.RefObject<AsyncStreamProxy<Group> | null>,
+): Promise<Conversation<BuiltInContentTypes> | null> {
+  log.info("setup: pending convo", { convoId: convo.id });
+  await client.conversations.sync();
+  if (cancelled.current) return null;
+
+  const resolveIfMatch = async (group: Group): Promise<boolean> => {
+    await group.sync();
+    if (!group.appData) return false;
+    try {
+      const appData = await decodeAppData(group.appData);
+      if (appData.tag !== convo.tag) return false;
+    } catch {
+      return false;
+    }
+    log.info("setup: pending convo matched group", {
+      groupId: group.id,
+    });
+    const { status, slug, creatorInboxId, ...rest } = convo;
+    await db.convos.put({ ...rest, xmtpId: group.id });
+
+    await client.conversations.sync();
+    const conversation = await client.conversations.getConversationById(
+      group.id,
+    );
+    if (!conversation) return false;
+
+    // register push notifications
+    if (client.installationId) {
+      registerConvo(client.installationId, conversation.topic).catch(
+        (err: unknown) => {
+          log.warn("push registration failed", err);
+        },
+      );
+    }
+
+    onConversation(conversation);
+    return true;
+  };
+
+  // start stream first so no welcome messages are missed
+  const stream = await client.conversations.streamGroups({
+    onValue(group) {
+      void resolveIfMatch(group).then((matched) => {
+        if (matched && groupStreamRef.current) {
+          void groupStreamRef.current.end();
+          groupStreamRef.current = null;
+        }
+      });
+    },
+  });
+  // oxlint-disable-next-line @typescript-eslint/no-unnecessary-condition
+  if (cancelled.current) {
+    void stream.end();
+    return null;
+  }
+  groupStreamRef.current = stream;
+
+  // check existing groups
+  const consentStates = [ConsentState.Unknown, ConsentState.Allowed];
+  const groups = await client.conversations.listGroups({
+    consentStates,
+  });
+  for (const group of groups) {
+    if (await resolveIfMatch(group)) {
+      void stream.end();
+      groupStreamRef.current = null;
+      return null; // conversation set via onConversation callback
+    }
+  }
+
+  // no match yet — streaming continues
+  return null;
+}
+
+async function setupReadyConvo(
+  client: Client,
+  convo: Convo,
+  cancelled: { current: boolean },
+  dmStreamRef: React.RefObject<AsyncStreamProxy<
+    DecodedMessage<BuiltInContentTypes>
+  > | null>,
+): Promise<Conversation<BuiltInContentTypes> | null> {
+  log.trace("setup: ready convo", {
+    convoId: convo.id,
+    xmtpId: convo.xmtpId,
+  });
+
+  const xmtpId = convo.xmtpId;
+  if (!xmtpId) {
+    log.warn("setup: ready convo missing xmtpId");
+    return null;
+  }
+
+  // try cached conversation first
+  let conversation = await client.conversations.getConversationById(xmtpId);
+  if (cancelled.current) return null;
+
+  // if not found locally, sync and retry
+  if (!conversation) {
+    log.trace("setup: conversation not cached, syncing");
+    await client.conversations.sync();
+    // oxlint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    if (cancelled.current) return null;
+    conversation = await client.conversations.getConversationById(xmtpId);
+    // oxlint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    if (cancelled.current) return null;
+  }
+
+  if (!conversation) {
+    log.warn("setup: conversation not found", {
+      xmtpId: convo.xmtpId,
+    });
+    return null;
+  }
+
+  log.info("setup: ready", {
+    convoId: convo.id,
+    xmtpId: convo.xmtpId,
+  });
+
+  // register push notifications
+  if (client.installationId) {
+    registerConvo(client.installationId, conversation.topic).catch(
+      (err: unknown) => {
+        log.warn("push registration failed", err);
+      },
+    );
+  }
+
+  // start DM invite stream for creator convos
+  if (convo.tag && conversation instanceof Group) {
+    const tag = convo.tag;
+    const group = conversation;
+    void processExistingDms(client, tag, group).then(async () => {
+      // oxlint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      if (cancelled.current) return;
+      const stream = await client.conversations.streamAllDmMessages({
+        disableSync: true,
+        onValue(value) {
+          void processDmInvite(value, tag, group);
+        },
+      });
+      // oxlint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      if (cancelled.current) {
+        void stream.end();
+      } else {
+        dmStreamRef.current = stream;
+      }
+    });
+  }
+
+  return conversation;
+}
+
+// -- ConvoProvider --
+
 export const ConvoProvider: React.FC<{
   convo: Convo;
-  conversation: Conversation<BuiltInContentTypes> | null;
   children: React.ReactNode;
-}> = ({ convo, conversation, children }) => {
+}> = ({ convo, children }) => {
+  const { acquireClient } = useXmtpLock();
   const [defaults] = useConvoGlobalSettings();
-  const { client } = useXmtp();
-  const inboxId = useInboxId();
-  const { appData, memberProfiles, refreshAppData } = useAppData(
-    conversation,
-    convo.id,
-  );
-  const [messages, setMessages] = useState<
-    DecodedMessage<BuiltInContentTypes>[]
-  >([]);
+  const [conversation, setConversation] =
+    useState<Conversation<BuiltInContentTypes> | null>(null);
+  const [client, setClient] = useState<Client | null>(null);
+  const [phase, setPhase] = useState<"loading" | "ready" | "error">("loading");
   const [members, setMembers] = useState<GroupMember[]>([]);
   const [sending, setSending] = useState(false);
   const [syncing, setSyncing] = useState(false);
   const [reply, setReply] = useState<ReplyState | null>(null);
-  const location = useLocation();
-  const navigate = useNavigate();
-  const detailsOpen = location.pathname.startsWith(
-    `/convo/${convo.id}/details`,
-  );
-  const toggleDetails = useCallback(() => {
-    if (detailsOpen) {
-      void navigate({
-        to: "/convo/$convoId",
-        params: { convoId: convo.id },
-      });
-    } else {
-      void navigate({
-        to: "/convo/$convoId/details",
-        params: { convoId: convo.id },
-      });
-    }
-  }, [detailsOpen, navigate, convo.id]);
-  const streamRef =
-    useRef<AsyncStreamProxy<DecodedMessage<BuiltInContentTypes>>>(null);
+
   const convoRef = useRef(convo);
   convoRef.current = convo;
+  const convoIdRef = useRef<string | null>(null);
+  const handleRef = useRef<XmtpLockHandle | null>(null);
+  const [reconnectKey, setReconnectKey] = useState(0);
+  const groupStreamRef = useRef<AsyncStreamProxy<Group> | null>(null);
+  const dmStreamRef = useRef<AsyncStreamProxy<
+    DecodedMessage<BuiltInContentTypes>
+  > | null>(null);
 
-  const { permissions, refreshPermissions } = usePermissions(conversation);
-  const [isLocked, setIsLocked] = useState(false);
-  const [exploding, setExploding] = useState(false);
-  const [explodeError, setExplodeError] = useState<string | null>(null);
-  const [pendingExplode, setPendingExplode] = useState<{
-    getDate: () => Date;
-    immediate: boolean;
-  } | null>(null);
-  const clearExplodeError = useCallback(() => {
-    setExplodeError(null);
-  }, []);
-
-  const explode = useCallback(
-    (getExpiresAt: () => Date, immediate?: boolean) => {
-      setPendingExplode({
-        getDate: getExpiresAt,
-        immediate: immediate ?? false,
-      });
-    },
-    [],
+  // extracted hooks
+  const {
+    messages,
+    sync: syncMessages,
+    startStream,
+    stopStream,
+  } = useMessages(conversation);
+  const actions = useConvoActions(convo.id, conversation);
+  const explodeState = useConvoExplode(convo.id, conversation, client);
+  const { appData, memberProfiles, refreshAppData } = useAppData(
+    conversation,
+    convo.id,
+  );
+  const { permissions, refreshPermissions } = usePermissions(
+    conversation,
+    client,
   );
 
-  const confirmExplode = useCallback(() => {
-    if (!pendingExplode || !conversation) return;
-    const expiresAt = pendingExplode.getDate();
-    log.info("confirmExplode", {
-      convoId: convo.id,
-      expiresAt: expiresAt.toISOString(),
-    });
-    setPendingExplode(null);
-    setExploding(true);
-    setExplodeError(null);
-    setExplodeTimer(
-      conversation,
-      convo.id,
-      expiresAt,
-      inboxId,
-      client?.installationId,
-    )
-      .catch((err: unknown) => {
-        log.error("explode failed", err);
-        setExplodeError(
-          err instanceof Error ? err.message : "Failed to explode convo",
+  // -- lifecycle effect --
+  useEffect(() => {
+    // dedup guard
+    if (convo.id === convoIdRef.current) return;
+    convoIdRef.current = convo.id;
+
+    setPhase("loading");
+    setConversation(null);
+    setClient(null);
+    setMembers([]);
+
+    const cancelled = { current: false };
+
+    const setup = async () => {
+      log.trace("lifecycle: acquiring client", {
+        convoId: convo.id,
+      });
+      const handle = await acquireClient(convo.privateKey, () => {
+        // onEvicted
+        log.info("lifecycle: evicted", {
+          convoId: convo.id,
+        });
+        setConversation(null);
+        setClient(null);
+        // trigger reconnect after eviction ends
+        convoIdRef.current = null;
+        setReconnectKey((k) => k + 1);
+      });
+      if (cancelled.current) {
+        handle.release();
+        return;
+      }
+      handleRef.current = handle;
+      setClient(handle.client);
+
+      let conv: Conversation<BuiltInContentTypes> | null = null;
+
+      const status = convo.status;
+      if (status === "creating" || status === "error") {
+        try {
+          conv = await setupCreatingConvo(handle.client, convo, cancelled);
+        } catch (err) {
+          log.error("lifecycle: create failed", err);
+          await db.convos.update(convo.id, {
+            status: "error",
+          });
+          setPhase("error");
+          return;
+        }
+      } else if (status === "pending") {
+        conv = await setupPendingConvo(
+          handle.client,
+          convo,
+          cancelled,
+          (c) => {
+            if (!cancelled.current) {
+              setConversation(c);
+              setActiveConvoId(c.id);
+              setPhase("ready");
+            }
+          },
+          groupStreamRef,
         );
-      })
-      .finally(() => {
-        setExploding(false);
-      });
-  }, [pendingExplode, conversation, convo.id, inboxId, client?.installationId]);
+      } else {
+        // ready or no status (legacy)
+        conv = await setupReadyConvo(
+          handle.client,
+          convo,
+          cancelled,
+          dmStreamRef,
+        );
+      }
 
-  const cancelExplode = useCallback(() => {
-    setPendingExplode(null);
-  }, []);
+      // oxlint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      if (cancelled.current) return;
 
-  const removeMember = useCallback(
-    async (memberInboxId: string) => {
-      if (!(conversation instanceof Group)) return;
-      await conversation.removeMembers([memberInboxId]);
-    },
-    [conversation],
-  );
+      if (conv) {
+        setConversation(conv);
+        setActiveConvoId(conv.id);
+        setPhase("ready");
+      }
+    };
 
-  const updateImage = useCallback(
-    async (imageData: Uint8Array<ArrayBuffer>) => {
-      if (!(conversation instanceof Group)) return;
-      await updateGroupImage(conversation, imageData);
-    },
-    [conversation],
-  );
+    void setup();
 
-  const removeImage = useCallback(async () => {
-    if (!(conversation instanceof Group)) return;
-    await removeGroupImage(conversation);
-  }, [conversation]);
+    return () => {
+      cancelled.current = true;
+      if (groupStreamRef.current) {
+        void groupStreamRef.current.end();
+        groupStreamRef.current = null;
+      }
+      if (dmStreamRef.current) {
+        void dmStreamRef.current.end();
+        dmStreamRef.current = null;
+      }
+      void stopStream();
+      if (handleRef.current) {
+        handleRef.current.release();
+        handleRef.current = null;
+      }
+      setActiveConvoId(null);
+      convoIdRef.current = null;
+    };
+    // oxlint-disable-next-line eslint-plugin-react-hooks/exhaustive-deps
+  }, [convo.id, reconnectKey]);
 
-  const updateName = useCallback(
-    async (name: string) => {
-      if (!(conversation instanceof Group)) return;
-      await conversation.updateName(name);
-      await updateConvo(convoRef.current.id, { name: name || undefined });
-    },
-    [conversation],
-  );
-
-  const updateDescription = useCallback(
-    async (description: string) => {
-      if (!(conversation instanceof Group)) return;
-      await conversation.updateDescription(description);
-      await updateConvo(convoRef.current.id, {
-        description: description || undefined,
-      });
-    },
-    [conversation],
-  );
-
-  const lock = useCallback(async () => {
-    if (!(conversation instanceof Group)) return;
-    await conversation.updatePermission(
-      PermissionUpdateType.AddMember,
-      PermissionPolicy.Deny,
-    );
-    await updateConvo(convoRef.current.id, { locked: true });
-  }, [conversation]);
-
-  const unlock = useCallback(async () => {
-    if (!(conversation instanceof Group)) return;
-    await conversation.updatePermission(
-      PermissionUpdateType.AddMember,
-      PermissionPolicy.Allow,
-    );
-    await updateConvo(convoRef.current.id, { locked: false });
-  }, [conversation]);
-
-  const shareProfile = useCallback(
-    async (profile: Profile, profileInboxId: string) => {
-      if (!(conversation instanceof Group)) return;
-      await shareProfileToGroup(conversation, profile, profileInboxId);
-    },
-    [conversation],
-  );
-
-  const toggleFaved = useCallback(() => {
-    const current = convoRef.current;
-    void updateConvo(current.id, { faved: !current.faved });
-  }, []);
-
-  const toggleUnread = useCallback(() => {
-    const current = convoRef.current;
-    void updateConvo(current.id, { unread: !current.unread });
-  }, []);
-
-  const setInviteIncludesInfo = useCallback((val: boolean) => {
-    void updateConvo(convoRef.current.id, { inviteIncludesInfo: val });
-  }, []);
-
-  const toggleMuted = useCallback(() => {
-    const current = convoRef.current;
-    void updateConvo(current.id, { muted: !current.muted });
-  }, []);
-
-  const toggleBlurImages = useCallback(() => {
-    const current = convoRef.current;
-    void updateConvo(current.id, { blurImages: !current.blurImages });
-  }, []);
-
-  const setQuickReactionEmoji = useCallback((emoji: string) => {
-    void updateConvo(convoRef.current.id, { quickReactionEmoji: emoji });
-  }, []);
-
+  // -- message stream + refresh --
   const refresh = useCallback(async () => {
     if (!conversation) return;
     if (conversation.id !== convoRef.current.xmtpId) return;
     log.trace("refresh", { convoId: convoRef.current.id });
-    // capture reference to convo so it stays in sync with conversation
     const current = convoRef.current;
 
     const isActive = await conversation.isActive();
@@ -304,18 +474,15 @@ export const ConvoProvider: React.FC<{
       return;
     }
 
-    // load cached messages immediately, then sync for new ones
-    const cached = await conversation.messages();
-    setMessages(cached);
+    // load cached messages immediately, then sync
+    await syncMessages();
     setMembers(await conversation.members());
 
     await conversation.sync();
-
-    const msgs = await conversation.messages();
-    setMessages(msgs);
+    const msgs = await syncMessages();
     setMembers(await conversation.members());
 
-    // sync conversation metadata and last message to local DB
+    // sync metadata to local DB
     const updates: Partial<Convo> = {};
     if (conversation instanceof Group) {
       const name = conversation.name;
@@ -343,17 +510,56 @@ export const ConvoProvider: React.FC<{
     refreshAppData();
     const policySet = await refreshPermissions();
     if (policySet) {
-      setIsLocked(policySet.addMemberPolicy === PermissionPolicy.Deny);
+      actions.setLocked(policySet.addMemberPolicy === PermissionPolicy.Deny);
     }
-  }, [conversation, refreshAppData, refreshPermissions]);
+  }, [conversation, syncMessages, refreshAppData, refreshPermissions, actions]);
+
+  // start message stream when conversation becomes available
+  useEffect(() => {
+    if (!conversation) return;
+    if (conversation.id !== convoRef.current.xmtpId) return;
+
+    let cancelled = false;
+
+    const init = async () => {
+      await refresh();
+      if (cancelled) return;
+
+      await startStream((value) => {
+        if (isExplodeSettings(value)) return;
+        const current = convoRef.current;
+        void updateConvo(current.id, {
+          lastMessage: getContentString(value) ?? current.lastMessage,
+          lastUpdatedAtNs: value.sentAtNs,
+        });
+        if (isGroupUpdated(value) && conversation instanceof Group) {
+          void refresh();
+        }
+      });
+    };
+
+    void init();
+
+    return () => {
+      cancelled = true;
+      void stopStream();
+    };
+  }, [conversation, refresh, startStream, stopStream]);
+
+  // mark as read on mount
+  useEffect(() => {
+    void updateConvo(convo.id, { unread: false });
+  }, [convo.id]);
 
   // sync locked state from permissions to local DB
   useEffect(() => {
     const current = convoRef.current;
-    if (current.locked !== isLocked) {
-      void updateConvo(current.id, { locked: isLocked });
+    if (current.locked !== actions.isLocked) {
+      void updateConvo(current.id, {
+        locked: actions.isLocked,
+      });
     }
-  }, [isLocked]);
+  }, [actions.isLocked]);
 
   // sync explode state from appData to local DB
   useEffect(() => {
@@ -368,7 +574,6 @@ export const ConvoProvider: React.FC<{
         unix,
       });
       if (unix <= Math.floor(Date.now() / 1000)) {
-        // already expired — delete locally
         log.info("already expired during sync, deleting locally", {
           convoId: current.id,
         });
@@ -380,65 +585,15 @@ export const ConvoProvider: React.FC<{
     }
   }, [appData?.expiresAtUnix]);
 
-  useEffect(() => {
-    setMessages([]);
-    setMembers([]);
+  // -- retry --
+  const retry = useCallback(() => {
+    log.info("retry", { convoId: convo.id });
+    void db.convos.update(convo.id, { status: "creating" });
+    convoIdRef.current = null;
+    setPhase("loading");
+  }, [convo.id]);
 
-    if (!conversation) return;
-    // skip stale conversation from previous convo
-    if (conversation.id !== convoRef.current.xmtpId) return;
-
-    let cancelled = false;
-
-    const init = async () => {
-      log.trace("starting message stream");
-      await refresh();
-
-      if (cancelled) {
-        return;
-      }
-
-      const stream = await conversation.stream({
-        onValue(value) {
-          if (isExplodeSettings(value)) {
-            // appData sync (via GroupUpdated) already handles the timer
-            // when we're in the convo — no action needed here. in the
-            // future, push notifications will use this message to set
-            // the timer on convos that aren't currently selected.
-            return;
-          }
-          setMessages((prev) => [...prev, value]);
-          const current = convoRef.current;
-          void updateConvo(current.id, {
-            lastMessage: getContentString(value) ?? current.lastMessage,
-            lastUpdatedAtNs: value.sentAtNs,
-          });
-          if (isGroupUpdated(value) && conversation instanceof Group) {
-            void refresh();
-          }
-        },
-      });
-
-      // oxlint-disable-next-line @typescript-eslint/no-unnecessary-condition
-      if (cancelled) {
-        await stream.end();
-        return;
-      }
-
-      streamRef.current = stream;
-    };
-
-    void init();
-
-    return () => {
-      cancelled = true;
-      if (streamRef.current) {
-        void streamRef.current.end();
-        streamRef.current = null;
-      }
-    };
-  }, [conversation, refresh]);
-
+  // -- resolved convo --
   const resolvedConvo = useMemo<ResolvedConvo>(
     () => ({
       ...convo,
@@ -456,20 +611,15 @@ export const ConvoProvider: React.FC<{
     () => ({
       convo: resolvedConvo,
       conversation,
-      ready: conversation != null,
+      client,
+      ready: phase === "ready" && conversation != null,
       appData,
       memberProfiles,
       members,
       messages,
       permissions,
-      isLocked,
-      exploding,
-      explodeError,
-      clearExplodeError,
-      pendingExplode,
-      explode,
-      confirmExplode,
-      cancelExplode,
+      isLocked: actions.isLocked,
+      ...explodeState,
       sending,
       setSending,
       syncing,
@@ -477,62 +627,33 @@ export const ConvoProvider: React.FC<{
       reply,
       setReply,
       refresh,
-      detailsOpen,
-      toggleDetails,
-      removeMember,
-      updateImage,
-      removeImage,
-      updateName,
-      updateDescription,
-      lock,
-      unlock,
-      shareProfile,
-      toggleFaved,
-      toggleUnread,
-      setInviteIncludesInfo,
-      toggleMuted,
-      toggleBlurImages,
-      setQuickReactionEmoji,
+      retry,
+      removeMember: actions.removeMember,
+      updateImage: actions.updateImage,
+      removeImage: actions.removeImage,
+      updateName: actions.updateName,
+      updateDescription: actions.updateDescription,
+      lock: actions.lock,
+      unlock: actions.unlock,
+      shareProfile: actions.shareProfile,
     }),
     [
       resolvedConvo,
       conversation,
+      client,
+      phase,
       appData,
       memberProfiles,
       members,
       messages,
       permissions,
-      isLocked,
-      exploding,
-      explodeError,
-      clearExplodeError,
-      pendingExplode,
-      explode,
-      confirmExplode,
-      cancelExplode,
+      actions,
+      explodeState,
       sending,
-      setSending,
       syncing,
-      setSyncing,
       reply,
-      setReply,
       refresh,
-      detailsOpen,
-      toggleDetails,
-      removeMember,
-      updateImage,
-      removeImage,
-      updateName,
-      updateDescription,
-      lock,
-      unlock,
-      shareProfile,
-      toggleFaved,
-      toggleUnread,
-      setInviteIncludesInfo,
-      toggleMuted,
-      toggleBlurImages,
-      setQuickReactionEmoji,
+      retry,
     ],
   );
 

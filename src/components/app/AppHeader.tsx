@@ -5,11 +5,13 @@ import { LinkActionIcon } from "@/components/shared/Button";
 import { Logo } from "@/components/shared/Logo";
 import { useNav } from "@/contexts/NavContext";
 import { useConvosFilter } from "@/hooks/useConvosFilter";
+import { useCreateConvo } from "@/hooks/useCreateConvo";
 import classes from "./AppHeader.module.css";
 
 export const AppHeader = () => {
   const { closeNav } = useNav();
   const [filter, setFilter] = useConvosFilter();
+  const createConvo = useCreateConvo();
 
   return (
     <Group
@@ -34,7 +36,15 @@ export const AppHeader = () => {
           <SettingsIcon size={24} />
         </LinkActionIcon>
         <FilterMenu filter={filter} setFilter={setFilter} />
-        <LinkActionIcon radius="xl" size="lg" to="/new" variant="transparent">
+        <LinkActionIcon
+          variant="transparent"
+          radius="xl"
+          size="lg"
+          to="/new"
+          onClick={(e: React.MouseEvent) => {
+            e.preventDefault();
+            void createConvo();
+          }}>
           <SquarePenIcon size={24} />
         </LinkActionIcon>
         <ActionIcon

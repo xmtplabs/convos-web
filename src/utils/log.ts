@@ -1,4 +1,5 @@
 export const LOG_DOMAINS = [
+  "active-convo",
   "app",
   "app-lock",
   "appData",
@@ -7,6 +8,7 @@ export const LOG_DOMAINS = [
   "convo",
   "convo-details",
   "convo-header",
+  "convo-provider",
   "convos-list",
   "db",
   "delete-all-data",
@@ -23,6 +25,7 @@ export const LOG_DOMAINS = [
   "layout",
   "members-list",
   "messaging",
+  "use-messages",
   "new-convo",
   "not-found",
   "notifications",
@@ -37,12 +40,17 @@ export const LOG_DOMAINS = [
   "router",
   "service-worker",
   "service-worker-sync",
+  "setup-convo",
   "settings",
+  "sw-decrypt",
   "sync",
   "upload-url-api",
+  "use-convo-db",
+  "use-messages",
   "welcome",
   "xmtp",
   "xmtp-context",
+  "xmtp-lock",
 ] as const;
 
 export type LogDomain = (typeof LOG_DOMAINS)[number];

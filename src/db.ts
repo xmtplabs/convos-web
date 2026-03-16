@@ -11,9 +11,9 @@ export type Convo = {
   lastUpdatedAtNs?: bigint;
   name?: string;
   privateKey: `0x${string}`;
-  xmtpId: string;
+  xmtpId?: string;
   tag?: string;
-  status?: "pending";
+  status?: "pending" | "creating" | "ready" | "error";
   creatorInboxId?: string;
   slug?: string;
   faved?: boolean;
@@ -25,6 +25,11 @@ export type Convo = {
   quickReactionEmoji?: string;
   unread?: boolean;
 };
+
+export type ReadyConvo = Convo & { xmtpId: string; status: "ready" };
+
+export const isReadyConvo = (c: Convo): c is ReadyConvo =>
+  c.status === "ready" && !!c.xmtpId;
 
 export type Profile = {
   id: string;
@@ -55,6 +60,23 @@ db.version(1).stores({
   profiles: "id",
   avatars: "[convoId+inboxId], convoId",
 });
+
+db.version(2)
+  .stores({
+    convos: "id",
+    profiles: "id",
+    avatars: "[convoId+inboxId], convoId",
+  })
+  .upgrade((tx) => {
+    return tx
+      .table("convos")
+      .toCollection()
+      .modify((convo: Convo) => {
+        if (!convo.status) {
+          convo.status = "ready";
+        }
+      });
+  });
 
 log.trace("database initialized");
 

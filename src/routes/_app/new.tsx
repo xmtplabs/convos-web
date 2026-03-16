@@ -1,35 +1,34 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect, useRef } from "react";
-import { LoadingMessage } from "@/components/shared/LoadingMessage";
-import { useXmtp } from "@/hooks/useXmtp";
-import { createLogger } from "@/utils/log";
-
-const log = createLogger("new-convo");
+import { Avatar, Group, Stack, Text } from "@mantine/core";
+import { createFileRoute } from "@tanstack/react-router";
+import { ImageIcon } from "lucide-react";
+import { useEffect } from "react";
+import { useCreateConvo } from "@/hooks/useCreateConvo";
+import { ConvoLayout } from "@/layouts/ConvoLayout";
 
 const NewConvo = () => {
-  log.trace("render");
-  const { createConvo } = useXmtp();
-  const navigate = useNavigate();
-  const startedRef = useRef(false);
+  const createConvo = useCreateConvo();
 
   useEffect(() => {
-    if (startedRef.current) {
-      return;
-    }
-    startedRef.current = true;
+    void createConvo();
+  }, [createConvo]);
 
-    log.info("creating");
-    void createConvo().then((convo) => {
-      log.info("created, navigating", { convoId: convo.id });
-      void navigate({
-        to: "/convo/$convoId",
-        params: { convoId: convo.id },
-      });
-    });
-    // oxlint-disable-next-line eslint-plugin-react-hooks/exhaustive-deps
-  }, []);
-
-  return <LoadingMessage message="Creating new convo..." />;
+  return (
+    <ConvoLayout
+      header={
+        <Group gap="sm" wrap="nowrap">
+          <Avatar radius="xl" size="48">
+            <ImageIcon size={24} />
+          </Avatar>
+          <Stack gap="0">
+            <Text fw={500} size="md">
+              New Convo
+            </Text>
+          </Stack>
+        </Group>
+      }
+      footer={null}
+    />
+  );
 };
 
 export const Route = createFileRoute("/_app/new")({

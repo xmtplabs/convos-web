@@ -1,11 +1,11 @@
 import {
   Group,
   PermissionPolicy,
+  type Client,
   type Conversation,
   type PermissionPolicySet,
 } from "@xmtp/browser-sdk";
 import { useCallback, useState } from "react";
-import { useInboxId } from "@/hooks/useInboxId";
 import { createLogger } from "@/utils/log";
 
 const log = createLogger("app-lock");
@@ -60,13 +60,17 @@ const resolvePermissions = (
   };
 };
 
-export const usePermissions = (conversation: Conversation | null) => {
-  const inboxId = useInboxId();
+export const usePermissions = (
+  conversation: Conversation | null,
+  client: Client | null,
+) => {
   const [permissions, setPermissions] = useState<ConvoPermissions | null>(null);
 
   const refreshPermissions = useCallback(async () => {
     log.trace("refreshing");
     if (!(conversation instanceof Group)) return;
+    const inboxId = client?.inboxId ?? "";
+    if (!inboxId) return;
     try {
       const { policySet } = await conversation.permissions();
       const admin = conversation.admins.includes(inboxId);
@@ -78,7 +82,7 @@ export const usePermissions = (conversation: Conversation | null) => {
     } catch (e: unknown) {
       log.error("permissions error", e);
     }
-  }, [conversation, inboxId]);
+  }, [conversation, client]);
 
   return { permissions, refreshPermissions };
 };

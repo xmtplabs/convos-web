@@ -1,19 +1,18 @@
 import {
   ActionIcon,
   Box,
-  Button,
   Group,
   Paper,
   Stack,
   Text,
   Title,
 } from "@mantine/core";
-import { Link } from "@tanstack/react-router";
 import { MenuIcon, SettingsIcon } from "lucide-react";
-import { LinkActionIcon } from "@/components/shared/Button";
+import { LinkActionIcon, LinkButton } from "@/components/shared/Button";
 import { Logo } from "@/components/shared/Logo";
 import { useNav } from "@/contexts/NavContext";
 import { useConvos } from "@/hooks/useConvos";
+import { useCreateConvo } from "@/hooks/useCreateConvo";
 import { useIsMobile } from "@/hooks/useMobile";
 import { CenteredLayout } from "@/layouts/CenteredLayout";
 import { createLogger } from "@/utils/log";
@@ -25,6 +24,7 @@ export const Welcome = () => {
   const { openNav } = useNav();
   const convos = useConvos();
   const isMobile = useIsMobile();
+  const createConvo = useCreateConvo();
   const hasConvos = convos.length > 0;
   const showHeader = !hasConvos || isMobile;
 
@@ -68,9 +68,16 @@ export const Welcome = () => {
               <Text c="dimmed">No account. New you every time.</Text>
             </Stack>
             <Box>
-              <Button component={Link} to="/new" size="lg" radius="xl">
+              <LinkButton
+                to="/new"
+                size="lg"
+                radius="xl"
+                onClick={(e: React.MouseEvent) => {
+                  e.preventDefault();
+                  void createConvo();
+                }}>
                 Start a convo
-              </Button>
+              </LinkButton>
             </Box>
           </Stack>
         </Paper>

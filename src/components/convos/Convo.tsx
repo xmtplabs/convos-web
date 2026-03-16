@@ -2,10 +2,10 @@ import { Outlet, useNavigate } from "@tanstack/react-router";
 import { useLiveQuery } from "dexie-react-hooks";
 import { useEffect, useRef } from "react";
 import { ConvoContent } from "@/components/convos/ConvoContent";
+import { ConvoError } from "@/components/convos/ConvoError";
 import { ConvoPending } from "@/components/convos/ConvoPending";
 import { ConvoProvider } from "@/contexts/ConvoContext";
 import { db } from "@/db";
-import { useXmtp } from "@/hooks/useXmtp";
 import { Route } from "@/routes/_app/convo/$convoId";
 import { createLogger } from "@/utils/log";
 
@@ -18,7 +18,7 @@ export const Convo = () => {
     [loaderConvo.id],
   );
   const convo = liveConvo ?? loaderConvo;
-  const { conversation, setConvo } = useXmtp();
+  const status = convo.status;
   const navigate = useNavigate();
   const hasLoaded = useRef(false);
 
@@ -33,35 +33,16 @@ export const Convo = () => {
     }
   }, [liveConvo, navigate]);
 
-  // set convo when it changes — no cleanup here so switching convos
-  // goes directly from old → new without an intermediate null that
-  // would close the client and race with OPFS
-  useEffect(() => {
-    log.trace("setConvo", { convoId: loaderConvo.id });
-    setConvo(loaderConvo);
-  }, [loaderConvo.id, setConvo, loaderConvo]);
-
-  // disconnect only on true unmount (navigating away from convo routes)
-  useEffect(() => {
-    return () => {
-      log.trace("unmounting, disconnecting");
-      setConvo(null);
-    };
-  }, [setConvo]);
-
-  if (convo.status === "pending") {
-    return (
-      <>
-        <ConvoPending />
-        <Outlet />
-      </>
-    );
-  }
-
   return (
-    <ConvoProvider key={convo.id} convo={convo} conversation={conversation}>
-      <ConvoContent />
-      <Outlet />
+    <ConvoProvider key={convo.id} convo={convo}>
+      {status === "pending" && <ConvoPending />}
+      {status === "error" && <ConvoError />}
+      {(status === "creating" || status === "ready") && (
+        <>
+          <ConvoContent />
+          <Outlet />
+        </>
+      )}
     </ConvoProvider>
   );
 };
