@@ -1,7 +1,7 @@
 import { useNavigate } from "@tanstack/react-router";
 import { useCallback, useRef } from "react";
 import { generatePrivateKey } from "viem/accounts";
-import { db } from "@/db";
+import { addConvo, findConvoBy } from "@/utils/db";
 import { createLogger } from "@/utils/log";
 
 const log = createLogger("new-convo");
@@ -15,9 +15,9 @@ export const useCreateConvo = () => {
     startedRef.current = true;
 
     // check for existing creating/error convo (dedup)
-    const existing = await db.convos
-      .filter((c) => c.status === "creating" || c.status === "error")
-      .first();
+    const existing = await findConvoBy(
+      (c) => c.status === "creating" || c.status === "error",
+    );
 
     if (existing) {
       log.info("resuming existing convo", {
@@ -33,7 +33,7 @@ export const useCreateConvo = () => {
 
     const id = window.crypto.randomUUID();
     try {
-      await db.convos.add({
+      await addConvo({
         id,
         privateKey: generatePrivateKey(),
         name: "New Convo",

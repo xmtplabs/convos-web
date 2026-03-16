@@ -1,6 +1,6 @@
 import { useEffect } from "react";
-import { db } from "@/db";
 import { useXmtpLock } from "@/hooks/useXmtpLock";
+import { getConvo } from "@/utils/db";
 import { cleanUpExplodedConvo } from "@/utils/explode";
 import { createLogger } from "@/utils/log";
 import { createClient } from "@/utils/xmtp";
@@ -9,7 +9,7 @@ const log = createLogger("explode");
 
 const deleteExpiredConvo = async (convoId: string, xmtpId: string) => {
   log.trace("deleteExpiredConvo", { convoId, xmtpId });
-  const convo = await db.convos.get(convoId);
+  const convo = await getConvo(convoId);
   if (!convo) return;
 
   const client = await createClient(convo.privateKey);

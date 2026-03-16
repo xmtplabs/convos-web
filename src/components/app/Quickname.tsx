@@ -19,9 +19,9 @@ import { useProfile } from "@/hooks/useProfile";
 import { useProfileAvatar } from "@/hooks/useProfileAvatar";
 import { validateFile } from "@/utils/attachment";
 import { uploadAvatar } from "@/utils/avatars";
+import { upsertProfile } from "@/utils/db";
 import { generateKey } from "@/utils/encryption";
 import { createLogger } from "@/utils/log";
-import { upsertProfile } from "@/utils/profile";
 import classes from "./Quickname.module.css";
 
 const log = createLogger("quickname");

@@ -1,11 +1,11 @@
 import { useLiveQuery } from "dexie-react-hooks";
-import { db } from "@/db";
+import { getConvos } from "@/utils/db";
 
 export const useConvos = () => {
   return (
     useLiveQuery(
       () =>
-        db.convos.toArray().then((convos) =>
+        getConvos().then((convos) =>
           convos.sort((a, b) => {
             const aFaved = a.faved ? 1 : 0;
             const bFaved = b.faved ? 1 : 0;

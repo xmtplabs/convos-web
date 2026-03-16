@@ -3,10 +3,10 @@ import { useNavigate, useRouter } from "@tanstack/react-router";
 import { Opfs } from "@xmtp/browser-sdk";
 import { useState } from "react";
 import { Modal, ModalCloseButton } from "@/components/shared/Modal";
-import { clearAllAvatars } from "@/utils/avatars";
+import { clearAllAvatars } from "@/utils/db";
 import { clearConvos } from "@/utils/db";
+import { clearProfiles } from "@/utils/db";
 import { createLogger } from "@/utils/log";
-import { clearProfiles } from "@/utils/profile";
 
 const log = createLogger("delete-all-data");
 

@@ -1,4 +1,4 @@
-import { db } from "@/db";
+import { getConvos } from "@/utils/db";
 import { createLogger } from "@/utils/log";
 
 const log = createLogger("explode-worker");
@@ -6,7 +6,7 @@ const POLL_INTERVAL = 1_000;
 
 const checkExpired = async () => {
   const nowUnix = Math.floor(Date.now() / 1000);
-  const allConvos = await db.convos.toArray();
+  const allConvos = await getConvos();
 
   const expired: { id: string; xmtpId: string }[] = [];
   for (const convo of allConvos) {

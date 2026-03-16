@@ -8,9 +8,8 @@ import type {
   ContentTypeId,
   EncodedContent,
 } from "@xmtp/content-type-primitives";
-import { db } from "@/db";
 import { updateExpiresAt } from "@/utils/appData";
-import { updateConvo } from "@/utils/db";
+import { deleteAvatarsByConvoId, deleteConvo, updateConvo } from "@/utils/db";
 import { createLogger } from "@/utils/log";
 import { unregisterConvo } from "@/utils/notifications";
 
@@ -147,8 +146,8 @@ export const cleanUpExplodedConvo = async (
     });
   }
 
-  await db.avatars.where("convoId").equals(convoId).delete();
-  await db.convos.delete(convoId);
+  await deleteAvatarsByConvoId(convoId);
+  await deleteConvo(convoId);
   log.info("exploded convo deleted", { convoId });
 };
 

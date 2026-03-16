@@ -1,6 +1,5 @@
 import { useCallback } from "react";
-import { db } from "@/db";
-import { updateConvo } from "@/utils/db";
+import { getConvo, updateConvo } from "@/utils/db";
 import { createLogger } from "@/utils/log";
 
 const log = createLogger("use-convo-db");
@@ -8,28 +7,28 @@ const log = createLogger("use-convo-db");
 export const useConvoDb = (convoId: string) => {
   const toggleFaved = useCallback(() => {
     log.trace("toggleFaved", { convoId });
-    void db.convos.get(convoId).then((c) => {
+    void getConvo(convoId).then((c) => {
       if (c) void updateConvo(convoId, { faved: !c.faved });
     });
   }, [convoId]);
 
   const toggleUnread = useCallback(() => {
     log.trace("toggleUnread", { convoId });
-    void db.convos.get(convoId).then((c) => {
+    void getConvo(convoId).then((c) => {
       if (c) void updateConvo(convoId, { unread: !c.unread });
     });
   }, [convoId]);
 
   const toggleMuted = useCallback(() => {
     log.trace("toggleMuted", { convoId });
-    void db.convos.get(convoId).then((c) => {
+    void getConvo(convoId).then((c) => {
       if (c) void updateConvo(convoId, { muted: !c.muted });
     });
   }, [convoId]);
 
   const toggleBlurImages = useCallback(() => {
     log.trace("toggleBlurImages", { convoId });
-    void db.convos.get(convoId).then((c) => {
+    void getConvo(convoId).then((c) => {
       if (c) void updateConvo(convoId, { blurImages: !c.blurImages });
     });
   }, [convoId]);

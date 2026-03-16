@@ -3,8 +3,8 @@ import { useNavigate, useParams } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { InvalidInvite } from "@/components/invite/InviteInvalid";
 import { InviteRequest } from "@/components/invite/InviteRequest";
-import { db } from "@/db";
 import { CenteredLayout } from "@/layouts/CenteredLayout";
+import { findConvoBy } from "@/utils/db";
 import {
   parseInviteSlug,
   sendJoinRequest,
@@ -40,9 +40,9 @@ export const InviteProcess: React.FC = () => {
     const tag = parsed.payload.tag;
     const join = async () => {
       // check if already in this group or have a pending request
-      const existing = await db.convos
-        .filter((c) => c.tag === tag || c.slug === parsed.slug)
-        .first();
+      const existing = await findConvoBy(
+        (c) => c.tag === tag || c.slug === parsed.slug,
+      );
       if (existing) {
         log.info("already joined or pending", { convoId: existing.id });
         void navigate({

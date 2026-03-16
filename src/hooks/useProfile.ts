@@ -1,6 +1,6 @@
 import { useLiveQuery } from "dexie-react-hooks";
-import { db } from "@/db";
+import { getProfile } from "@/utils/db";
 
 export const useProfile = () => {
-  return useLiveQuery(() => db.profiles.toCollection().first()) ?? null;
+  return useLiveQuery(() => getProfile()) ?? null;
 };

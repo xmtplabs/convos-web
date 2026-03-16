@@ -5,8 +5,8 @@ import { ConvoContent } from "@/components/convos/ConvoContent";
 import { ConvoError } from "@/components/convos/ConvoError";
 import { ConvoPending } from "@/components/convos/ConvoPending";
 import { ConvoProvider } from "@/contexts/ConvoContext";
-import { db } from "@/db";
 import { Route } from "@/routes/_app/convo/$convoId";
+import { getConvo } from "@/utils/db";
 import { createLogger } from "@/utils/log";
 
 const log = createLogger("convo");
@@ -14,7 +14,7 @@ const log = createLogger("convo");
 export const Convo = () => {
   const loaderConvo = Route.useLoaderData();
   const liveConvo = useLiveQuery(
-    () => db.convos.get(loaderConvo.id),
+    () => getConvo(loaderConvo.id),
     [loaderConvo.id],
   );
   const convo = liveConvo ?? loaderConvo;

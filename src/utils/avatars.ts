@@ -1,6 +1,6 @@
-import { db } from "@/db";
 import type { AppData } from "@/utils/appData";
 import { getPresignedUrl } from "@/utils/attachment";
+import { addAvatar, deleteAvatar, getAvatar } from "@/utils/db";
 import { bytesToHex, decrypt, encrypt } from "@/utils/encryption";
 import { createLogger } from "@/utils/log";
 import { pinata } from "@/utils/pinata";
@@ -42,7 +42,7 @@ export const syncAvatars = async (
       }
 
       // skip if we already have this exact sourceUrl cached
-      const existing = await db.avatars.get([convoId, profile.inboxId]);
+      const existing = await getAvatar(convoId, profile.inboxId);
       if (existing && existing.sourceUrl === img.url) {
         return;
       }
@@ -88,12 +88,7 @@ export const syncAvatars = async (
       const dataUrl = uint8ToDataUrl(plaintext);
 
       log.info("saving avatar", { convoId, inboxId: profile.inboxId, dataUrl });
-      await db.avatars.put({
-        convoId,
-        inboxId: profile.inboxId,
-        dataUrl,
-        sourceUrl: img.url,
-      });
+      await addAvatar(convoId, profile.inboxId, dataUrl, img.url);
     });
 
   await Promise.allSettled(tasks);
@@ -105,7 +100,7 @@ export const syncAvatars = async (
       convoId,
       inboxId: GROUP_IMAGE_INBOX_ID,
     });
-    await db.avatars.delete([convoId, GROUP_IMAGE_INBOX_ID]);
+    await deleteAvatar(convoId, GROUP_IMAGE_INBOX_ID);
   } else {
     try {
       if (signal?.aborted) {
@@ -115,7 +110,7 @@ export const syncAvatars = async (
         });
         return;
       }
-      const existing = await db.avatars.get([convoId, GROUP_IMAGE_INBOX_ID]);
+      const existing = await getAvatar(convoId, GROUP_IMAGE_INBOX_ID);
       if (!existing || existing.sourceUrl !== groupImg.url) {
         const response = await fetch(groupImg.url, { signal });
         if (!response.ok) {
@@ -155,25 +150,12 @@ export const syncAvatars = async (
           inboxId: GROUP_IMAGE_INBOX_ID,
           dataUrl,
         });
-        await db.avatars.put({
-          convoId,
-          inboxId: GROUP_IMAGE_INBOX_ID,
-          dataUrl,
-          sourceUrl: groupImg.url,
-        });
+        await addAvatar(convoId, GROUP_IMAGE_INBOX_ID, dataUrl, groupImg.url);
       }
     } catch (err) {
       log.warn("group image sync failed (non-fatal)", err);
     }
   }
-};
-
-export const clearAvatars = async (convoId: string): Promise<void> => {
-  await db.avatars.where("convoId").equals(convoId).delete();
-};
-
-export const clearAllAvatars = async (): Promise<void> => {
-  await db.avatars.clear();
 };
 
 export const uploadAvatar = async (
