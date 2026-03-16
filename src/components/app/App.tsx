@@ -1,19 +1,17 @@
 import { Outlet, useSearch } from "@tanstack/react-router";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect } from "react";
 import { AppHeader } from "@/components/app/AppHeader";
 import { AppLockScreen } from "@/components/app/AppLockScreen";
 import { ConvosList } from "@/components/convos/ConvosList";
 import { ConvoInfoModal } from "@/components/modals/ConvoInfoModal";
 import { DeleteAllDataModal } from "@/components/modals/DeleteAllDataModal";
 import { SettingsPanel } from "@/components/settings/SettingsPanel";
-import { AppLockProvider, useAppLockContext } from "@/contexts/AppLockContext";
-import { NavProvider } from "@/contexts/NavContext";
-import { XmtpLockProvider } from "@/contexts/XmtpLockContext";
+import { useAppLockContext } from "@/contexts/AppLockContext";
+import { useNav } from "@/contexts/NavContext";
 import { useActiveConvo } from "@/hooks/useActiveConvo";
 import { useConvos } from "@/hooks/useConvos";
 import { useExplodeWatcher } from "@/hooks/useExplodeWatcher";
 import { useLogConfig } from "@/hooks/useLogConfig";
-import { useIsMobile } from "@/hooks/useMobile";
 import { useServiceWorker } from "@/hooks/useServiceWorker";
 import { useServiceWorkerSync } from "@/hooks/useServiceWorkerSync";
 import { useSwDecrypt } from "@/hooks/useSwDecrypt";
@@ -22,39 +20,24 @@ import { createLogger } from "@/utils/log";
 
 const log = createLogger("app");
 
-const AppContent = () => {
+const AppMain = () => {
   log.trace("content render");
   const { modal } = useSearch({ from: "/_app" });
   const convos = useConvos();
+  const { setHasConvos } = useNav();
   log.debug("convos loaded", { count: convos.length });
-  const isMobile = useIsMobile();
-  const [navOpened, setNavOpened] = useState(false);
-  const openNav = useCallback(() => {
-    setNavOpened(true);
-  }, []);
-  const closeNav = useCallback(() => {
-    setNavOpened(false);
-  }, []);
-  const navInitialized = useRef(false);
   useActiveConvo();
   useSwDecrypt();
   useExplodeWatcher();
   useServiceWorkerSync(convos);
 
   useEffect(() => {
-    if (convos.length === 0) {
-      setNavOpened(false);
-      navInitialized.current = false;
-    } else if (!navInitialized.current) {
-      setNavOpened(!isMobile);
-      navInitialized.current = true;
-    }
-  }, [convos, isMobile]);
+    setHasConvos(convos.length > 0);
+  }, [convos.length, setHasConvos]);
 
   return (
-    <NavProvider value={{ navOpened, openNav, closeNav }}>
+    <>
       <MainLayout
-        opened={navOpened}
         aside={
           convos.length > 0 ? (
             <>
@@ -68,23 +51,7 @@ const AppContent = () => {
         {modal === "convo-info" && <ConvoInfoModal />}
       </MainLayout>
       <SettingsPanel />
-    </NavProvider>
-  );
-};
-
-const AppGate = () => {
-  const { lockState } = useAppLockContext();
-  log.trace("gate render", { lockState });
-
-  if (lockState === "locked") {
-    log.warn("locked by another tab");
-    return <AppLockScreen />;
-  }
-
-  return (
-    <XmtpLockProvider>
-      <AppContent />
-    </XmtpLockProvider>
+    </>
   );
 };
 
@@ -93,9 +60,11 @@ export const App = () => {
   useLogConfig();
   useServiceWorker();
 
-  return (
-    <AppLockProvider>
-      <AppGate />
-    </AppLockProvider>
-  );
+  const { lockState } = useAppLockContext();
+  if (lockState === "locked") {
+    log.warn("locked by another tab");
+    return <AppLockScreen />;
+  }
+
+  return <AppMain />;
 };
