@@ -2,7 +2,7 @@ import { isGroupUpdated, isReaction } from "@xmtp/browser-sdk";
 import { useEffect } from "react";
 import { db, type Convo } from "@/db";
 import { useXmtpLock } from "@/hooks/useXmtpLock";
-import { updateConvo } from "@/utils/convos";
+import { updateConvo } from "@/utils/db";
 import { createLogger } from "@/utils/log";
 import { createClient, getContentString } from "@/utils/xmtp";
 

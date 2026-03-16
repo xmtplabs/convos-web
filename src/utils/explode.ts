@@ -10,7 +10,7 @@ import type {
 } from "@xmtp/content-type-primitives";
 import { db } from "@/db";
 import { updateExpiresAt } from "@/utils/appData";
-import { updateConvo } from "@/utils/convos";
+import { updateConvo } from "@/utils/db";
 import { createLogger } from "@/utils/log";
 import { unregisterConvo } from "@/utils/notifications";
 

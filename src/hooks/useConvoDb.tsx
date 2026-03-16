@@ -1,6 +1,6 @@
 import { useCallback } from "react";
 import { db } from "@/db";
-import { updateConvo } from "@/utils/convos";
+import { updateConvo } from "@/utils/db";
 import { createLogger } from "@/utils/log";
 
 const log = createLogger("use-convo-db");

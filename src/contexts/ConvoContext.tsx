@@ -34,7 +34,7 @@ import {
   type AppData,
   type MemberProfile,
 } from "@/utils/appData";
-import { updateConvo } from "@/utils/convos";
+import { updateConvo } from "@/utils/db";
 import { isExplodeSettings } from "@/utils/explode";
 import { processDmInvite, processExistingDms } from "@/utils/invite";
 import { createLogger } from "@/utils/log";

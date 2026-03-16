@@ -7,7 +7,7 @@ import { useConvo } from "@/hooks/useConvo";
 import { useInboxId } from "@/hooks/useInboxId";
 import { Route } from "@/routes/_app/convo/$convoId";
 import { clearAvatars } from "@/utils/avatars";
-import { deleteConvo } from "@/utils/convos";
+import { deleteConvo } from "@/utils/db";
 import { createLogger } from "@/utils/log";
 import { unregisterConvo } from "@/utils/notifications";
 

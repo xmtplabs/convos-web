@@ -4,7 +4,7 @@ import { Opfs } from "@xmtp/browser-sdk";
 import { useState } from "react";
 import { Modal, ModalCloseButton } from "@/components/shared/Modal";
 import { clearAllAvatars } from "@/utils/avatars";
-import { clearConvos } from "@/utils/convos";
+import { clearConvos } from "@/utils/db";
 import { createLogger } from "@/utils/log";
 import { clearProfiles } from "@/utils/profile";
 

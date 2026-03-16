@@ -4,7 +4,7 @@ import { ConvoHeader } from "@/components/convos/ConvoHeader";
 import { useConvo } from "@/hooks/useConvo";
 import { CenteredLayout } from "@/layouts/CenteredLayout";
 import { ConvoLayout } from "@/layouts/ConvoLayout";
-import { deleteConvo } from "@/utils/convos";
+import { deleteConvo } from "@/utils/db";
 import { createLogger } from "@/utils/log";
 
 const log = createLogger("convo");

@@ -1,6 +1,6 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import { Convo } from "@/components/convos/Convo";
-import { getConvo } from "@/utils/convos";
+import { getConvo } from "@/utils/db";
 import { createLogger } from "@/utils/log";
 
 const log = createLogger("sync");

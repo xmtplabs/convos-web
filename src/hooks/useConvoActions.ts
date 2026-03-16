@@ -12,7 +12,7 @@ import {
   shareProfileToGroup,
   updateGroupImage,
 } from "@/utils/appData";
-import { updateConvo } from "@/utils/convos";
+import { updateConvo } from "@/utils/db";
 
 export const useConvoActions = (
   convoId: string,
