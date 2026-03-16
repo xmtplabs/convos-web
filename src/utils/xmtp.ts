@@ -1,5 +1,6 @@
 import {
   Client,
+  Group,
   IdentifierKind,
   isAttachment,
   isMultiRemoteAttachment,
@@ -8,6 +9,8 @@ import {
   isText,
   isTextReply,
   LogLevel,
+  type BuiltInContentTypes,
+  type Conversation,
   type DecodedMessage,
   type GroupUpdated,
   type Signer,
@@ -130,4 +133,10 @@ export const getGroupUpdatedStrings = (
   }
 
   return lines;
+};
+
+export const isGroup = <T extends BuiltInContentTypes>(
+  conversation?: Conversation<T> | null,
+): conversation is Group<T> => {
+  return conversation instanceof Group;
 };
