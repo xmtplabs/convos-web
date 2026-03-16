@@ -161,3 +161,10 @@ export const getNextSunday = () => {
   sunday.setHours(0, 0, 0, 0);
   return sunday;
 };
+
+export const deleteExpiredConvo = async (convoId: string) => {
+  log.info("deleting expired convo", { convoId });
+  await deleteAvatarsByConvoId(convoId);
+  await deleteConvo(convoId);
+  log.info("expired convo deleted", { convoId });
+};

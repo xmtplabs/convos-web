@@ -34,6 +34,11 @@ export const clearConvos = () => {
   return db.convos.clear();
 };
 
+export const findConvosBy = (filter: (convo: Convo) => boolean) => {
+  log.trace("findConvosBy");
+  return db.convos.filter(filter).toArray();
+};
+
 export const findConvoBy = (filter: (convo: Convo) => boolean) => {
   log.trace("findConvoBy");
   return db.convos.filter(filter).first();

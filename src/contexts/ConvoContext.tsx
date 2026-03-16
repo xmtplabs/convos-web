@@ -25,6 +25,7 @@ import { useAppData } from "@/hooks/useAppData";
 import { useConvoActions } from "@/hooks/useConvoActions";
 import { useConvoExplode } from "@/hooks/useConvoExplode";
 import { useConvoGlobalSettings } from "@/hooks/useConvoGlobalSettings";
+import { refreshExplodeWorker } from "@/hooks/useExplodeWatcher";
 import { useMessages } from "@/hooks/useMessages";
 import { usePermissions, type ConvoPermissions } from "@/hooks/usePermissions";
 import { useXmtpLock } from "@/hooks/useXmtpLock";
@@ -580,7 +581,9 @@ export const ConvoProvider: React.FC<{
         void db.avatars.where("convoId").equals(current.id).delete();
         void db.convos.delete(current.id);
       } else {
-        void updateConvo(current.id, { expiresAtUnix: unix });
+        void updateConvo(current.id, { expiresAtUnix: unix }).then(() => {
+          refreshExplodeWorker();
+        });
       }
     }
   }, [appData?.expiresAtUnix]);

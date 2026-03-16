@@ -1,10 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import { createLogger } from "@/utils/log";
 
-const log = createLogger("explode");
+const log = createLogger("use-explode-countdown");
 
 const format = (ms: number): string => {
-  log.trace("format", { ms });
   if (ms <= 0) return "00:00";
 
   const totalSeconds = Math.floor(ms / 1000);

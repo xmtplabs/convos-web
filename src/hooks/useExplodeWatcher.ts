@@ -1,34 +1,15 @@
 import { useEffect } from "react";
 import { useXmtpLock } from "@/hooks/useXmtpLock";
-import { getConvo } from "@/utils/db";
-import { cleanUpExplodedConvo } from "@/utils/explode";
+import { deleteExpiredConvo } from "@/utils/explode";
 import { createLogger } from "@/utils/log";
-import { createClient } from "@/utils/xmtp";
 
-const log = createLogger("explode");
+const log = createLogger("use-explode-watcher");
 
-const deleteExpiredConvo = async (convoId: string, xmtpId: string) => {
-  log.trace("deleteExpiredConvo", { convoId, xmtpId });
-  const convo = await getConvo(convoId);
-  if (!convo) return;
+// module-level ref so ConvoContext can trigger a refresh
+let workerInstance: Worker | null = null;
 
-  const client = await createClient(convo.privateKey);
-  try {
-    if (!client.inboxId) return;
-    const conversation = await client.conversations.getConversationById(xmtpId);
-    if (conversation) {
-      await cleanUpExplodedConvo(
-        conversation,
-        convoId,
-        client.inboxId,
-        client.installationId,
-      );
-    }
-  } catch (err: unknown) {
-    log.error("failed to clean up expired convo", { convoId }, err);
-  } finally {
-    client.close();
-  }
+export const refreshExplodeWorker = () => {
+  workerInstance?.postMessage({ type: "refresh" });
 };
 
 export const useExplodeWatcher = () => {
@@ -41,6 +22,7 @@ export const useExplodeWatcher = () => {
       new URL("../workers/explode.worker.ts", import.meta.url),
       { type: "module" },
     );
+    workerInstance = worker;
 
     worker.onmessage = (
       e: MessageEvent<{
@@ -52,8 +34,8 @@ export const useExplodeWatcher = () => {
         log.info("worker reported expired convos", {
           convos: e.data.convos,
         });
-        for (const { id, xmtpId } of e.data.convos) {
-          deleteExpiredConvo(id, xmtpId).catch((err: unknown) => {
+        for (const { id } of e.data.convos) {
+          deleteExpiredConvo(id).catch((err: unknown) => {
             log.error("failed to delete expired convo", { convoId: id }, err);
           });
         }
@@ -63,6 +45,7 @@ export const useExplodeWatcher = () => {
     return () => {
       log.trace("terminating explode worker");
       worker.terminate();
+      workerInstance = null;
     };
   }, []);
 };

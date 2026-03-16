@@ -5,7 +5,7 @@ import { Modal, ModalCloseButton } from "@/components/shared/Modal";
 import { useConvo } from "@/hooks/useConvo";
 import { createLogger } from "@/utils/log";
 
-const log = createLogger("explode");
+const log = createLogger("explode-convo-modal");
 
 type ExplodeConvoModalProps = {
   onClose: () => void;

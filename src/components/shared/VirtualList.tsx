@@ -140,7 +140,8 @@ const VirtualList = <T,>(
                 width: "100%",
                 transform: `translateY(${virtualItem.start}px)`,
               }}>
-              {renderItem(items[virtualItem.index], virtualItem.index)}
+              {items[virtualItem.index] != null &&
+                renderItem(items[virtualItem.index], virtualItem.index)}
             </div>
           ))}
         </div>
