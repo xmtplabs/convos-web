@@ -97,10 +97,11 @@ const VirtualList = <T,>(
     };
   }, [scrollContainerRef, updateScrollbar]);
 
-  // run on every render to catch virtualizer measurement changes
+  // update scrollbar when virtualizer measurements change
+  const totalSize = virtualizer.getTotalSize();
   useEffect(() => {
     updateScrollbar();
-  });
+  }, [totalSize, updateScrollbar]);
 
   return (
     <div

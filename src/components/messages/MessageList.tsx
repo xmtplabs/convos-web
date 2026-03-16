@@ -12,7 +12,7 @@ import {
   type Reaction,
 } from "@xmtp/browser-sdk";
 import { InfoIcon, ReplyIcon } from "lucide-react";
-import { useCallback, useMemo, useRef, useState } from "react";
+import { memo, useCallback, useMemo, useRef, useState } from "react";
 import { ConvoCard } from "@/components/convos/ConvoCard";
 import { UnstyledLink } from "@/components/shared/UnstyledLink";
 import VirtualList, {
@@ -332,215 +332,219 @@ const AvatarImg: React.FC<{ inboxId: string }> = ({ inboxId }) => {
   );
 };
 
-const RowRenderer = ({
-  row,
-  reactionMap,
-  onScrollToMessage,
-  highlightedMessageId,
-  convo,
-}: {
-  row: Row;
-  reactionMap: ReactionMap;
-  onScrollToMessage: (messageId: string) => void;
-  highlightedMessageId: string | null;
-  convo: ResolvedConvo;
-}) => {
-  const { memberProfiles } = useConvo();
-  const { sendReaction } = useSendMessage();
+const RowRenderer = memo(
+  ({
+    row,
+    reactionMap,
+    onScrollToMessage,
+    highlightedMessageId,
+    convo,
+  }: {
+    row: Row;
+    reactionMap: ReactionMap;
+    onScrollToMessage: (messageId: string) => void;
+    highlightedMessageId: string | null;
+    convo: ResolvedConvo;
+  }) => {
+    const { memberProfiles } = useConvo();
+    const { sendReaction } = useSendMessage();
 
-  const handleDoubleClick = useCallback(
-    (messageId: string, senderInboxId: string) => {
-      const emoji = convo.quickReactionEmoji;
-      const existing = reactionMap.get(messageId)?.get(emoji);
-      const action = existing?.reacted
-        ? ReactionAction.Removed
-        : ReactionAction.Added;
-      log.info("quick reaction", { emoji, messageId, action });
-      void sendReaction({
-        reference: messageId,
-        referenceInboxId: senderInboxId,
-        action,
-        content: emoji,
-        schema: ReactionSchema.Unicode,
-      });
-    },
-    [convo.quickReactionEmoji, reactionMap, sendReaction],
-  );
+    const handleDoubleClick = useCallback(
+      (messageId: string, senderInboxId: string) => {
+        const emoji = convo.quickReactionEmoji;
+        const existing = reactionMap.get(messageId)?.get(emoji);
+        const action = existing?.reacted
+          ? ReactionAction.Removed
+          : ReactionAction.Added;
+        log.info("quick reaction", { emoji, messageId, action });
+        void sendReaction({
+          reference: messageId,
+          referenceInboxId: senderInboxId,
+          action,
+          content: emoji,
+          schema: ReactionSchema.Unicode,
+        });
+      },
+      [convo.quickReactionEmoji, reactionMap, sendReaction],
+    );
 
-  if (row.type === "time") {
-    return (
-      <div className={`${classes.item} ${classes.timeLabel}`}>
-        <Text size="xs" c="dimmed">
-          {row.label}
+    if (row.type === "time") {
+      return (
+        <div className={`${classes.item} ${classes.timeLabel}`}>
+          <Text size="xs" c="dimmed">
+            {row.label}
+          </Text>
+        </div>
+      );
+    }
+
+    if (row.type === "summary") {
+      return (
+        <Box px="lg" pt="lg">
+          <ConvoCard convo={convo} />
+
+          <Stack gap="xxxs" align="center" p="md">
+            <UnstyledLink
+              to="."
+              search={(prev) => ({ ...prev, modal: "convo-info" })}>
+              <Group gap="xxxs" align="center">
+                <Text size="xs">New convo, new everything</Text>
+                <InfoIcon size={16} />
+              </Group>
+            </UnstyledLink>
+            <Text size="xs" c="dimmed">
+              For privacy, new members can&apos;t see earlier messages.
+            </Text>
+          </Stack>
+        </Box>
+      );
+    }
+
+    if (isGroupUpdated(row.message)) {
+      const groupUpdated = row.message.content as GroupUpdated;
+      const initiatorName = memberProfiles.get(
+        groupUpdated.initiatedByInboxId,
+      )?.name;
+      const lines = getGroupUpdatedStrings(
+        groupUpdated,
+        initiatorName,
+        memberProfiles,
+      );
+      const hasUnrecognized =
+        groupUpdated.metadataFieldChanges.length > lines.length;
+      return (
+        <>
+          {lines.length > 0 && (
+            <div className={`${classes.item} ${classes.systemMessage}`}>
+              {lines.map((line) => (
+                <Text key={line} size="xs" c="dimmed">
+                  {line}
+                </Text>
+              ))}
+            </div>
+          )}
+          {hasUnrecognized && convo.expiresAtUnix != null && (
+            <ExplodeNotification
+              initiatorInboxId={groupUpdated.initiatedByInboxId}
+              sentAtNs={row.message.sentAtNs}
+              expiresAtUnix={convo.expiresAtUnix}
+            />
+          )}
+        </>
+      );
+    }
+
+    const reactions = reactionMap.get(row.message.id) ?? new Map();
+    const content = getContentString(row.message) ?? "";
+    const isHighlighted = highlightedMessageId === row.message.id;
+    const wrapperClass = `${classes.item} ${classes.messageWrapper}${isHighlighted ? ` ${classes.messageHighlight}` : ""}`;
+
+    const senderLabel =
+      !row.isOwn && row.isFirstInGroup ? (
+        <Text size="xs" c="dimmed" className={classes.senderName} pl="sm">
+          {memberProfiles.get(row.message.senderInboxId)?.name || "Somebody"}
         </Text>
+      ) : null;
+
+    let inner: React.ReactNode;
+
+    if (row.message.content === undefined) {
+      const fallbackText =
+        row.message.fallback || "This content can't be displayed";
+      inner = (
+        <Box
+          className={`${classes.bubble} ${classes.bubbleUnsupported} ${row.isOwn ? classes.bubbleOwn : classes.bubbleOther}`}>
+          <Text c="dimmed" fs="italic" size="sm">
+            {fallbackText}
+          </Text>
+        </Box>
+      );
+    } else if (isRemoteAttachment(row.message)) {
+      inner = (
+        <Box
+          className={`${classes.attachment} ${row.isOwn ? classes.attachmentOwn : classes.attachmentOther}`}>
+          <RemoteAttachmentContent content={row.message.content} />
+        </Box>
+      );
+    } else {
+      const replyContent = isTextReply(row.message)
+        ? row.message.content
+        : null;
+      const replyContext = replyContent?.inReplyTo ?? null;
+      const replyText = replyContext ? getContentString(replyContext) : null;
+      const replyReferenceId = replyContent?.referenceId;
+      const replySenderName = replyContext
+        ? (memberProfiles.get(replyContext.senderInboxId)?.name ?? "Somebody")
+        : null;
+
+      inner = (
+        <Box
+          className={`${classes.bubble} ${row.isOwn ? classes.bubbleOwn : classes.bubbleOther}`}>
+          {replyText && (
+            <div
+              className={`${classes.replyContext} ${row.isOwn ? classes.replyContextOwn : classes.replyContextOther}`}
+              onClick={() => {
+                if (replyReferenceId) {
+                  onScrollToMessage(replyReferenceId);
+                }
+              }}>
+              <ReplyIcon size={14} className={classes.replyIcon} />
+              <div style={{ overflow: "hidden" }}>
+                <Text size="xxs" c="dimmed" truncate>
+                  {replySenderName}
+                </Text>
+                <Text size="xs" c="dimmed" truncate>
+                  {replyText}
+                </Text>
+              </div>
+            </div>
+          )}
+          <Text>{content}</Text>
+        </Box>
+      );
+    }
+
+    return (
+      <div
+        className={wrapperClass}
+        onMouseDown={(e) => {
+          // prevent text-selection on double-click
+          if (e.detail >= 2) {
+            e.preventDefault();
+          }
+        }}
+        onDoubleClick={() => {
+          handleDoubleClick(row.message.id, row.message.senderInboxId);
+        }}>
+        <MessageActions
+          messageId={row.message.id}
+          senderInboxId={row.message.senderInboxId}
+          content={content}
+          isOwn={row.isOwn}
+        />
+        {senderLabel}
+        {row.isOwn ? (
+          inner
+        ) : (
+          <div className={classes.messageRow}>
+            <div className={classes.avatarSlot}>
+              {row.isLastInGroup && (
+                <AvatarImg inboxId={row.message.senderInboxId} />
+              )}
+            </div>
+            <div className={classes.messageContent}>{inner}</div>
+          </div>
+        )}
+        <ReactionBar
+          reactions={reactions}
+          messageId={row.message.id}
+          senderInboxId={row.message.senderInboxId}
+          isOwn={row.isOwn}
+        />
       </div>
     );
-  }
-
-  if (row.type === "summary") {
-    return (
-      <Box px="lg" pt="lg">
-        <ConvoCard convo={convo} />
-
-        <Stack gap="xxxs" align="center" p="md">
-          <UnstyledLink
-            to="."
-            search={(prev) => ({ ...prev, modal: "convo-info" })}>
-            <Group gap="xxxs" align="center">
-              <Text size="xs">New convo, new everything</Text>
-              <InfoIcon size={16} />
-            </Group>
-          </UnstyledLink>
-          <Text size="xs" c="dimmed">
-            For privacy, new members can&apos;t see earlier messages.
-          </Text>
-        </Stack>
-      </Box>
-    );
-  }
-
-  if (isGroupUpdated(row.message)) {
-    const groupUpdated = row.message.content as GroupUpdated;
-    const initiatorName = memberProfiles.get(
-      groupUpdated.initiatedByInboxId,
-    )?.name;
-    const lines = getGroupUpdatedStrings(
-      groupUpdated,
-      initiatorName,
-      memberProfiles,
-    );
-    const hasUnrecognized =
-      groupUpdated.metadataFieldChanges.length > lines.length;
-    return (
-      <>
-        {lines.length > 0 && (
-          <div className={`${classes.item} ${classes.systemMessage}`}>
-            {lines.map((line) => (
-              <Text key={line} size="xs" c="dimmed">
-                {line}
-              </Text>
-            ))}
-          </div>
-        )}
-        {hasUnrecognized && convo.expiresAtUnix != null && (
-          <ExplodeNotification
-            initiatorInboxId={groupUpdated.initiatedByInboxId}
-            sentAtNs={row.message.sentAtNs}
-            expiresAtUnix={convo.expiresAtUnix}
-          />
-        )}
-      </>
-    );
-  }
-
-  const reactions = reactionMap.get(row.message.id) ?? new Map();
-  const content = getContentString(row.message) ?? "";
-  const isHighlighted = highlightedMessageId === row.message.id;
-  const wrapperClass = `${classes.item} ${classes.messageWrapper}${isHighlighted ? ` ${classes.messageHighlight}` : ""}`;
-
-  const senderLabel =
-    !row.isOwn && row.isFirstInGroup ? (
-      <Text size="xs" c="dimmed" className={classes.senderName} pl="sm">
-        {memberProfiles.get(row.message.senderInboxId)?.name || "Somebody"}
-      </Text>
-    ) : null;
-
-  let inner: React.ReactNode;
-
-  if (row.message.content === undefined) {
-    const fallbackText =
-      row.message.fallback || "This content can't be displayed";
-    inner = (
-      <Box
-        className={`${classes.bubble} ${classes.bubbleUnsupported} ${row.isOwn ? classes.bubbleOwn : classes.bubbleOther}`}>
-        <Text c="dimmed" fs="italic" size="sm">
-          {fallbackText}
-        </Text>
-      </Box>
-    );
-  } else if (isRemoteAttachment(row.message)) {
-    inner = (
-      <Box
-        className={`${classes.attachment} ${row.isOwn ? classes.attachmentOwn : classes.attachmentOther}`}>
-        <RemoteAttachmentContent content={row.message.content} />
-      </Box>
-    );
-  } else {
-    const replyContent = isTextReply(row.message) ? row.message.content : null;
-    const replyContext = replyContent?.inReplyTo ?? null;
-    const replyText = replyContext ? getContentString(replyContext) : null;
-    const replyReferenceId = replyContent?.referenceId;
-    const replySenderName = replyContext
-      ? (memberProfiles.get(replyContext.senderInboxId)?.name ?? "Somebody")
-      : null;
-
-    inner = (
-      <Box
-        className={`${classes.bubble} ${row.isOwn ? classes.bubbleOwn : classes.bubbleOther}`}>
-        {replyText && (
-          <div
-            className={`${classes.replyContext} ${row.isOwn ? classes.replyContextOwn : classes.replyContextOther}`}
-            onClick={() => {
-              if (replyReferenceId) {
-                onScrollToMessage(replyReferenceId);
-              }
-            }}>
-            <ReplyIcon size={14} className={classes.replyIcon} />
-            <div style={{ overflow: "hidden" }}>
-              <Text size="xxs" c="dimmed" truncate>
-                {replySenderName}
-              </Text>
-              <Text size="xs" c="dimmed" truncate>
-                {replyText}
-              </Text>
-            </div>
-          </div>
-        )}
-        <Text>{content}</Text>
-      </Box>
-    );
-  }
-
-  return (
-    <div
-      className={wrapperClass}
-      onMouseDown={(e) => {
-        // prevent text-selection on double-click
-        if (e.detail >= 2) {
-          e.preventDefault();
-        }
-      }}
-      onDoubleClick={() => {
-        handleDoubleClick(row.message.id, row.message.senderInboxId);
-      }}>
-      <MessageActions
-        messageId={row.message.id}
-        senderInboxId={row.message.senderInboxId}
-        content={content}
-        isOwn={row.isOwn}
-      />
-      {senderLabel}
-      {row.isOwn ? (
-        inner
-      ) : (
-        <div className={classes.messageRow}>
-          <div className={classes.avatarSlot}>
-            {row.isLastInGroup && (
-              <AvatarImg inboxId={row.message.senderInboxId} />
-            )}
-          </div>
-          <div className={classes.messageContent}>{inner}</div>
-        </div>
-      )}
-      <ReactionBar
-        reactions={reactions}
-        messageId={row.message.id}
-        senderInboxId={row.message.senderInboxId}
-        isOwn={row.isOwn}
-      />
-    </div>
-  );
-};
+  },
+);
 
 export const MessageList: React.FC<{
   messages: DecodedMessage<BuiltInContentTypes>[];
@@ -586,24 +590,29 @@ export const MessageList: React.FC<{
     [messageIdToIndex],
   );
 
+  const renderItem = useCallback(
+    (row: Row) => (
+      <RowRenderer
+        row={row}
+        reactionMap={reactionMap}
+        onScrollToMessage={onScrollToMessage}
+        highlightedMessageId={highlightedMessageId}
+        convo={convo}
+      />
+    ),
+    [reactionMap, onScrollToMessage, highlightedMessageId, convo],
+  );
+
   return (
     <VirtualList
       ref={listRef}
       items={rows}
-      getItemKey={(row) => getRowKey(row)}
+      getItemKey={getRowKey}
       estimateSize={44}
       followOutput="auto"
       overscan={20}
       outerClassName={classes.root}
-      renderItem={(row) => (
-        <RowRenderer
-          row={row}
-          reactionMap={reactionMap}
-          onScrollToMessage={onScrollToMessage}
-          highlightedMessageId={highlightedMessageId}
-          convo={convo}
-        />
-      )}
+      renderItem={renderItem}
     />
   );
 };

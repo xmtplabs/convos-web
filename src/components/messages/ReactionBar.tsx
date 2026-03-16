@@ -1,5 +1,5 @@
 import { ReactionAction, ReactionSchema } from "@xmtp/browser-sdk";
-import { useCallback } from "react";
+import { memo, useCallback } from "react";
 import { useSendMessage } from "@/hooks/useSendMessage";
 import { createLogger } from "@/utils/log";
 import classes from "./MessageList.module.css";
@@ -17,7 +17,7 @@ export const ReactionBar: React.FC<{
   messageId: string;
   senderInboxId: string;
   isOwn: boolean;
-}> = ({ reactions, messageId, senderInboxId, isOwn }) => {
+}> = memo(({ reactions, messageId, senderInboxId, isOwn }) => {
   const { sendReaction } = useSendMessage();
 
   const handleClick = useCallback(
@@ -58,4 +58,4 @@ export const ReactionBar: React.FC<{
       ))}
     </div>
   );
-};
+});

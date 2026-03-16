@@ -1,7 +1,7 @@
 import { ActionIcon, Group } from "@mantine/core";
 import { ReactionAction, ReactionSchema } from "@xmtp/browser-sdk";
 import { MessageCircleReplyIcon, SmilePlusIcon } from "lucide-react";
-import { useCallback, useState } from "react";
+import { memo, useCallback, useState } from "react";
 import { EmojiPicker } from "@/components/shared/EmojiPicker";
 import { useSendMessage } from "@/hooks/useSendMessage";
 import { createLogger } from "@/utils/log";
@@ -16,7 +16,7 @@ export const MessageActions: React.FC<{
   senderInboxId: string;
   content: string;
   isOwn: boolean;
-}> = ({ messageId, senderInboxId, content, isOwn }) => {
+}> = memo(({ messageId, senderInboxId, content, isOwn }) => {
   const { sendReaction, setReply } = useSendMessage();
   const [pickerOpen, setPickerOpen] = useState(false);
 
@@ -75,4 +75,4 @@ export const MessageActions: React.FC<{
       </ActionIcon>
     </Group>
   );
-};
+});

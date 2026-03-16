@@ -1,6 +1,6 @@
 import { Box, Button, Paper, Stack, Text } from "@mantine/core";
 import { useParams } from "@tanstack/react-router";
-import { useMemo } from "react";
+import { useCallback, useMemo } from "react";
 import { LinkButton } from "@/components/shared/Button";
 import VirtualList from "@/components/shared/VirtualList";
 import { useNav } from "@/contexts/NavContext";
@@ -37,6 +37,20 @@ export const ConvosList: React.FC<ConvosListProps> = ({ convos }) => {
   const selectedConversationIndex = useMemo(
     () => filtered.findIndex((convo) => convo.id === convoId),
     [filtered, convoId],
+  );
+
+  const handleItemClick = useMemo(
+    () => (isMobile ? closeNav : undefined),
+    [isMobile, closeNav],
+  );
+
+  const renderItem = useCallback(
+    (convo: Convo) => (
+      <div onClick={handleItemClick}>
+        <ConvoListItem convo={convo} selected={convo.id === convoId} />
+      </div>
+    ),
+    [handleItemClick, convoId],
   );
 
   if (filtered.length === 0) {
@@ -86,11 +100,7 @@ export const ConvosList: React.FC<ConvosListProps> = ({ convos }) => {
         getItemKey={(convo) => convo.id}
         initialScrollIndex={Math.max(selectedConversationIndex, 0)}
         outerClassName={classes.outer}
-        renderItem={(convo) => (
-          <div onClick={isMobile ? closeNav : undefined}>
-            <ConvoListItem convo={convo} selected={convo.id === convoId} />
-          </div>
-        )}
+        renderItem={renderItem}
       />
     </Box>
   );
