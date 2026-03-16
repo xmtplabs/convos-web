@@ -1,6 +1,6 @@
 import { ReactionAction, ReactionSchema } from "@xmtp/browser-sdk";
 import { memo, useCallback } from "react";
-import { useSendMessage } from "@/hooks/useSendMessage";
+import { useConvoMessaging } from "@/contexts/ConvoMessagingContext";
 import { createLogger } from "@/utils/log";
 import classes from "./MessageList.module.css";
 
@@ -18,7 +18,7 @@ export const ReactionBar: React.FC<{
   senderInboxId: string;
   isOwn: boolean;
 }> = memo(({ reactions, messageId, senderInboxId, isOwn }) => {
-  const { sendReaction } = useSendMessage();
+  const { sendReaction } = useConvoMessaging();
 
   const handleClick = useCallback(
     (emoji: string, alreadyReacted: boolean) => {

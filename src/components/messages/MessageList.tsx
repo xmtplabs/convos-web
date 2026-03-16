@@ -19,10 +19,10 @@ import VirtualList, {
   type VirtualListHandle,
 } from "@/components/shared/VirtualList";
 import type { ResolvedConvo } from "@/contexts/ConvoContext";
+import { useConvoMessaging } from "@/contexts/ConvoMessagingContext";
 import { useAvatar } from "@/hooks/useAvatar";
 import { useConvo } from "@/hooks/useConvo";
 import { useInboxId } from "@/hooks/useInboxId";
-import { useSendMessage } from "@/hooks/useSendMessage";
 import { isExplodeSettings } from "@/utils/explode";
 import { createLogger } from "@/utils/log";
 import { getContentString, getGroupUpdatedStrings } from "@/utils/xmtp";
@@ -347,7 +347,7 @@ const RowRenderer = memo(
     convo: ResolvedConvo;
   }) => {
     const { memberProfiles } = useConvo();
-    const { sendReaction } = useSendMessage();
+    const { sendReaction } = useConvoMessaging();
 
     const handleDoubleClick = useCallback(
       (messageId: string, senderInboxId: string) => {

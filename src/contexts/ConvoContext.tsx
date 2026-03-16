@@ -18,6 +18,7 @@ import {
   useRef,
   useState,
 } from "react";
+import { ConvoMessagingProvider } from "@/contexts/ConvoMessagingContext";
 import type { XmtpLockHandle } from "@/contexts/XmtpLockContext";
 import { db, type Convo, type Profile } from "@/db";
 import { setActiveConvoId } from "@/hooks/useActiveConvo";
@@ -60,20 +61,13 @@ export type ResolvedConvo = Convo &
 
 export type ConvoContextValue = {
   convo: ResolvedConvo;
-  conversation: Conversation<BuiltInContentTypes> | null;
   client: Client | null;
   ready: boolean;
   appData: AppData | null;
   memberProfiles: Map<string, MemberProfile>;
   members: GroupMember[];
-  messages: DecodedMessage<BuiltInContentTypes>[];
-
-  sending: boolean;
-  setSending: React.Dispatch<React.SetStateAction<boolean>>;
   syncing: boolean;
   setSyncing: React.Dispatch<React.SetStateAction<boolean>>;
-  reply: ReplyState | null;
-  setReply: (reply: ReplyState | null) => void;
   permissions: ConvoPermissions | null;
   isLocked: boolean;
   exploding: boolean;
@@ -324,9 +318,7 @@ export const ConvoProvider: React.FC<{
   const [client, setClient] = useState<Client | null>(null);
   const [phase, setPhase] = useState<"loading" | "ready" | "error">("loading");
   const [members, setMembers] = useState<GroupMember[]>([]);
-  const [sending, setSending] = useState(false);
   const [syncing, setSyncing] = useState(false);
-  const [reply, setReply] = useState<ReplyState | null>(null);
 
   const convoRef = useRef(convo);
   convoRef.current = convo;
@@ -610,25 +602,19 @@ export const ConvoProvider: React.FC<{
     [convo, defaults],
   );
 
-  const ctxValue = useMemo(
+  const dataValue = useMemo(
     () => ({
       convo: resolvedConvo,
-      conversation,
       client,
       ready: phase === "ready" && conversation != null,
       appData,
       memberProfiles,
       members,
-      messages,
       permissions,
       isLocked: actions.isLocked,
       ...explodeState,
-      sending,
-      setSending,
       syncing,
       setSyncing,
-      reply,
-      setReply,
       refresh,
       retry,
       removeMember: actions.removeMember,
@@ -648,19 +634,20 @@ export const ConvoProvider: React.FC<{
       appData,
       memberProfiles,
       members,
-      messages,
       permissions,
       actions,
       explodeState,
-      sending,
       syncing,
-      reply,
       refresh,
       retry,
     ],
   );
 
   return (
-    <ConvoContext.Provider value={ctxValue}>{children}</ConvoContext.Provider>
+    <ConvoContext.Provider value={dataValue}>
+      <ConvoMessagingProvider conversation={conversation} messages={messages}>
+        {children}
+      </ConvoMessagingProvider>
+    </ConvoContext.Provider>
   );
 };

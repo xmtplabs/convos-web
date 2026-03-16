@@ -6,6 +6,7 @@ export const LOG_DOMAINS = [
   "attachment",
   "avatars",
   "convo-details",
+  "convo-messaging",
   "convo-header",
   "convo-id-route",
   "convo-provider",

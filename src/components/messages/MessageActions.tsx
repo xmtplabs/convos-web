@@ -3,7 +3,7 @@ import { ReactionAction, ReactionSchema } from "@xmtp/browser-sdk";
 import { MessageCircleReplyIcon, SmilePlusIcon } from "lucide-react";
 import { memo, useCallback, useState } from "react";
 import { EmojiPicker } from "@/components/shared/EmojiPicker";
-import { useSendMessage } from "@/hooks/useSendMessage";
+import { useConvoMessaging } from "@/contexts/ConvoMessagingContext";
 import { createLogger } from "@/utils/log";
 import classes from "./MessageList.module.css";
 
@@ -17,7 +17,7 @@ export const MessageActions: React.FC<{
   content: string;
   isOwn: boolean;
 }> = memo(({ messageId, senderInboxId, content, isOwn }) => {
-  const { sendReaction, setReply } = useSendMessage();
+  const { sendReaction, setReply } = useConvoMessaging();
   const [pickerOpen, setPickerOpen] = useState(false);
 
   const handleReaction = useCallback(

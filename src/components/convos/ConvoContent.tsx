@@ -11,6 +11,7 @@ import { ExplodeErrorModal } from "@/components/modals/ExplodeErrorModal";
 import { InviteModal } from "@/components/modals/InviteModal";
 import { LockConvoModal } from "@/components/modals/LockConvoModal";
 import { UnlockConvoModal } from "@/components/modals/UnlockConvoModal";
+import { useConvoMessaging } from "@/contexts/ConvoMessagingContext";
 import { useConvo } from "@/hooks/useConvo";
 import { useConvoDetails } from "@/hooks/useConvoDetails";
 import { ConvoLayout } from "@/layouts/ConvoLayout";
@@ -18,7 +19,7 @@ import { Route } from "@/routes/_app/convo/$convoId";
 
 export const ConvoContent = () => {
   const ctx = useConvo();
-  const { messages } = ctx;
+  const { messages } = useConvoMessaging();
   const { detailsOpen } = useConvoDetails(ctx.convo.id);
   const { action } = Route.useSearch();
   const navigate = useNavigate();
