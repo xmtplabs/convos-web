@@ -1,6 +1,7 @@
 import { useNavigate } from "@tanstack/react-router";
 import { useCallback, useRef } from "react";
 import { generatePrivateKey } from "viem/accounts";
+import { useConvoGlobalSettings } from "@/hooks/useConvoGlobalSettings";
 import { addConvo, findConvoBy } from "@/utils/db";
 import { createLogger } from "@/utils/log";
 
@@ -8,6 +9,7 @@ const log = createLogger("use-create-convo");
 
 export const useCreateConvo = () => {
   const navigate = useNavigate();
+  const [defaults] = useConvoGlobalSettings();
   const startedRef = useRef(false);
 
   return useCallback(async () => {
@@ -40,6 +42,10 @@ export const useCreateConvo = () => {
         name: "New Convo",
         status: "creating",
         lastUpdatedAtNs: BigInt(Date.now()) * 1_000_000n,
+        inviteIncludesInfo: defaults.inviteIncludesInfo,
+        muted: defaults.muted,
+        blurImages: defaults.blurImages,
+        quickReactionEmoji: defaults.quickReactionEmoji,
       });
     } catch (err) {
       log.error("failed to create convo record", err);
@@ -53,5 +59,5 @@ export const useCreateConvo = () => {
       to: "/convo/$convoId",
       params: { convoId: id },
     });
-  }, [navigate]);
+  }, [navigate, defaults]);
 };

@@ -1,7 +1,5 @@
 import { useLocalStorage } from "@mantine/hooks";
 
-export const DEFAULT_QUICK_REACTION_EMOJI = "❤️";
-
 export type ConvoDefaults = {
   inviteIncludesInfo: boolean;
   muted: boolean;
@@ -12,8 +10,8 @@ export type ConvoDefaults = {
 const defaultConvoDefaults: ConvoDefaults = {
   inviteIncludesInfo: false,
   muted: false,
-  blurImages: false,
-  quickReactionEmoji: DEFAULT_QUICK_REACTION_EMOJI,
+  blurImages: true,
+  quickReactionEmoji: "❤️",
 };
 
 export const useConvoGlobalSettings = () => {
