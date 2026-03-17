@@ -1,28 +1,26 @@
-import { ActionIcon, Group } from "@mantine/core";
+import { ActionIcon, Flex } from "@mantine/core";
 import { ReactionAction, ReactionSchema } from "@xmtp/browser-sdk";
-import { MessageCircleReplyIcon, SmilePlusIcon } from "lucide-react";
+import { ReplyIcon, SmilePlusIcon } from "lucide-react";
 import { memo, useCallback, useState } from "react";
 import { EmojiPicker } from "@/components/shared/EmojiPicker";
 import { useConvoMessaging } from "@/contexts/ConvoMessagingContext";
 import { createLogger } from "@/utils/log";
-import classes from "./MessageList.module.css";
 
-const log = createLogger("message-actions");
+const log = createLogger("message-hover-actions");
 
-const quickEmojis = ["👍", "❤️", "😂", "😢", "🙏"];
-
-export const MessageActions: React.FC<{
+export const MessageHoverActions: React.FC<{
   messageId: string;
   senderInboxId: string;
   content: string;
   isOwn: boolean;
 }> = memo(({ messageId, senderInboxId, content, isOwn }) => {
+  log.trace("render");
   const { sendReaction, setReply } = useConvoMessaging();
   const [pickerOpen, setPickerOpen] = useState(false);
 
   const handleReaction = useCallback(
     (emoji: string) => {
-      log.info("handleReaction", { emoji, messageId });
+      log.info("reaction added", { emoji, messageId });
       void sendReaction({
         reference: messageId,
         referenceInboxId: senderInboxId,
@@ -35,25 +33,12 @@ export const MessageActions: React.FC<{
   );
 
   const handleReply = useCallback(() => {
-    log.info("handleReply", { messageId });
+    log.info("reply triggered", { messageId });
     setReply({ messageId, senderInboxId, content });
   }, [messageId, senderInboxId, content, setReply]);
 
   return (
-    <Group
-      gap={2}
-      className={`${classes.messageActions} ${isOwn ? classes.messageActionsOwn : classes.messageActionsOther}`}>
-      {quickEmojis.map((emoji) => (
-        <button
-          key={emoji}
-          type="button"
-          className={classes.quickEmoji}
-          onClick={() => {
-            handleReaction(emoji);
-          }}>
-          {emoji}
-        </button>
-      ))}
+    <Flex direction={isOwn ? "row-reverse" : "row"} gap="sm" align="center">
       <EmojiPicker
         opened={pickerOpen}
         onClose={() => {
@@ -62,17 +47,23 @@ export const MessageActions: React.FC<{
         onSelect={handleReaction}>
         <ActionIcon
           size="md"
-          variant="subtle"
+          variant="transparent"
+          c="dimmed"
           radius="xl"
           onClick={() => {
             setPickerOpen((o) => !o);
           }}>
-          <SmilePlusIcon size={20} />
+          <SmilePlusIcon size={24} />
         </ActionIcon>
       </EmojiPicker>
-      <ActionIcon size="md" variant="subtle" radius="xl" onClick={handleReply}>
-        <MessageCircleReplyIcon size={20} />
+      <ActionIcon
+        size="md"
+        variant="transparent"
+        c="dimmed"
+        radius="xl"
+        onClick={handleReply}>
+        <ReplyIcon size={24} />
       </ActionIcon>
-    </Group>
+    </Flex>
   );
 });

@@ -14,6 +14,7 @@ import {
 import { InfoIcon, ReplyIcon } from "lucide-react";
 import { memo, useCallback, useMemo, useRef, useState } from "react";
 import { ConvoCard } from "@/components/convos/ConvoCard";
+import { ReactionsModal } from "@/components/modals/ReactionsModal";
 import { UnstyledLink } from "@/components/shared/UnstyledLink";
 import VirtualList, {
   type VirtualListHandle,
@@ -26,12 +27,34 @@ import { useInboxId } from "@/hooks/useInboxId";
 import { isExplodeSettings } from "@/utils/explode";
 import { createLogger } from "@/utils/log";
 import { getContentString, getGroupUpdatedStrings } from "@/utils/xmtp";
-import { MessageActions } from "./MessageActions";
+import { MessageHoverActions } from "./MessageHoverActions";
 import classes from "./MessageList.module.css";
-import { ReactionBar, type ReactionEntry } from "./ReactionBar";
+import { ReactionBubble } from "./ReactionBubble";
 import { RemoteAttachmentContent } from "./RemoteAttachmentContent";
 
 const log = createLogger("message-list");
+
+export type ReactionEntry = {
+  emoji: string;
+  count: number;
+  reacted: boolean;
+};
+
+export type UserReaction = {
+  inboxId: string;
+  emojis: string[];
+};
+
+export type MessageReactions = {
+  byEmoji: Map<string, ReactionEntry>;
+  byUser: UserReaction[];
+  totalCount: number;
+};
+
+// intermediate: emoji -> Set<inboxId>
+type ReactionAccumulator = Map<string, Set<string>>;
+
+type ReactionMap = Map<string, MessageReactions>;
 
 type SummaryRow = {
   type: "summary";
@@ -52,8 +75,6 @@ type MessageRow = {
 };
 
 type Row = SummaryRow | TimeRow | MessageRow;
-
-type ReactionMap = Map<string, Map<string, ReactionEntry>>;
 
 const formatTimeLabel = (date: Date): string => {
   const now = new Date();
@@ -93,45 +114,34 @@ const getMinuteKey = (sentAtNs: bigint): string => {
   return `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}-${date.getHours()}-${date.getMinutes()}`;
 };
 
-const addReaction = (
-  map: ReactionMap,
+const addReactionToAccumulator = (
+  acc: Map<string, ReactionAccumulator>,
   reference: string,
   reaction: Reaction,
   senderInboxId: string,
-  inboxId: string,
 ) => {
-  if (!reaction.content) {
-    return;
-  }
+  if (!reaction.content) return;
 
-  let msgReactions = map.get(reference);
-  if (!msgReactions) {
-    msgReactions = new Map();
-    map.set(reference, msgReactions);
+  let msgAcc = acc.get(reference);
+  if (!msgAcc) {
+    msgAcc = new Map();
+    acc.set(reference, msgAcc);
   }
-
-  const existing = msgReactions.get(reaction.content);
 
   if (reaction.action === ReactionAction.Added) {
-    if (existing) {
-      existing.count += 1;
-      if (senderInboxId === inboxId) {
-        existing.reacted = true;
+    let senders = msgAcc.get(reaction.content);
+    if (!senders) {
+      senders = new Set();
+      msgAcc.set(reaction.content, senders);
+    }
+    senders.add(senderInboxId);
+  } else if (reaction.action === ReactionAction.Removed) {
+    const senders = msgAcc.get(reaction.content);
+    if (senders) {
+      senders.delete(senderInboxId);
+      if (senders.size === 0) {
+        msgAcc.delete(reaction.content);
       }
-    } else {
-      msgReactions.set(reaction.content, {
-        emoji: reaction.content,
-        count: 1,
-        reacted: senderInboxId === inboxId,
-      });
-    }
-  } else if (reaction.action === ReactionAction.Removed && existing) {
-    existing.count -= 1;
-    if (senderInboxId === inboxId) {
-      existing.reacted = false;
-    }
-    if (existing.count <= 0) {
-      msgReactions.delete(reaction.content);
     }
   }
 };
@@ -140,38 +150,70 @@ const buildReactionMap = (
   messages: DecodedMessage<BuiltInContentTypes>[],
   inboxId: string,
 ): ReactionMap => {
-  const map: ReactionMap = new Map();
+  const acc = new Map<string, ReactionAccumulator>();
 
   for (const msg of messages) {
-    // process reactions embedded on each message (from initial fetch)
     if (!isReaction(msg) && msg.reactions.length > 0) {
       for (const r of msg.reactions) {
         const reaction = r.content as Reaction;
         if (reaction.reference) {
-          addReaction(
-            map,
+          addReactionToAccumulator(
+            acc,
             reaction.reference,
             reaction,
             r.senderInboxId,
-            inboxId,
           );
         }
       }
     }
-
-    // process standalone reaction messages (from streaming)
     if (isReaction(msg)) {
       const reaction = msg.content as Reaction;
       if (reaction.reference) {
-        addReaction(
-          map,
+        addReactionToAccumulator(
+          acc,
           reaction.reference,
           reaction,
           msg.senderInboxId,
-          inboxId,
         );
       }
     }
+  }
+
+  const map: ReactionMap = new Map();
+
+  for (const [messageId, msgAcc] of acc) {
+    const byEmoji = new Map<string, ReactionEntry>();
+    const userMap = new Map<string, string[]>();
+    let totalCount = 0;
+
+    for (const [emoji, senders] of msgAcc) {
+      byEmoji.set(emoji, {
+        emoji,
+        count: senders.size,
+        reacted: senders.has(inboxId),
+      });
+      totalCount += senders.size;
+
+      for (const sender of senders) {
+        let emojis = userMap.get(sender);
+        if (!emojis) {
+          emojis = [];
+          userMap.set(sender, emojis);
+        }
+        emojis.push(emoji);
+      }
+    }
+
+    const byUser: UserReaction[] = [];
+    if (userMap.has(inboxId)) {
+      byUser.push({ inboxId, emojis: userMap.get(inboxId)! });
+      userMap.delete(inboxId);
+    }
+    for (const [uid, emojis] of userMap) {
+      byUser.push({ inboxId: uid, emojis });
+    }
+
+    map.set(messageId, { byEmoji, byUser, totalCount });
   }
 
   return map;
@@ -337,12 +379,14 @@ const RowRenderer = memo(
     row,
     reactionMap,
     onScrollToMessage,
+    onOpenReactionsModal,
     highlightedMessageId,
     convo,
   }: {
     row: Row;
     reactionMap: ReactionMap;
     onScrollToMessage: (messageId: string) => void;
+    onOpenReactionsModal: (messageId: string) => void;
     highlightedMessageId: string | null;
     convo: ResolvedConvo;
   }) => {
@@ -352,7 +396,7 @@ const RowRenderer = memo(
     const handleDoubleClick = useCallback(
       (messageId: string, senderInboxId: string) => {
         const emoji = convo.quickReactionEmoji;
-        const existing = reactionMap.get(messageId)?.get(emoji);
+        const existing = reactionMap.get(messageId)?.byEmoji.get(emoji);
         const action = existing?.reacted
           ? ReactionAction.Removed
           : ReactionAction.Added;
@@ -370,11 +414,11 @@ const RowRenderer = memo(
 
     if (row.type === "time") {
       return (
-        <div className={`${classes.item} ${classes.timeLabel}`}>
+        <Group justify="center" className={classes.item} pt="md" pb="xxs">
           <Text size="xs" c="dimmed">
             {row.label}
           </Text>
-        </div>
+        </Group>
       );
     }
 
@@ -415,13 +459,13 @@ const RowRenderer = memo(
       return (
         <>
           {lines.length > 0 && (
-            <div className={`${classes.item} ${classes.systemMessage}`}>
+            <Stack gap={0} align="center" className={classes.item}>
               {lines.map((line) => (
                 <Text key={line} size="xs" c="dimmed">
                   {line}
                 </Text>
               ))}
-            </div>
+            </Stack>
           )}
           {hasUnrecognized && convo.expiresAtUnix != null && (
             <ExplodeNotification
@@ -434,7 +478,7 @@ const RowRenderer = memo(
       );
     }
 
-    const reactions = reactionMap.get(row.message.id) ?? new Map();
+    const reactions = reactionMap.get(row.message.id) ?? null;
     const content = getContentString(row.message) ?? "";
     const isHighlighted = highlightedMessageId === row.message.id;
     const wrapperClass = `${classes.item} ${classes.messageWrapper}${isHighlighted ? ` ${classes.messageHighlight}` : ""}`;
@@ -462,7 +506,7 @@ const RowRenderer = memo(
     } else if (isRemoteAttachment(row.message)) {
       inner = (
         <Box
-          className={`${classes.attachment} ${row.isOwn ? classes.attachmentOwn : classes.attachmentOther}`}>
+          className={`${classes.attachment} ${row.isOwn ? "" : classes.attachmentOther}`}>
           <RemoteAttachmentContent content={row.message.content} />
         </Box>
       );
@@ -481,23 +525,26 @@ const RowRenderer = memo(
         <Box
           className={`${classes.bubble} ${row.isOwn ? classes.bubbleOwn : classes.bubbleOther}`}>
           {replyText && (
-            <div
-              className={`${classes.replyContext} ${row.isOwn ? classes.replyContextOwn : classes.replyContextOther}`}
+            <Group
+              gap={6}
+              align="flex-start"
+              wrap="nowrap"
+              className={`${classes.replyContext} ${row.isOwn ? "" : classes.replyContextOther}`}
               onClick={() => {
                 if (replyReferenceId) {
                   onScrollToMessage(replyReferenceId);
                 }
               }}>
               <ReplyIcon size={14} className={classes.replyIcon} />
-              <div style={{ overflow: "hidden" }}>
+              <Box style={{ overflow: "hidden" }}>
                 <Text size="xxs" c="dimmed" truncate>
                   {replySenderName}
                 </Text>
                 <Text size="xs" c="dimmed" truncate>
                   {replyText}
                 </Text>
-              </div>
-            </div>
+              </Box>
+            </Group>
           )}
           <Text>{content}</Text>
         </Box>
@@ -508,7 +555,6 @@ const RowRenderer = memo(
       <div
         className={wrapperClass}
         onMouseDown={(e) => {
-          // prevent text-selection on double-click
           if (e.detail >= 2) {
             e.preventDefault();
           }
@@ -516,31 +562,63 @@ const RowRenderer = memo(
         onDoubleClick={() => {
           handleDoubleClick(row.message.id, row.message.senderInboxId);
         }}>
-        <MessageActions
-          messageId={row.message.id}
-          senderInboxId={row.message.senderInboxId}
-          content={content}
-          isOwn={row.isOwn}
-        />
         {senderLabel}
         {row.isOwn ? (
-          inner
+          <>
+            <Group gap="md" justify="flex-end" align="center">
+              <Box className={classes.hoverActions}>
+                <MessageHoverActions
+                  messageId={row.message.id}
+                  senderInboxId={row.message.senderInboxId}
+                  content={content}
+                  isOwn
+                />
+              </Box>
+              {inner}
+            </Group>
+            {reactions && (
+              <ReactionBubble
+                reactions={reactions}
+                isOwn
+                onOpen={() => {
+                  onOpenReactionsModal(row.message.id);
+                }}
+              />
+            )}
+          </>
         ) : (
-          <div className={classes.messageRow}>
-            <div className={classes.avatarSlot}>
-              {row.isLastInGroup && (
-                <AvatarImg inboxId={row.message.senderInboxId} />
-              )}
-            </div>
-            <div className={classes.messageContent}>{inner}</div>
-          </div>
+          <>
+            <Group gap="md" justify="flex-end">
+              <Box className={classes.avatarSlot}>
+                {row.isLastInGroup && (
+                  <AvatarImg inboxId={row.message.senderInboxId} />
+                )}
+              </Box>
+              <Box className={classes.messageContent}>
+                <Group gap="md" align="center" wrap="nowrap">
+                  {inner}
+                  <Box className={classes.hoverActions}>
+                    <MessageHoverActions
+                      messageId={row.message.id}
+                      senderInboxId={row.message.senderInboxId}
+                      content={content}
+                      isOwn={false}
+                    />
+                  </Box>
+                </Group>
+              </Box>
+            </Group>
+            {reactions && (
+              <ReactionBubble
+                reactions={reactions}
+                isOwn={false}
+                onOpen={() => {
+                  onOpenReactionsModal(row.message.id);
+                }}
+              />
+            )}
+          </>
         )}
-        <ReactionBar
-          reactions={reactions}
-          messageId={row.message.id}
-          senderInboxId={row.message.senderInboxId}
-          isOwn={row.isOwn}
-        />
       </div>
     );
   },
@@ -561,6 +639,9 @@ export const MessageList: React.FC<{
     string | null
   >(null);
   const highlightTimer = useRef<ReturnType<typeof setTimeout>>(null);
+  const [reactionsModalMessageId, setReactionsModalMessageId] = useState<
+    string | null
+  >(null);
 
   const { rows, messageIdToIndex } = useMemo(
     () => buildRows(messages, inboxId, convo.expiresAtUnix),
@@ -596,6 +677,7 @@ export const MessageList: React.FC<{
         row={row}
         reactionMap={reactionMap}
         onScrollToMessage={onScrollToMessage}
+        onOpenReactionsModal={setReactionsModalMessageId}
         highlightedMessageId={highlightedMessageId}
         convo={convo}
       />
@@ -604,15 +686,35 @@ export const MessageList: React.FC<{
   );
 
   return (
-    <VirtualList
-      ref={listRef}
-      items={rows}
-      getItemKey={getRowKey}
-      estimateSize={44}
-      followOutput="auto"
-      overscan={20}
-      outerClassName={classes.root}
-      renderItem={renderItem}
-    />
+    <>
+      <VirtualList
+        ref={listRef}
+        items={rows}
+        getItemKey={getRowKey}
+        estimateSize={44}
+        followOutput="auto"
+        overscan={20}
+        outerClassName={classes.root}
+        renderItem={renderItem}
+      />
+      {(() => {
+        if (!reactionsModalMessageId) return null;
+        const modalReactions = reactionMap.get(reactionsModalMessageId);
+        if (!modalReactions) return null;
+        return (
+          <ReactionsModal
+            reactions={modalReactions}
+            messageId={reactionsModalMessageId}
+            senderInboxId={
+              messages.find((m) => m.id === reactionsModalMessageId)
+                ?.senderInboxId ?? ""
+            }
+            onClose={() => {
+              setReactionsModalMessageId(null);
+            }}
+          />
+        );
+      })()}
+    </>
   );
 };

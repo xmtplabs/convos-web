@@ -1,0 +1,11 @@
+.bubble {
+  border-radius: var(--mantine-radius-lg);
+  cursor: pointer;
+  background: var(--mantine-color-gray-1);
+  transition: background-color 0.15s;
+  margin-left: 36px;
+}
+
+.bubble:hover {
+  background: var(--mantine-color-gray-2);
+}
