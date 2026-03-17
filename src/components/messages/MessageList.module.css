@@ -6,7 +6,6 @@
   padding: 2px var(--mantine-spacing-md);
 }
 
-
 .bubble {
   max-width: 90%;
   width: fit-content;
@@ -22,7 +21,6 @@
 }
 
 .bubbleOther {
-  margin-right: auto;
   background-color: light-dark(
     var(--mantine-color-gray-1),
     var(--mantine-color-dark-5)
@@ -116,11 +114,7 @@
 .avatarSlot {
   width: 28px;
   flex-shrink: 0;
-}
-
-.messageContent {
-  min-width: 0;
-  flex: 1;
+  align-self: flex-end;
 }
 
 .senderName {

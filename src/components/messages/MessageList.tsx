@@ -206,7 +206,7 @@ const buildReactionMap = (
 
     const byUser: UserReaction[] = [];
     if (userMap.has(inboxId)) {
-      byUser.push({ inboxId, emojis: userMap.get(inboxId)! });
+      byUser.push({ inboxId, emojis: userMap.get(inboxId) ?? [] });
       userMap.delete(inboxId);
     }
     for (const [uid, emojis] of userMap) {
@@ -565,7 +565,7 @@ const RowRenderer = memo(
         {senderLabel}
         {row.isOwn ? (
           <>
-            <Group gap="md" justify="flex-end" align="center">
+            <Group gap="md" justify="flex-end" align="center" wrap="nowrap">
               <Box className={classes.hoverActions}>
                 <MessageHoverActions
                   messageId={row.message.id}
@@ -587,37 +587,36 @@ const RowRenderer = memo(
             )}
           </>
         ) : (
-          <>
-            <Group gap="md" justify="flex-end">
+          <Box flex={1} miw={0}>
+            <Group gap="md" align="center" wrap="nowrap">
               <Box className={classes.avatarSlot}>
                 {row.isLastInGroup && (
                   <AvatarImg inboxId={row.message.senderInboxId} />
                 )}
               </Box>
-              <Box className={classes.messageContent}>
-                <Group gap="md" align="center" wrap="nowrap">
-                  {inner}
-                  <Box className={classes.hoverActions}>
-                    <MessageHoverActions
-                      messageId={row.message.id}
-                      senderInboxId={row.message.senderInboxId}
-                      content={content}
-                      isOwn={false}
-                    />
-                  </Box>
-                </Group>
+              {inner}
+              <Box className={classes.hoverActions}>
+                <MessageHoverActions
+                  messageId={row.message.id}
+                  senderInboxId={row.message.senderInboxId}
+                  content={content}
+                  isOwn={false}
+                />
               </Box>
             </Group>
             {reactions && (
-              <ReactionBubble
-                reactions={reactions}
-                isOwn={false}
-                onOpen={() => {
-                  onOpenReactionsModal(row.message.id);
-                }}
-              />
+              <Group gap="md" align="center" wrap="nowrap">
+                <Box className={classes.avatarSlot} />
+                <ReactionBubble
+                  reactions={reactions}
+                  isOwn={false}
+                  onOpen={() => {
+                    onOpenReactionsModal(row.message.id);
+                  }}
+                />
+              </Group>
             )}
-          </>
+          </Box>
         )}
       </div>
     );
