@@ -1,18 +1,14 @@
 import { Avatar, Popover, Stack, Text } from "@mantine/core";
 import { ReactionAction, ReactionSchema } from "@xmtp/browser-sdk";
 import { useCallback, useState } from "react";
-
-import type { MessageReactions } from "@/components/messages/MessageList";
-import {
-  GroupedList,
-  GroupedListItem,
-} from "@/components/shared/GroupedList";
+import { GroupedList, GroupedListItem } from "@/components/shared/GroupedList";
 import { Modal } from "@/components/shared/Modal";
-import { useConvo } from "@/hooks/useConvo";
 import { useConvoMessaging } from "@/contexts/ConvoMessagingContext";
 import { useAvatar } from "@/hooks/useAvatar";
+import { useConvo } from "@/hooks/useConvo";
 import { useInboxId } from "@/hooks/useInboxId";
 import { createLogger } from "@/utils/log";
+import type { MessageReactions } from "@/utils/reactions";
 import classes from "./ReactionsModal.module.css";
 
 const log = createLogger("reactions-modal");
@@ -23,10 +19,7 @@ const EmojiButton: React.FC<{
   emoji: string;
   onClick: () => void;
 }> = ({ emoji, onClick }) => (
-  <button
-    type="button"
-    className={classes.emoji}
-    onClick={onClick}>
+  <button type="button" className={classes.emoji} onClick={onClick}>
     {emoji}
   </button>
 );
@@ -116,21 +109,14 @@ export const ReactionsModal: React.FC<{
   messageId: string;
   senderInboxId: string;
   onClose: () => void;
-}> = ({
-  reactions,
-  messageId,
-  senderInboxId,
-  onClose,
-}) => {
+}> = ({ reactions, messageId, senderInboxId, onClose }) => {
   const { sendReaction } = useConvoMessaging();
   const { convo } = useConvo();
   const inboxId = useInboxId();
 
   const handleEmojiClick = useCallback(
     (emoji: string, isYou: boolean) => {
-      const action = isYou
-        ? ReactionAction.Removed
-        : ReactionAction.Added;
+      const action = isYou ? ReactionAction.Removed : ReactionAction.Added;
       log.info("emoji clicked", { emoji, messageId, action });
       void sendReaction({
         reference: messageId,
