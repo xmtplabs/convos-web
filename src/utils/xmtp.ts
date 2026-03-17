@@ -97,7 +97,7 @@ export const getGroupUpdatedStrings = (
   initiatorName?: string,
   profileNames?: Map<string, { name?: string }>,
 ): string[] => {
-  log.trace("getGroupUpdatedStrings", { content, initiatorName, profileNames });
+  log.trace("getGroupUpdatedStrings");
   const who = initiatorName ?? "Somebody";
   const getName = (inboxId: string) =>
     profileNames?.get(inboxId)?.name ?? "Somebody";

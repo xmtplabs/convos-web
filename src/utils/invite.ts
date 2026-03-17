@@ -179,7 +179,7 @@ export type ParsedInvite = {
 };
 
 export const parseInviteSlug = (slug: string): ParsedInvite => {
-  log.trace("parseInviteSlug", { slug });
+  log.trace("parseInviteSlug");
   // strip '*' separators
   const b64 = slug.replace(/\*/g, "");
 

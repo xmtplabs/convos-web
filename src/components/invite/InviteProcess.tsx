@@ -25,7 +25,7 @@ export const InviteProcess: React.FC = () => {
   const parsed = useMemo((): ParsedInvite | null => {
     try {
       const result = parseInviteSlug(slug);
-      log.info("parsed", { payload: result.payload });
+      log.info("invite parsed");
       return result;
     } catch (err) {
       log.error("invalid invite slug", err);
