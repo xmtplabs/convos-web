@@ -7,9 +7,8 @@ import { createLogger } from "@/utils/log";
 const log = createLogger("app-lock");
 
 export const AppLockScreen = () => {
-  const { acquireLock } = useAppLockContext();
-
   log.trace("render");
+  const { acquireLock } = useAppLockContext();
 
   return (
     <CenteredLayout fullScreen>

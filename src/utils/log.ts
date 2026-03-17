@@ -1,5 +1,6 @@
 export const LOG_DOMAINS = [
   "active-convo",
+  "app-error",
   "app-lock",
   "app",
   "appData",
