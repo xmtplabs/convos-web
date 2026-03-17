@@ -16,7 +16,7 @@ export const getConvos = () => {
 
 export const addConvo = async (convo: Convo) => {
   log.trace("addConvo", { convo });
-  return db.convos.add(convo);
+  return db.convos.put(convo);
 };
 
 export const updateConvo = (id: string, changes: Partial<Convo>) => {

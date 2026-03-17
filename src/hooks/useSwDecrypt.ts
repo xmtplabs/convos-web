@@ -1,8 +1,8 @@
 import { isGroupUpdated, isReaction } from "@xmtp/browser-sdk";
 import { useEffect } from "react";
-import { db, type Convo } from "@/db";
+import { type Convo } from "@/db";
 import { useXmtpLock } from "@/hooks/useXmtpLock";
-import { updateConvo } from "@/utils/db";
+import { findConvoBy, updateConvo } from "@/utils/db";
 import { createLogger } from "@/utils/log";
 import { createClient, getContentString } from "@/utils/xmtp";
 
@@ -44,8 +44,7 @@ export const useSwDecrypt = () => {
       };
 
       try {
-        const convos = await db.convos.toArray();
-        const convo = convos.find((c) => c.xmtpId === xmtpId);
+        const convo = await findConvoBy((c) => c.xmtpId === xmtpId);
         if (!convo) {
           log.warn("convo not found", { xmtpId });
           return;

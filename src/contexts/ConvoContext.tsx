@@ -36,7 +36,7 @@ import {
   type AppData,
   type MemberProfile,
 } from "@/utils/appData";
-import { updateConvo } from "@/utils/db";
+import { addConvo, deleteConvo, updateConvo } from "@/utils/db";
 import { isExplodeSettings } from "@/utils/explode";
 import { processDmInvite, processExistingDms } from "@/utils/invite";
 import { createLogger } from "@/utils/log";
@@ -113,7 +113,7 @@ async function setupCreatingConvo(
   // oxlint-disable-next-line @typescript-eslint/no-unnecessary-condition
   if (cancelled.current) return null;
 
-  await db.convos.update(convo.id, {
+  await updateConvo(convo.id, {
     xmtpId: group.id,
     tag,
     status: "ready",
@@ -169,7 +169,7 @@ async function setupPendingConvo(
       groupId: group.id,
     });
     const { status, slug, creatorInboxId, ...rest } = convo;
-    await db.convos.put({ ...rest, xmtpId: group.id });
+    await addConvo({ ...rest, xmtpId: group.id, status: "ready" });
 
     await client.conversations.sync();
     const conversation = await client.conversations.getConversationById(
@@ -391,7 +391,7 @@ export const ConvoProvider: React.FC<{
           conv = await setupCreatingConvo(handle.client, convo, cancelled);
         } catch (err) {
           log.error("lifecycle: create failed", err);
-          await db.convos.update(convo.id, {
+          await updateConvo(convo.id, {
             status: "error",
           });
           setPhase("error");
@@ -571,7 +571,7 @@ export const ConvoProvider: React.FC<{
           convoId: current.id,
         });
         void db.avatars.where("convoId").equals(current.id).delete();
-        void db.convos.delete(current.id);
+        void deleteConvo(current.id);
       } else {
         void updateConvo(current.id, { expiresAtUnix: unix }).then(() => {
           refreshExplodeWorker();
@@ -583,7 +583,7 @@ export const ConvoProvider: React.FC<{
   // -- retry --
   const retry = useCallback(() => {
     log.info("retry", { convoId: convo.id });
-    void db.convos.update(convo.id, { status: "creating" });
+    void updateConvo(convo.id, { status: "creating" });
     convoIdRef.current = null;
     setPhase("loading");
   }, [convo.id]);

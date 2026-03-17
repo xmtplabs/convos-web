@@ -10,13 +10,14 @@ import {
   type Group,
 } from "@xmtp/browser-sdk";
 import { generatePrivateKey } from "viem/accounts";
-import { db, type Convo } from "@/db";
+import { type Convo } from "@/db";
 import {
   InvitePayloadSchema,
   SignedInviteSchema,
   type InvitePayload,
 } from "@/gen/convos/v1/invite_pb";
 import type { AppData } from "@/utils/appData";
+import { addConvo } from "@/utils/db";
 import { bytesToHex, hexToBytes } from "@/utils/encryption";
 import { createLogger } from "@/utils/log";
 import { createClient } from "@/utils/xmtp";
@@ -234,7 +235,7 @@ export const sendJoinRequest = async (parsed: ParsedInvite) => {
       slug,
     };
 
-    await db.convos.add(convo);
+    await addConvo(convo);
     return convo;
   } finally {
     client.close();
