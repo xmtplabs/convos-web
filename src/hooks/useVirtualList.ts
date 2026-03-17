@@ -30,7 +30,8 @@ export const useVirtualList = <T>({
     getScrollElement: () => scrollContainerRef.current,
     estimateSize: () => estimateSize,
     overscan,
-    getItemKey: (index) => getItemKey(items[index], index),
+    getItemKey: (index) =>
+      index < items.length ? getItemKey(items[index], index) : index,
     useFlushSync: false,
   });
 
