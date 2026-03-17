@@ -1,11 +1,15 @@
 import { Alert, Group, Loader, Stack, Text } from "@mantine/core";
 import { HourglassIcon } from "lucide-react";
+import { createLogger } from "@/utils/log";
+
+const log = createLogger("invite-request");
 
 export type InviteRequestProps = {
   error?: string;
 };
 
 export const InviteRequest: React.FC<InviteRequestProps> = ({ error }) => {
+  log.trace("render");
   return (
     <Stack align="center" gap="md">
       <HourglassIcon size={48} />

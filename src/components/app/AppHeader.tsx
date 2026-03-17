@@ -6,9 +6,13 @@ import { Logo } from "@/components/shared/Logo";
 import { useNav } from "@/contexts/NavContext";
 import { useConvosFilter } from "@/hooks/useConvosFilter";
 import { useCreateConvo } from "@/hooks/useCreateConvo";
+import { createLogger } from "@/utils/log";
 import classes from "./AppHeader.module.css";
 
+const log = createLogger("app-header");
+
 export const AppHeader = () => {
+  log.trace("render");
   const { closeNav } = useNav();
   const [filter, setFilter] = useConvosFilter();
   const createConvo = useCreateConvo();

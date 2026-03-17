@@ -31,7 +31,7 @@ import classes from "./MessageList.module.css";
 import { ReactionBar, type ReactionEntry } from "./ReactionBar";
 import { RemoteAttachmentContent } from "./RemoteAttachmentContent";
 
-const log = createLogger("messaging");
+const log = createLogger("message-list");
 
 type SummaryRow = {
   type: "summary";

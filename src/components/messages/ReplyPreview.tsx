@@ -1,5 +1,8 @@
 import { ActionIcon, Group, Paper, Stack, Text } from "@mantine/core";
 import { ReplyIcon, XIcon } from "lucide-react";
+import { createLogger } from "@/utils/log";
+
+const log = createLogger("reply-preview");
 
 export type ReplyPreviewProps = {
   replyTo: string;
@@ -12,6 +15,7 @@ export const ReplyPreview: React.FC<ReplyPreviewProps> = ({
   replyMessage,
   onCancel,
 }) => {
+  log.trace("render");
   return (
     <Paper p="xs" radius="md" withBorder>
       <Group gap="xs" align="flex-start" wrap="nowrap" justify="space-between">

@@ -4,9 +4,13 @@ import { InvitePending } from "@/components/invite/InvitePending";
 import { CenteredLayout } from "@/layouts/CenteredLayout";
 import { ConvoLayout } from "@/layouts/ConvoLayout";
 import { Route } from "@/routes/_app/convo/$convoId";
+import { createLogger } from "@/utils/log";
+
+const log = createLogger("convo-pending");
 
 export const ConvoPending: React.FC = () => {
   const convo = Route.useLoaderData();
+  log.trace("render");
 
   return (
     <ConvoLayout

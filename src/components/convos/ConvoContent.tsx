@@ -16,9 +16,13 @@ import { useConvo } from "@/hooks/useConvo";
 import { useConvoDetails } from "@/hooks/useConvoDetails";
 import { ConvoLayout } from "@/layouts/ConvoLayout";
 import { Route } from "@/routes/_app/convo/$convoId";
+import { createLogger } from "@/utils/log";
+
+const log = createLogger("convo-content");
 
 export const ConvoContent = () => {
   const ctx = useConvo();
+  log.trace("render");
   const { messages } = useConvoMessaging();
   const { detailsOpen } = useConvoDetails(ctx.convo.id);
   const { action } = Route.useSearch();

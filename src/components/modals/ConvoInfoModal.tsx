@@ -3,11 +3,16 @@ import { useNavigate } from "@tanstack/react-router";
 import { ExternalLinkIcon } from "lucide-react";
 import { GroupedListItem } from "@/components/shared/GroupedList";
 import { Modal, ModalCloseButton } from "@/components/shared/Modal";
+import { createLogger } from "@/utils/log";
+
+const log = createLogger("convo-info-modal");
 
 export const ConvoInfoModal: React.FC = () => {
+  log.trace("render");
   const navigate = useNavigate();
 
   const onClose = () => {
+    log.info("close");
     void navigate({
       to: ".",
       search: (prev) => ({ ...prev, modal: undefined }),

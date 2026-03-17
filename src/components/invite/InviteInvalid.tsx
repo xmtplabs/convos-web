@@ -1,7 +1,11 @@
 import { Stack, Text } from "@mantine/core";
 import { TicketXIcon } from "lucide-react";
+import { createLogger } from "@/utils/log";
+
+const log = createLogger("invite-invalid");
 
 export const InvalidInvite: React.FC = () => {
+  log.trace("render");
   return (
     <Stack align="center" gap="md">
       <TicketXIcon size={48} />

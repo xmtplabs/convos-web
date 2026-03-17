@@ -23,7 +23,7 @@ import { createLogger } from "@/utils/log";
 import { AttachmentPreview } from "./AttachmentPreview";
 import { ReplyPreview } from "./ReplyPreview";
 
-const log = createLogger("messaging");
+const log = createLogger("composer");
 
 export const Composer = () => {
   const { convo, ready, memberProfiles, permissions, shareProfile } =

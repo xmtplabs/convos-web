@@ -7,7 +7,10 @@ import type { Convo } from "@/db";
 import { useAvatar } from "@/hooks/useAvatar";
 import { useExplodeCountdown } from "@/hooks/useExplodeCountdown";
 import { GROUP_IMAGE_INBOX_ID } from "@/utils/avatars";
+import { createLogger } from "@/utils/log";
 import classes from "./ConvoListItem.module.css";
+
+const log = createLogger("convo-list-item");
 
 const formatTime = (ns: bigint | undefined): string | undefined => {
   if (ns == null) {
@@ -58,6 +61,7 @@ export const ConvoListItem: React.FC<ConvoListItemProps> = memo(
     const time = useRelativeTime(convo.lastUpdatedAtNs);
     const explodeCountdown = useExplodeCountdown(convo.expiresAtUnix);
     const groupImage = useAvatar(convo.id, GROUP_IMAGE_INBOX_ID);
+    log.trace("render");
 
     return (
       <Link

@@ -1,7 +1,11 @@
 import { Stack, Text } from "@mantine/core";
 import { Logo } from "@/components/shared/Logo";
+import { createLogger } from "@/utils/log";
+
+const log = createLogger("invite-pending");
 
 export const InvitePending: React.FC = () => {
+  log.trace("render");
   return (
     <Stack align="center" gap="md">
       <Logo size={48} />

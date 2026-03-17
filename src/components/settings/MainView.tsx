@@ -9,9 +9,13 @@ import { GroupedList, GroupedListItem } from "@/components/shared/GroupedList";
 import { useConvos } from "@/hooks/useConvos";
 import { useProfile } from "@/hooks/useProfile";
 import { useProfileAvatar } from "@/hooks/useProfileAvatar";
+import { createLogger } from "@/utils/log";
+
+const log = createLogger("settings-main");
 
 export const MainView: React.FC = () => {
   const convos = useConvos();
+  log.trace("render");
   const hasConvos = convos.length > 0;
   const profile = useProfile();
   const decryptedAvatarSrc = useProfileAvatar(profile);

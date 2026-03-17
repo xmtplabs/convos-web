@@ -4,7 +4,7 @@ import { useConvoMessaging } from "@/contexts/ConvoMessagingContext";
 import { createLogger } from "@/utils/log";
 import classes from "./MessageList.module.css";
 
-const log = createLogger("messaging");
+const log = createLogger("reaction-bar");
 
 export type ReactionEntry = {
   emoji: string;
@@ -18,6 +18,7 @@ export const ReactionBar: React.FC<{
   senderInboxId: string;
   isOwn: boolean;
 }> = memo(({ reactions, messageId, senderInboxId, isOwn }) => {
+  log.trace("render");
   const { sendReaction } = useConvoMessaging();
 
   const handleClick = useCallback(

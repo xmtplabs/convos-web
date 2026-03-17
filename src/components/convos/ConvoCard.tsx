@@ -3,6 +3,9 @@ import { ImageIcon } from "lucide-react";
 import type { Convo } from "@/db";
 import { useAvatar } from "@/hooks/useAvatar";
 import { GROUP_IMAGE_INBOX_ID } from "@/utils/avatars";
+import { createLogger } from "@/utils/log";
+
+const log = createLogger("convo-card");
 
 type ConvoCardProps = React.PropsWithChildren<{
   convo: Convo;
@@ -10,6 +13,7 @@ type ConvoCardProps = React.PropsWithChildren<{
 
 export const ConvoCard: React.FC<ConvoCardProps> = ({ convo, children }) => {
   const groupImage = useAvatar(convo.id, GROUP_IMAGE_INBOX_ID);
+  log.trace("render");
 
   return (
     <Box bg="gray.1" bdrs="lg" p="lg">

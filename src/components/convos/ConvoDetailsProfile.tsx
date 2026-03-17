@@ -3,10 +3,14 @@ import { ImageIcon } from "lucide-react";
 import { useAvatar } from "@/hooks/useAvatar";
 import { useConvo } from "@/hooks/useConvo";
 import { GROUP_IMAGE_INBOX_ID } from "@/utils/avatars";
+import { createLogger } from "@/utils/log";
+
+const log = createLogger("convo-details-profile");
 
 export const ConvoDetailsProfile: React.FC = () => {
   const { convo } = useConvo();
   const groupImage = useAvatar(convo.id, GROUP_IMAGE_INBOX_ID);
+  log.trace("render");
 
   return (
     <Stack align="center" gap="xs">

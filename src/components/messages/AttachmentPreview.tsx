@@ -4,7 +4,7 @@ import { useMemo } from "react";
 import { formatFileSize } from "@/utils/attachment";
 import { createLogger } from "@/utils/log";
 
-const log = createLogger("messaging");
+const log = createLogger("attachment-preview");
 
 export type AttachmentPreviewProps = {
   file: File;
@@ -17,15 +17,11 @@ export const AttachmentPreview: React.FC<AttachmentPreviewProps> = ({
   onCancel,
   disabled,
 }) => {
+  log.trace("render");
+
   const fileUrl = useMemo(() => URL.createObjectURL(file), [file]);
   const fileType = file.type.split("/")[0];
   const fileSize = formatFileSize(file.size);
-
-  log.trace("render", {
-    name: file.name,
-    size: file.size,
-    fileType,
-  });
 
   return (
     <Paper p="xs" radius="md" withBorder>

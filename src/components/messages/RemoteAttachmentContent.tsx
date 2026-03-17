@@ -15,13 +15,14 @@ import { downloadAttachment, getFileType } from "@/utils/attachment";
 import { createLogger } from "@/utils/log";
 import classes from "./RemoteAttachmentContent.module.css";
 
-const log = createLogger("messaging");
+const log = createLogger("remote-attachment-content");
 
 const urlCache = new Map<string, { blobUrl: string | null; failed: boolean }>();
 
 export const RemoteAttachmentContent: React.FC<{
   content: RemoteAttachment;
 }> = ({ content }) => {
+  log.trace("render");
   const { convo } = useConvo();
   const [decryptedUrl, setDecryptedUrl] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);

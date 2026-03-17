@@ -7,7 +7,7 @@ import { useConvoMessaging } from "@/contexts/ConvoMessagingContext";
 import { createLogger } from "@/utils/log";
 import classes from "./MessageList.module.css";
 
-const log = createLogger("messaging");
+const log = createLogger("message-actions");
 
 const quickEmojis = ["👍", "❤️", "😂", "😢", "🙏"];
 
