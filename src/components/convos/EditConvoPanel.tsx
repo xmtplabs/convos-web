@@ -75,16 +75,12 @@ export const EditConvoPanel: React.FC = () => {
         log.debug("no file chosen");
         return;
       }
-      log.info("file chosen", {
-        name: file.name,
-        size: file.size,
-        type: file.type,
-      });
+      log.info("file chosen", { size: file.size, type: file.type });
       e.target.value = "";
 
       const validation = validateFile(file);
       if (!validation.valid) {
-        log.warn("validation failed", { name: file.name });
+        log.warn("validation failed");
         setImageError(
           "Invalid file. Please choose a JPEG, PNG, GIF, or WebP image.",
         );

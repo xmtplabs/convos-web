@@ -77,7 +77,7 @@ export const Composer = () => {
   }, [reply]);
 
   const handleShareProfile = useCallback(async () => {
-    log.info("handleShareProfile start", { inboxId });
+    log.info("handleShareProfile start");
     if (!inboxId || !profile) {
       log.debug("handleShareProfile skipped: missing prerequisites", {
         hasInboxId: !!inboxId,
@@ -88,7 +88,7 @@ export const Composer = () => {
     setSharingProfile(true);
     try {
       await shareProfile(profile, inboxId);
-      log.info("handleShareProfile success", { inboxId });
+      log.info("handleShareProfile success");
     } catch (err) {
       log.error("handleShareProfile failed", err);
       setError("Failed to share profile");
@@ -102,7 +102,6 @@ export const Composer = () => {
       const file = event.target.files?.[0];
       if (file) {
         log.info("handleFileSelect: file chosen", {
-          name: file.name,
           size: file.size,
           type: file.type,
         });
@@ -139,7 +138,6 @@ export const Composer = () => {
       try {
         if (!remoteAttachmentRef.current) {
           log.info("handleSend: uploading attachment", {
-            name: attachment.name,
             size: attachment.size,
           });
           setUploadingAttachment(true);
@@ -222,7 +220,7 @@ export const Composer = () => {
               file={attachment}
               disabled={isSending}
               onCancel={() => {
-                log.info("cancel attachment", { name: attachment.name });
+                log.info("cancel attachment");
                 setAttachment(null);
               }}
             />

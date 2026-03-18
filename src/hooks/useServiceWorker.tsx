@@ -52,7 +52,7 @@ export function useServiceWorker() {
     const onMessage = (e: MessageEvent) => {
       const data = e.data as { type?: string; url?: string } | null;
       if (data?.type === "navigate" && data.url) {
-        log.info("navigating from notification", { url: data.url });
+        log.info("navigating from notification");
         void navigate({ to: data.url });
       }
     };

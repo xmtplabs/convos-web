@@ -106,7 +106,7 @@ export async function registerConvo(
   installationId: string,
   topic: string,
 ): Promise<boolean> {
-  log.trace("registerConvo", { installationId, topic });
+  log.trace("registerConvo");
   const subscription = await ensurePushSubscription();
   if (!subscription) {
     log.error("failed to ensure push subscription");
@@ -119,7 +119,7 @@ export async function registerConvo(
     return false;
   }
 
-  log.info("subscribing", { installationId, topic });
+  log.info("subscribing");
   try {
     const res = await fetch("/api/v1/notifications/subscribe", {
       method: "POST",
@@ -136,17 +136,17 @@ export async function registerConvo(
       return false;
     }
 
-    log.info("push registration complete", { installationId });
+    log.info("push registration complete");
     return true;
   } catch (err) {
-    log.error("subscribe failed", installationId, topic, err);
+    log.error("subscribe failed", err);
     return false;
   }
 }
 
 // unregister an installation from push notifications
 export async function unregisterConvo(installationId: string): Promise<void> {
-  log.trace("unregisterConvo", { installationId });
+  log.trace("unregisterConvo");
   try {
     const res = await fetch("/api/v1/notifications/unsubscribe", {
       method: "POST",
@@ -158,6 +158,6 @@ export async function unregisterConvo(installationId: string): Promise<void> {
       log.error("unsubscribe failed", { status: res.status });
     }
   } catch (err) {
-    log.error("unsubscribe failed", installationId, err);
+    log.error("unsubscribe failed", err);
   }
 }

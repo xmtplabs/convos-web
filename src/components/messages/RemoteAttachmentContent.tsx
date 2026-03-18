@@ -38,7 +38,7 @@ export const RemoteAttachmentContent: React.FC<
 
   const loadAttachment = useCallback(
     async (force = false) => {
-      log.info("loadAttachment start", { url: content.url, force });
+      log.info("loadAttachment start", { force });
       if (loadingRef.current) {
         return;
       }
@@ -50,7 +50,6 @@ export const RemoteAttachmentContent: React.FC<
         const cached = urlCache.get(content.url);
         if (cached) {
           log.debug("loadAttachment cache hit", {
-            url: content.url,
             failed: cached.failed,
           });
           if (cached.failed) {
@@ -61,7 +60,7 @@ export const RemoteAttachmentContent: React.FC<
           loadingRef.current = false;
           return;
         }
-        log.debug("loadAttachment cache miss", { url: content.url });
+        log.debug("loadAttachment cache miss");
       }
 
       setIsLoading(true);
@@ -73,7 +72,7 @@ export const RemoteAttachmentContent: React.FC<
         const blobUrl = URL.createObjectURL(blob);
         urlCache.set(content.url, { blobUrl, failed: false });
         setDecryptedUrl(blobUrl);
-        log.info("loadAttachment download success", { url: content.url });
+        log.info("loadAttachment download success");
       } catch (err) {
         log.error("loadAttachment download failed", err);
         setError("Unable to load attachment");
@@ -132,7 +131,7 @@ export const RemoteAttachmentContent: React.FC<
             radius="xl"
             size="xs"
             onClick={() => {
-              log.info("loadAttachment retry", { url: content.url });
+              log.info("loadAttachment retry");
               void loadAttachment(true);
             }}>
             Retry

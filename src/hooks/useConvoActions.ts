@@ -25,7 +25,7 @@ export const useConvoActions = (
 
   const removeMember = useCallback(
     async (memberInboxId: string) => {
-      log.trace("removeMember", { memberInboxId });
+      log.trace("removeMember");
       if (!isGroup(conversation)) {
         return;
       }
@@ -36,7 +36,7 @@ export const useConvoActions = (
 
   const updateName = useCallback(
     async (name: string) => {
-      log.trace("updateName", { name });
+      log.trace("updateName");
       if (!isGroup(conversation)) {
         return;
       }
@@ -48,7 +48,7 @@ export const useConvoActions = (
 
   const updateDescription = useCallback(
     async (description: string) => {
-      log.trace("updateDescription", { description });
+      log.trace("updateDescription");
       if (!isGroup(conversation)) {
         return;
       }
@@ -60,7 +60,7 @@ export const useConvoActions = (
 
   const updateImage = useCallback(
     async (imageData: Uint8Array) => {
-      log.trace("updateImage", { imageData });
+      log.trace("updateImage");
       if (!isGroup(conversation)) {
         return;
       }
@@ -118,7 +118,7 @@ export const useConvoActions = (
 
   const shareProfile = useCallback(
     async (profile: Profile, inboxId: string) => {
-      log.trace("shareProfile", { profile, inboxId });
+      log.trace("shareProfile");
       if (!isGroup(conversation)) {
         return;
       }

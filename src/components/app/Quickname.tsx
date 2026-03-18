@@ -73,11 +73,7 @@ export const Quickname: React.FC<QuicknameProps> = ({ onDirtyChange }) => {
         log.debug("file select dismissed, no file chosen");
         return;
       }
-      log.info("file selected", {
-        name: file.name,
-        size: file.size,
-        type: file.type,
-      });
+      log.info("file selected", { size: file.size, type: file.type });
       const validation = validateFile(file);
       if (!validation.valid) {
         log.warn("file validation failed", { error: validation.error });
@@ -121,7 +117,6 @@ export const Quickname: React.FC<QuicknameProps> = ({ onDirtyChange }) => {
 
   const handleSave = async () => {
     log.info("save started", {
-      name: editingName,
       hasPendingFile: !!pendingFile,
       hasPendingUrl: !!pendingUrl,
       avatarCleared,
@@ -147,7 +142,7 @@ export const Quickname: React.FC<QuicknameProps> = ({ onDirtyChange }) => {
           log.debug("reading pending file");
           imageData = new Uint8Array(await pendingFile.arrayBuffer());
         } else if (pendingUrl) {
-          log.debug("fetching image from url", { url: pendingUrl });
+          log.debug("fetching image from url");
           setStatus("Fetching image...");
           const response = await fetch(pendingUrl);
           if (!response.ok) {

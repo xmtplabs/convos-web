@@ -42,18 +42,18 @@ export const Route = createFileRoute("/api/v1/notifications/unsubscribe")({
         const { installationId } = body as UnsubscribeRequestBody;
 
         if (!isValidInstallationId(installationId)) {
-          log.warn("invalid installationId", installationId);
+          log.warn("invalid installationId");
           return new Response("Invalid installationId", { status: 400 });
         }
 
-        log.info("deleting", installationId);
+        log.info("deleting");
 
         try {
           await client.delete(installationId);
-          log.info("deleted", installationId);
+          log.info("deleted");
           return Response.json({ ok: true });
         } catch (err) {
-          log.error("unsubscribe failed", installationId, err);
+          log.error("unsubscribe failed", err);
           return new Response("Notifications server error", { status: 502 });
         }
       },

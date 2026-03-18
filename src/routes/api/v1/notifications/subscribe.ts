@@ -49,7 +49,7 @@ export const Route = createFileRoute("/api/v1/notifications/subscribe")({
           body as SubscribeRequestBody;
 
         if (!isValidInstallationId(installationId)) {
-          log.warn("invalid installationId", installationId);
+          log.warn("invalid installationId");
           return new Response("Invalid installationId", { status: 400 });
         }
         if (!isValidSubscription(subscription)) {
@@ -57,11 +57,11 @@ export const Route = createFileRoute("/api/v1/notifications/subscribe")({
           return new Response("Invalid subscription", { status: 400 });
         }
         if (!isValidTopic(topic)) {
-          log.warn("invalid topic", topic);
+          log.warn("invalid topic");
           return new Response("Invalid topic", { status: 400 });
         }
 
-        log.info("registering", installationId, "for topic", topic);
+        log.info("registering");
 
         try {
           await client.register(installationId, {
@@ -70,7 +70,7 @@ export const Route = createFileRoute("/api/v1/notifications/subscribe")({
             p256dh: subscription.p256dh,
             auth: subscription.auth,
           });
-          log.info("registered", installationId);
+          log.info("registered");
 
           const decodedHmacKeys = Array.isArray(hmacKeys)
             ? hmacKeys.map((k) => ({
@@ -86,11 +86,11 @@ export const Route = createFileRoute("/api/v1/notifications/subscribe")({
               isSilent: isSilent === true ? true : undefined,
             },
           ]);
-          log.info("subscribed", installationId, "to", topic);
+          log.info("subscribed");
 
           return Response.json({ ok: true });
         } catch (err) {
-          log.error("subscribe failed", installationId, topic, err);
+          log.error("subscribe failed", err);
           return new Response("Notifications server error", { status: 502 });
         }
       },

@@ -27,7 +27,7 @@ export type FileValidation =
     };
 
 export const validateFile = (file: File): FileValidation => {
-  log.trace("validateFile", { file: file.name, type: file.type });
+  log.trace("validateFile", { type: file.type });
   if (!ALLOWED_FILE_TYPES.includes(file.type)) {
     return {
       valid: false,
@@ -48,11 +48,7 @@ export const getPresignedUrl = async (): Promise<string> => {
 export const uploadAttachment = async (
   file: File,
 ): Promise<RemoteAttachment> => {
-  log.trace("uploadAttachment", {
-    name: file.name,
-    type: file.type,
-    size: file.size,
-  });
+  log.trace("uploadAttachment", { type: file.type, size: file.size });
   const arrayBuffer = await file.arrayBuffer();
   const attachment = new Uint8Array(arrayBuffer);
   const attachmentData: Attachment = {
@@ -60,9 +56,9 @@ export const uploadAttachment = async (
     filename: file.name,
     content: attachment,
   };
-  log.info("encrypting attachment", { attachmentData });
+  log.info("encrypting attachment");
   const encryptedAttachment = await encryptAttachment(attachmentData);
-  log.info("encrypted attachment", { encryptedAttachment });
+  log.info("encrypted attachment");
   const encryptedBlob = new Blob(
     [encryptedAttachment.payload as Uint8Array<ArrayBuffer>],
     {
@@ -74,13 +70,13 @@ export const uploadAttachment = async (
   });
   log.info("fetching presigned url for attachment");
   const presignedUrl = await getPresignedUrl();
-  log.info("fetched presigned url", { presignedUrl });
-  log.info("uploading attachment to pinata", { encryptedFile });
+  log.info("fetched presigned url");
+  log.info("uploading attachment to pinata");
   const upload = await pinata.upload.public
     .file(encryptedFile)
     .url(presignedUrl);
   const url = `https://${import.meta.env.VITE_PINATA_GATEWAY}/ipfs/${upload.cid}`;
-  log.info("uploaded attachment to pinata", { url });
+  log.info("uploaded attachment to pinata");
   return {
     url,
     contentDigest: encryptedAttachment.contentDigest,
@@ -94,7 +90,7 @@ export const uploadAttachment = async (
 };
 
 export const downloadAttachment = async (content: RemoteAttachment) => {
-  log.trace("downloadAttachment", { url: content.url });
+  log.trace("downloadAttachment");
   const response = await fetch(content.url);
   if (!response.ok) {
     const msg = `Unable to load attachment: [${response.status}] ${response.statusText}`;
@@ -106,7 +102,7 @@ export const downloadAttachment = async (content: RemoteAttachment) => {
 };
 
 export const getFileType = (filename: string) => {
-  log.trace("getFileType", { filename });
+  log.trace("getFileType");
   const extension = filename.split(".").pop()?.toLowerCase();
   switch (extension) {
     case "jpg":

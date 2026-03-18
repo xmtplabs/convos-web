@@ -19,7 +19,7 @@ export const QRCode: React.FC<QRCodeProps> = ({
   pupilColor,
   eyeRadius,
 }) => {
-  log.trace("render", { value });
+  log.trace("render");
   const src = useMemo(() => {
     try {
       log.trace("generating QR code", {
@@ -44,7 +44,7 @@ export const QRCode: React.FC<QRCodeProps> = ({
       });
       return `data:image/svg+xml,${encodeURIComponent(svg)}`;
     } catch (error: unknown) {
-      log.error("failed to generate QR code", { value, error });
+      log.error("failed to generate QR code", { error });
       return null;
     }
   }, [

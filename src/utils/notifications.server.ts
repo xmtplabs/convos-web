@@ -6,7 +6,7 @@ const log = createLogger("notifications-server");
 const HEX_RE = /^[0-9a-f]+$/i;
 
 export function isValidInstallationId(id: unknown): id is string {
-  log.trace("isValidInstallationId", { id });
+  log.trace("isValidInstallationId");
   return (
     typeof id === "string" &&
     id.length >= 1 &&
@@ -18,14 +18,14 @@ export function isValidInstallationId(id: unknown): id is string {
 const TOPIC_RE = /^\/xmtp\/mls\/1\/g-.+$/;
 
 export function isValidTopic(topic: unknown): topic is string {
-  log.trace("isValidTopic", { topic });
+  log.trace("isValidTopic");
   return typeof topic === "string" && TOPIC_RE.test(topic);
 }
 
 export function isValidSubscription(
   sub: unknown,
 ): sub is { endpoint: string; p256dh: string; auth: string } {
-  log.trace("isValidSubscription", { sub });
+  log.trace("isValidSubscription");
   if (typeof sub !== "object" || sub === null) return false;
   const s = sub as Record<string, unknown>;
   return (
@@ -54,7 +54,7 @@ export function getNotificationsClient() {
       baseUrl: url,
       httpVersion: "1.1",
     });
-    log.info("client created", url);
+    log.info("client created");
   }
   return client;
 }

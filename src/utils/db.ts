@@ -15,7 +15,7 @@ export const getConvos = () => {
 };
 
 export const addConvo = async (convo: Convo) => {
-  log.trace("addConvo", { convo });
+  log.trace("addConvo", { id: convo.id });
   return db.convos.put(convo);
 };
 
@@ -45,7 +45,7 @@ export const findConvoBy = (filter: (convo: Convo) => boolean) => {
 };
 
 export const getAvatar = async (convoId: string, inboxId: string) => {
-  log.trace("getAvatar", { convoId, inboxId });
+  log.trace("getAvatar", { convoId });
   return await db.avatars.get([convoId, inboxId]);
 };
 
@@ -55,7 +55,7 @@ export const deleteAvatarsByConvoId = async (convoId: string) => {
 };
 
 export const deleteAvatar = async (convoId: string, inboxId: string) => {
-  log.trace("deleteAvatar", { convoId, inboxId });
+  log.trace("deleteAvatar", { convoId });
   await db.avatars.delete([convoId, inboxId]);
 };
 
@@ -65,7 +65,7 @@ export const addAvatar = async (
   dataUrl: string,
   sourceUrl: string,
 ) => {
-  log.trace("addAvatar", { convoId, inboxId, dataUrl, sourceUrl });
+  log.trace("addAvatar", { convoId });
   await db.avatars.put({ convoId, inboxId, dataUrl, sourceUrl });
 };
 

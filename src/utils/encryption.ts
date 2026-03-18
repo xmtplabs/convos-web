@@ -5,7 +5,7 @@ const log = createLogger("encryption");
 const INFO = new TextEncoder().encode("ConvosImageV1");
 
 export const hexToBytes = (hex: string) => {
-  log.trace("hexToBytes", { hex });
+  log.trace("hexToBytes", { length: hex.length });
   const bytes = new Uint8Array(hex.length / 2);
   for (let i = 0; i < hex.length; i += 2) {
     bytes[i / 2] = parseInt(hex.substring(i, i + 2), 16);
@@ -19,7 +19,7 @@ export const bytesToHex = (bytes: Uint8Array) => {
   const hex = Array.from(bytes)
     .map((b) => b.toString(16).padStart(2, "0"))
     .join("");
-  log.debug("bytesToHex complete", { hex });
+  log.debug("bytesToHex complete", { length: hex.length });
   return hex;
 };
 
@@ -43,7 +43,7 @@ export const generateNonce = () => {
 };
 
 const deriveKey = async (key: string, saltBytes: Uint8Array<ArrayBuffer>) => {
-  log.trace("deriveKey", { key, saltBytes });
+  log.trace("deriveKey");
   const keyBytes = hexToBytes(key);
   const baseKey = await crypto.subtle.importKey(
     "raw",

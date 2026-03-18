@@ -8,7 +8,7 @@ export const Route = createFileRoute("/api/v1/notifications/health")({
     handlers: {
       GET: async () => {
         const url = process.env.XMTP_NOTIFICATIONS_URL;
-        log.info("health check", { url });
+        log.info("health check");
 
         if (!url) {
           return Response.json({
@@ -23,11 +23,11 @@ export const Route = createFileRoute("/api/v1/notifications/health")({
           });
           const status = res.status;
           const body = await res.text().catch(() => "");
-          log.info("health response", { status, body });
+          log.info("health response", { status });
           return Response.json({ ok: res.ok, status, body, url });
         } catch (err) {
           const message = err instanceof Error ? err.message : String(err);
-          log.error("health check failed", { url, error: message });
+          log.error("health check failed", { error: message });
           return Response.json({ ok: false, url, error: message });
         }
       },

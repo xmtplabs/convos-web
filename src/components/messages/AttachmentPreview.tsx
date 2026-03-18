@@ -53,7 +53,7 @@ export const AttachmentPreview: React.FC<AttachmentPreviewProps> = ({
           variant="light"
           radius="xl"
           onClick={() => {
-            log.info("cancel", { name: file.name });
+            log.info("cancel");
             onCancel();
           }}
           disabled={disabled}>

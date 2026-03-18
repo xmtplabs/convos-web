@@ -19,7 +19,7 @@ export const useProfileAvatar = (profile: Profile | null) => {
     const ctrl = new AbortController();
     void (async () => {
       try {
-        log.info("avatar fetch start", { avatarUrl });
+        log.info("avatar fetch start");
         const response = await fetch(avatarUrl, { signal: ctrl.signal });
         if (!response.ok) {
           log.warn("avatar fetch failed", { status: response.status });

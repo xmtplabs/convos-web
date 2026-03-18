@@ -40,7 +40,7 @@ export const ConvoHeader: React.FC = () => {
   const explodeCountdown = useExplodeCountdown(convo.expiresAtUnix);
   const groupImage = useAvatar(convo.id, GROUP_IMAGE_INBOX_ID);
 
-  log.trace("render", { convoId: convo.id, name: convo.name });
+  log.trace("render", { convoId: convo.id });
 
   return (
     <Group

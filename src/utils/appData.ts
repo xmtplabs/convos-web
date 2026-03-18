@@ -141,12 +141,12 @@ export const generateTag = () => {
 };
 
 export const initGroupAppData = async (group: Group) => {
-  log.trace("initGroupAppData", { groupId: group.id });
+  log.trace("initGroupAppData");
   const tag = generateTag();
   const metadata = create(ConversationCustomMetadataSchema, { tag });
   const encoded = await encode(metadata);
   await group.updateAppData(encoded);
-  log.info("group appData initialized", { groupId: group.id });
+  log.info("group appData initialized");
   return tag;
 };
 
@@ -155,7 +155,7 @@ export const shareProfileToGroup = async (
   profile: Profile,
   inboxId: string,
 ) => {
-  log.trace("shareProfileToGroup", { groupId: group.id, inboxId });
+  log.trace("shareProfileToGroup");
   let existing: ConversationCustomMetadata | undefined;
   const currentAppData = group.appData;
   if (currentAppData) {
@@ -184,7 +184,7 @@ export const shareProfileToGroup = async (
     profile.avatarSalt &&
     profile.avatarNonce
   ) {
-    log.info("downloading profile avatar", { avatarUrl: profile.avatarUrl });
+    log.info("downloading profile avatar");
     // download and decrypt profile avatar
     const response = await fetch(profile.avatarUrl);
 
@@ -206,9 +206,9 @@ export const shareProfileToGroup = async (
     );
 
     // re-encrypt avatar with group key and upload
-    log.info("uploading profile avatar", { keyHex: groupKeyHex });
+    log.info("uploading profile avatar");
     const upload = await uploadAvatar(plaintext, groupKeyHex);
-    log.info("uploaded profile avatar", { url: upload.url });
+    log.info("uploaded profile avatar");
     encryptedImage = {
       url: upload.url,
       salt: hexToBytes(upload.salt),
@@ -223,7 +223,7 @@ export const shareProfileToGroup = async (
     encryptedImage,
   });
 
-  log.info("creating profile", { inboxId, name: profile.name });
+  log.info("creating profile");
 
   // add/replace profile in metadata
   metadata.profiles = [
@@ -231,9 +231,9 @@ export const shareProfileToGroup = async (
     newProfile,
   ];
 
-  log.info("encoding metadata", { metadata });
+  log.info("encoding metadata");
   const encoded = await encode(metadata);
-  log.info("updating group appData", { encoded });
+  log.info("updating group appData");
   await group.updateAppData(encoded);
 };
 
@@ -241,7 +241,7 @@ export const updateGroupImage = async (
   group: Group,
   imageData: Uint8Array<ArrayBuffer>,
 ) => {
-  log.trace("updateGroupImage", { groupId: group.id });
+  log.trace("updateGroupImage");
   let existing: ConversationCustomMetadata | undefined;
   const currentAppData = group.appData;
   if (currentAppData) {
@@ -262,24 +262,24 @@ export const updateGroupImage = async (
   metadata.imageEncryptionKey = imageEncryptionKey;
 
   // encrypt and upload
-  log.info("uploading group image", { keyHex: bytesToHex(imageEncryptionKey) });
+  log.info("uploading group image");
   const upload = await uploadAvatar(imageData, bytesToHex(imageEncryptionKey));
-  log.info("uploaded group image", { url: upload.url });
+  log.info("uploaded group image");
   metadata.encryptedGroupImage = create(EncryptedImageRefSchema, {
     url: upload.url,
     salt: hexToBytes(upload.salt),
     nonce: hexToBytes(upload.nonce),
   });
 
-  log.info("encoding metadata", { metadata });
+  log.info("encoding metadata");
   const encoded = await encode(metadata);
-  log.info("updating group appData", { encoded });
+  log.info("updating group appData");
   await group.updateAppData(encoded);
   await group.updateImageUrl(upload.url);
 };
 
 export const removeGroupImage = async (group: Group) => {
-  log.trace("removeGroupImage", { groupId: group.id });
+  log.trace("removeGroupImage");
   const currentAppData = group.appData;
   if (!currentAppData) {
     return;
@@ -287,9 +287,9 @@ export const removeGroupImage = async (group: Group) => {
 
   let metadata: ConversationCustomMetadata;
   try {
-    log.info("decoding metadata", { currentAppData });
+    log.info("decoding metadata");
     metadata = await decode(currentAppData);
-    log.info("decoded metadata", { metadata });
+    log.info("decoded metadata");
   } catch (err) {
     log.error("corrupt appData during removeGroupImage", err);
     return;
@@ -297,25 +297,24 @@ export const removeGroupImage = async (group: Group) => {
 
   metadata.encryptedGroupImage = undefined;
 
-  log.info("encoding metadata", { metadata });
+  log.info("encoding metadata");
   const encoded = await encode(metadata);
-  log.info("updating group appData", { encoded });
+  log.info("updating group appData");
   await group.updateAppData(encoded);
   await group.updateImageUrl("");
 };
 
 export const updateExpiresAt = async (group: Group, expiresAtUnix: bigint) => {
   log.trace("updateExpiresAt", {
-    groupId: group.id,
     expiresAtUnix: Number(expiresAtUnix),
   });
   let existing: ConversationCustomMetadata | undefined;
   const currentAppData = group.appData;
   if (currentAppData) {
     try {
-      log.info("decoding metadata", { currentAppData });
+      log.info("decoding metadata");
       existing = await decode(currentAppData);
-      log.info("decoded metadata", { metadata: existing });
+      log.info("decoded metadata");
     } catch (err) {
       log.error("corrupt appData during updateExpiresAt, starting fresh", err);
     }
@@ -325,8 +324,8 @@ export const updateExpiresAt = async (group: Group, expiresAtUnix: bigint) => {
   log.info("setting expiresAtUnix", { expiresAtUnix });
   metadata.expiresAtUnix = expiresAtUnix;
 
-  log.info("encoding metadata", { metadata });
+  log.info("encoding metadata");
   const encoded = await encode(metadata);
-  log.info("updating group appData", { encoded });
+  log.info("updating group appData");
   await group.updateAppData(encoded);
 };

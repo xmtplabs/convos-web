@@ -78,7 +78,6 @@ export const setExplodeTimer = async (
   log.trace("setExplodeTimer", {
     convoId,
     expiresAt: expiresAt.toISOString(),
-    selfInboxId,
   });
   if (!(conversation instanceof XmtpGroup)) {
     throw new Error("Explode is only supported for group conversations");
@@ -116,7 +115,7 @@ export const cleanUpExplodedConvo = async (
   selfInboxId: string,
   installationId?: string,
 ) => {
-  log.info("cleaning up exploded convo", { convoId, selfInboxId });
+  log.info("cleaning up exploded convo", { convoId });
 
   if (conversation instanceof XmtpGroup) {
     try {

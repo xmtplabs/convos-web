@@ -32,7 +32,7 @@ const encoder = new TextEncoder();
  * Type tag 0x02 (UTF-8 string) + length prefix + UTF-8 bytes.
  */
 const packConversationId = (conversationId: string): Uint8Array => {
-  log.trace("packConversationId", { conversationId });
+  log.trace("packConversationId");
   const utf8 = encoder.encode(conversationId);
   const len = utf8.length;
 
@@ -58,7 +58,7 @@ const encryptConversationToken = (
   privateKeyBytes: Uint8Array,
   inboxId: string,
 ) => {
-  log.trace("encryptConversationToken", { conversationId, inboxId });
+  log.trace("encryptConversationToken");
   const info = encoder.encode("inbox:" + inboxId);
   const key = hkdf(sha256, privateKeyBytes, SALT, info, 32);
 
@@ -212,7 +212,7 @@ export const parseInviteSlug = (slug: string): ParsedInvite => {
 };
 
 export const sendJoinRequest = async (parsed: ParsedInvite) => {
-  log.trace("sendJoinRequest", { creatorInboxId: parsed.creatorInboxId });
+  log.trace("sendJoinRequest");
   const { creatorInboxId, slug, payload } = parsed;
   const privateKey = generatePrivateKey();
   const client = await createClient(privateKey);
@@ -220,7 +220,7 @@ export const sendJoinRequest = async (parsed: ParsedInvite) => {
     await client.conversations.sync();
     const dm = await client.conversations.createDm(creatorInboxId);
     await dm.sendText(slug);
-    log.info("join request sent", { creatorInboxId });
+    log.info("join request sent");
 
     const convo: Convo = {
       id: crypto.randomUUID(),
@@ -247,7 +247,7 @@ export const processDmInvite = async (
   tag: string,
   group: Group,
 ) => {
-  log.trace("processDmInvite", { senderInboxId: message.senderInboxId });
+  log.trace("processDmInvite");
   if (!isText(message) || !message.content) {
     return false;
   }
@@ -258,9 +258,7 @@ export const processDmInvite = async (
       return false;
     }
     await group.addMembers([message.senderInboxId]);
-    log.info("processDmInvite: member added", {
-      senderInboxId: message.senderInboxId,
-    });
+    log.info("processDmInvite: member added");
     return true;
   } catch (err) {
     log.debug("processDmInvite: not an invite message", err);

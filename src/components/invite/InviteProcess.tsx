@@ -59,7 +59,7 @@ export const InviteProcess: React.FC = () => {
       });
     };
 
-    log.info("auto-joining", { payload: parsed.payload });
+    log.info("auto-joining");
     join().catch((e: unknown) => {
       log.error("join request failed", e);
       joining.current = false;

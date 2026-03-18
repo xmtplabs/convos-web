@@ -38,7 +38,7 @@ export const syncAvatars = async (
         return;
       }
       if (signal?.aborted) {
-        log.info("avatar sync aborted", { convoId, inboxId: profile.inboxId });
+        log.info("avatar sync aborted", { convoId });
         return;
       }
 
@@ -48,20 +48,13 @@ export const syncAvatars = async (
         return;
       }
 
-      log.info("fetching avatar", {
-        convoId,
-        inboxId: profile.inboxId,
-        url: img.url,
-      });
+      log.info("fetching avatar", { convoId });
       const response = await fetch(img.url, { signal });
 
       if (!response.ok) {
         log.error("failed to fetch avatar", {
           convoId,
-          inboxId: profile.inboxId,
-          url: img.url,
           status: response.status,
-          statusText: response.statusText,
         });
         return;
       }
@@ -69,7 +62,7 @@ export const syncAvatars = async (
       const ciphertext = new Uint8Array(await response.arrayBuffer());
 
       if (signal?.aborted) {
-        log.info("avatar sync aborted", { convoId, inboxId: profile.inboxId });
+        log.info("avatar sync aborted", { convoId });
         return;
       }
 
@@ -82,13 +75,13 @@ export const syncAvatars = async (
       );
 
       if (signal?.aborted) {
-        log.info("avatar sync aborted", { convoId, inboxId: profile.inboxId });
+        log.info("avatar sync aborted", { convoId });
         return;
       }
 
       const dataUrl = uint8ToDataUrl(plaintext);
 
-      log.info("saving avatar", { convoId, inboxId: profile.inboxId, dataUrl });
+      log.info("saving avatar", { convoId });
       await addAvatar(convoId, profile.inboxId, dataUrl, img.url);
     });
 
@@ -97,18 +90,12 @@ export const syncAvatars = async (
   // sync group image
   const groupImg = appData.encryptedGroupImage;
   if (!groupImg) {
-    log.info("deleting group image", {
-      convoId,
-      inboxId: GROUP_IMAGE_INBOX_ID,
-    });
+    log.info("deleting group image", { convoId });
     await deleteAvatar(convoId, GROUP_IMAGE_INBOX_ID);
   } else {
     try {
       if (signal?.aborted) {
-        log.info("group image sync aborted", {
-          convoId,
-          inboxId: GROUP_IMAGE_INBOX_ID,
-        });
+        log.info("group image sync aborted", { convoId });
         return;
       }
       const existing = await getAvatar(convoId, GROUP_IMAGE_INBOX_ID);
@@ -117,10 +104,7 @@ export const syncAvatars = async (
         if (!response.ok) {
           log.error("failed to fetch group image", {
             convoId,
-            inboxId: GROUP_IMAGE_INBOX_ID,
-            url: groupImg.url,
             status: response.status,
-            statusText: response.statusText,
           });
           return;
         }
@@ -146,11 +130,7 @@ export const syncAvatars = async (
           return;
         }
         const dataUrl = uint8ToDataUrl(plaintext);
-        log.info("saving group image", {
-          convoId,
-          inboxId: GROUP_IMAGE_INBOX_ID,
-          dataUrl,
-        });
+        log.info("saving group image", { convoId });
         await addAvatar(convoId, GROUP_IMAGE_INBOX_ID, dataUrl, groupImg.url);
       }
     } catch (err) {
@@ -163,7 +143,7 @@ export const uploadAvatar = async (
   data: Uint8Array<ArrayBuffer>,
   groupKeyHex: string,
 ): Promise<{ url: string; salt: string; nonce: string }> => {
-  log.trace("uploadAvatar", { groupKeyHex });
+  log.trace("uploadAvatar");
   const { ciphertext, salt, nonce } = await encrypt(data, groupKeyHex);
 
   const blob = new Blob([ciphertext], { type: "application/octet-stream" });
