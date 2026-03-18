@@ -13,15 +13,21 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useConvo } from "@/hooks/useConvo";
 import { downloadAttachment, getFileType } from "@/utils/attachment";
 import { createLogger } from "@/utils/log";
+import messageClasses from "./MessageList.module.css";
 import classes from "./RemoteAttachmentContent.module.css";
 
 const log = createLogger("remote-attachment-content");
 
 const urlCache = new Map<string, { blobUrl: string | null; failed: boolean }>();
 
-export const RemoteAttachmentContent: React.FC<{
+type RemoteAttachmentContentProps = {
   content: RemoteAttachment;
-}> = ({ content }) => {
+  isOwn: boolean;
+};
+
+export const RemoteAttachmentContent: React.FC<
+  RemoteAttachmentContentProps
+> = ({ content, isOwn }) => {
   log.trace("render");
   const { convo } = useConvo();
   const [decryptedUrl, setDecryptedUrl] = useState<string | null>(null);
@@ -88,45 +94,51 @@ export const RemoteAttachmentContent: React.FC<{
     setRevealed(false);
   }, [decryptedUrl]);
 
+  const wrapperClass = `${messageClasses.attachment} ${isOwn ? "" : messageClasses.attachmentOther}`;
+
   if (isLoading) {
     return (
-      <Stack
-        align="center"
-        justify="center"
-        gap="xs"
-        p="xl"
-        className={`${classes.placeholder} ${classes.placeholderLoading}`}>
-        <Loader size="sm" />
-        <Text size="xs" c="dimmed">
-          Loading attachment...
-        </Text>
-      </Stack>
+      <Box className={wrapperClass}>
+        <Stack
+          align="center"
+          justify="center"
+          gap="xs"
+          p="xl"
+          className={`${classes.placeholder} ${classes.placeholderLoading}`}>
+          <Loader size="sm" />
+          <Text size="xs" c="dimmed">
+            Loading attachment...
+          </Text>
+        </Stack>
+      </Box>
     );
   }
 
   if (error) {
     return (
-      <Stack
-        align="center"
-        justify="center"
-        gap="xs"
-        p="md"
-        className={classes.placeholder}>
-        <AlertCircleIcon size={24} />
-        <Text size="xs" c="dimmed">
-          {error}
-        </Text>
-        <Button
-          variant="light"
-          radius="xl"
-          size="xs"
-          onClick={() => {
-            log.info("loadAttachment retry", { url: content.url });
-            void loadAttachment(true);
-          }}>
-          Retry
-        </Button>
-      </Stack>
+      <Box className={wrapperClass}>
+        <Stack
+          align="center"
+          justify="center"
+          gap="xs"
+          p="md"
+          className={classes.placeholder}>
+          <AlertCircleIcon size={24} />
+          <Text size="xs" c="dimmed">
+            {error}
+          </Text>
+          <Button
+            variant="light"
+            radius="xl"
+            size="xs"
+            onClick={() => {
+              log.info("loadAttachment retry", { url: content.url });
+              void loadAttachment(true);
+            }}>
+            Retry
+          </Button>
+        </Stack>
+      </Box>
     );
   }
 
@@ -139,46 +151,54 @@ export const RemoteAttachmentContent: React.FC<{
   if (fileType === "image") {
     const blurred = convo.blurImages && !revealed;
     return (
-      <div className={classes.imageWrapper}>
-        <Image
-          src={decryptedUrl}
-          alt={content.filename ?? "Attachment"}
-          maw="100%"
-          className={`${classes.image} ${blurred ? classes.imageBlurred : ""}`}
-        />
-        {blurred && (
-          <div className={classes.revealOverlay}>
-            <ActionIcon
-              variant="filled"
-              color="dark"
-              radius="xl"
-              size="xl"
-              onClick={() => {
-                setRevealed(true);
-              }}>
-              <EyeIcon size={24} />
-            </ActionIcon>
-          </div>
-        )}
-      </div>
+      <Box className={wrapperClass}>
+        <div className={classes.imageWrapper}>
+          <Image
+            src={decryptedUrl}
+            alt={content.filename ?? "Attachment"}
+            maw="100%"
+            className={`${classes.image} ${blurred ? classes.imageBlurred : ""}`}
+          />
+          {blurred && (
+            <div className={classes.revealOverlay}>
+              <ActionIcon
+                variant="filled"
+                color="dark"
+                radius="xl"
+                size="xl"
+                onClick={() => {
+                  setRevealed(true);
+                }}>
+                <EyeIcon size={24} />
+              </ActionIcon>
+            </div>
+          )}
+        </div>
+      </Box>
     );
   }
 
   if (fileType === "video") {
-    return <video src={decryptedUrl} controls className={classes.video} />;
+    return (
+      <Box className={wrapperClass}>
+        <video src={decryptedUrl} controls className={classes.video} />
+      </Box>
+    );
   }
 
   if (fileType === "audio") {
     return (
-      <Box p="sm">
+      <Box className={wrapperClass} p="sm">
         <audio src={decryptedUrl} controls className={classes.audio} />
       </Box>
     );
   }
 
   return (
-    <Text size="sm" c="dimmed" p="sm">
-      {content.filename ?? "Attachment"}
-    </Text>
+    <Box className={wrapperClass}>
+      <Text size="sm" c="dimmed" p="sm">
+        {content.filename ?? "Attachment"}
+      </Text>
+    </Box>
   );
 };

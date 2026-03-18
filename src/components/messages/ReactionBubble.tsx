@@ -1,18 +1,13 @@
 import { Group, Text, UnstyledButton } from "@mantine/core";
 import { memo } from "react";
-import { createLogger } from "@/utils/log";
 import type { MessageReactions } from "@/utils/reactions";
 import classes from "./ReactionBubble.module.css";
-
-const log = createLogger("reaction-bubble");
 
 export const ReactionBubble: React.FC<{
   reactions: MessageReactions;
   isOwn: boolean;
   onOpen: () => void;
 }> = memo(({ reactions, isOwn, onOpen }) => {
-  log.trace("render");
-
   const uniqueEmojis = [...reactions.byEmoji.keys()];
 
   if (uniqueEmojis.length === 0) {
