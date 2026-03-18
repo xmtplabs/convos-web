@@ -16,11 +16,13 @@ export const ConvoSummary: React.FC<ConvoSummaryProps> = ({ convo }) => (
         to="."
         search={(prev) => ({ ...prev, modal: "convo-info" })}>
         <Group gap="xxxs" align="center">
-          <Text size="xs">New convo, new everything</Text>
+          <Text size="xs" ta="center">
+            New convo, new everything
+          </Text>
           <InfoIcon size={16} />
         </Group>
       </UnstyledLink>
-      <Text size="xs" c="dimmed">
+      <Text size="xs" c="dimmed" ta="center">
         For privacy, new members can&apos;t see earlier messages.
       </Text>
     </Stack>
