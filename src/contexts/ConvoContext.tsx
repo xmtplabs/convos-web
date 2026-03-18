@@ -365,19 +365,23 @@ export const ConvoProvider: React.FC<{
       log.trace("lifecycle: acquiring client", {
         convoId: convo.id,
       });
-      const handle = await acquireClient(convo.privateKey, () => {
-        // onEvicted
-        log.info("lifecycle: evicted", {
-          convoId: convo.id,
-        });
-        setConversation(null);
-        setClient(null);
-        // trigger reconnect after eviction ends
-        convoIdRef.current = null;
-        setReconnectKey((k) => k + 1);
-      });
-      if (cancelled.current) {
-        handle.release();
+      const handle = await acquireClient(
+        convo.privateKey,
+        () => {
+          // onEvicted
+          log.info("lifecycle: evicted", {
+            convoId: convo.id,
+          });
+          setConversation(null);
+          setClient(null);
+          // trigger reconnect after eviction ends
+          convoIdRef.current = null;
+          setReconnectKey((k) => k + 1);
+        },
+        () => cancelled.current,
+      );
+      if (!handle || cancelled.current) {
+        handle?.release();
         return;
       }
       handleRef.current = handle;
@@ -467,13 +471,16 @@ export const ConvoProvider: React.FC<{
       return;
     }
 
-    // load cached messages immediately, then sync
+    // load cached messages immediately for instant display
     await syncMessages();
-    setMembers(await conversation.members());
 
+    // then sync from network and reload
     await conversation.sync();
-    const msgs = await syncMessages();
-    setMembers(await conversation.members());
+    const [msgs, freshMembers] = await Promise.all([
+      syncMessages(),
+      conversation.members(),
+    ]);
+    setMembers(freshMembers);
 
     // sync metadata to local DB
     const updates: Partial<Convo> = {};

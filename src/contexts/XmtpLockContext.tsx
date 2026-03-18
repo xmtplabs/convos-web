@@ -14,7 +14,8 @@ export type XmtpLockContextValue = {
   acquireClient: (
     privateKey: `0x${string}`,
     onEvicted?: () => void,
-  ) => Promise<XmtpLockHandle>;
+    isCancelled?: () => boolean,
+  ) => Promise<XmtpLockHandle | null>;
 };
 
 export const XmtpLockContext = createContext<XmtpLockContextValue | null>(null);
@@ -35,11 +36,15 @@ export const XmtpLockProvider: React.FC<{ children: React.ReactNode }> = ({
     async (
       privateKey: `0x${string}`,
       onEvicted?: () => void,
-    ): Promise<XmtpLockHandle> => {
-      let handle!: XmtpLockHandle;
+      isCancelled?: () => boolean,
+    ): Promise<XmtpLockHandle | null> => {
+      let handle: XmtpLockHandle | null = null;
       queueRef.current = queueRef.current
         .catch(() => {})
         .then(async () => {
+          // skip if requester was cancelled (e.g. StrictMode cleanup)
+          if (isCancelled?.()) return;
+
           // evict current holder if present
           if (lockRef.current && !lockRef.current.released) {
             log.info("evicting current lock holder");
